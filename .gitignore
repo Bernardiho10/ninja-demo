@@ -1,6 +1,9 @@
 .env
 data.db
+*.db
 *.log
+node_modules/
+apps/*/web/dist/
 server
 server.exe
 ninja-demo-server
@@ -8,4 +11,6 @@ ninja-demo-server.exe
 web/public/
 web/src/index.ts
 tutor.md
+apps/DEPLOYMENT.md
 
+.playwright-mcp/
