@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ninja-bet</title>
+  <link rel="stylesheet" href="/assets/css/shared.css"/>
+  <link type="ham/layout-css"/>
+</head>
+<body>
+<embed type="ham/partial" src="nav.phtml"/>
+<embed type="ham/page"/>
+<script type="module" src="/assets/js/nav.js"></script>
+<embed type="ham/layout-js"/>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<div class="page page-wide"
+  data-ham-page-config='{ "layout": "default.lhtml" }'
+>
+  <h1>ninja-bet</h1>
+  <p class="lede">
+    We only ask for your NIN and phone number — no date of birth. We look up your details from the national
+    registry and confirm the name you typed matches.
+  </p>
+
+  <div class="demo-row">
+    <div>
+      <form id="register-form" class="card">
+        <label>First name<input id="first_name" value="James" required /></label>
+        <label>Last name<input id="last_name" value="Bond" required /></label>
+        <label>Phone number<input id="phone_number" value="08012345678" required /></label>
+        <label>NIN<input id="nin" value="77777777777" required /></label>
+        <label>Password<input id="password" type="password" value="password123" required /></label>
+        <p id="form-error" class="error" hidden></p>
+        <button type="submit" id="submit-btn">Create account — get ₦100,000 welcome credit</button>
+        <p class="hint">Already have an account? <a href="/login.html">Log in</a></p>
+
+        <div id="result" hidden></div>
+      </form>
+
+      <p class="hint" style="margin-top: 14px; text-align: center">
+        A betting company also has to catch minors before they can play —
+        <button type="button" id="simulate-underage-btn" class="link-button">try a simulated underage signup</button>.
+      </p>
+    </div>
+
+    <div class="snippet-stack">
+      <div id="lookup-tabs"></div>
+      <div id="verify-tabs"></div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+<div class="page"
+  data-ham-page-config='{ "layout": "default.lhtml" }'
+>
+  <h1>Fraud signals</h1>
+  <p class="lede">Every NIN currently tied to more than one account. Only the first account on a given NIN keeps its welcome bonus.</p>
+
+  <div class="impact-strip" style="margin-top: 16px">
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-duplicates">0</span>
+      <span class="impact-label" id="impact-duplicates-label">duplicate accounts, ₦0 not paid</span>
+    </div>
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-mismatch">0</span>
+      <span class="impact-label">registrations blocked on name mismatch</span>
+    </div>
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-payout-fraud">0</span>
+      <span class="impact-label" id="impact-payout-fraud-label">payouts blocked, ₦0</span>
+    </div>
+  </div>
+
+  <button type="button" id="refresh-btn" class="secondary" style="margin-top: 18px; margin-bottom: 18px">Refresh</button>
+
+  <div id="groups"></div>
+</div>

@@ -1,0 +1,1102 @@
+:root {
+  color-scheme: light;
+  --red: #e4002b;
+  --red-dark: #b8001f;
+  --green: #17b84b;
+  --green-dark: #0f8f3a;
+  --navy: #0b0f1a;
+  --navy-panel: #131a2b;
+  --bg: #f1f2f4;
+  --card: #ffffff;
+  --border: #e3e5e9;
+  --text: #101828;
+  --muted: #667085;
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-family: var(--font-display);
+}
+
+* { box-sizing: border-box; }
+
+/* Author-stylesheet display rules (button, .card, etc.) always beat the
+   browser's built-in [hidden]{display:none} UA rule, no matter the
+   selector specificity — cascade origin wins, not specificity. Without
+   this, toggling the `hidden` attribute silently does nothing on any
+   element that also matches a display-setting rule. */
+[hidden] { display: none !important; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* --- Top bar: red brand header, like SportyBet's header --- */
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 32px;
+  background: var(--red);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav .brand {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 900;
+  font-size: 20px;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.ninja-logo-mark {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.nav .sandbox-badge {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 9px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.nav a {
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 700;
+  padding-bottom: 2px;
+  border-bottom: 2px solid transparent;
+}
+
+.nav a:hover { color: #fff; border-bottom-color: #fff; }
+.nav a.brand:hover { border-bottom-color: transparent; }
+.nav a.nav-active { color: #fff; border-bottom-color: #fff; }
+
+.nav-spacer { flex: 1; }
+
+.nav-status-badge {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.nav-account {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.3;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.nav-balance {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.nav-logout {
+  width: auto;
+  margin: 0;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.nav-logout:hover:not(:disabled) { background: rgba(255, 255, 255, 0.24); }
+
+.nav a.nav-register-cta {
+  background: var(--green);
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border-bottom: none;
+}
+
+.nav a.nav-register-cta:hover { background: var(--green-dark); border-bottom: none; }
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 32px 60px;
+}
+
+.page-narrow { max-width: 440px; }
+
+h1 {
+  margin-top: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+h2 { font-family: var(--font-display); }
+
+.lede {
+  color: var(--muted);
+  line-height: 1.65;
+  max-width: 62ch;
+  text-wrap: pretty;
+}
+
+.wallet-amount, .impact-value, table.fields td:nth-child(3), .odds-pill {
+  font-variant-numeric: tabular-nums;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+/* --- Cards: white, like SportyBet's light content panels --- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+/* --- Layer-2 withdrawal security: strictness tiers --- */
+.security-card { margin-top: 18px; }
+
+.security-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.security-toggle-row input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--green);
+  cursor: pointer;
+}
+
+.tier-selector {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 14px 0;
+}
+
+.tier-option {
+  width: auto;
+  margin: 0;
+  padding: 14px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  text-align: left;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.tier-option strong {
+  display: block;
+  font-size: 15px;
+}
+
+.tier-option span {
+  display: inline-block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.tier-option p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.tier-option:hover:not(:disabled) { border-color: var(--green); }
+
+.tier-option-selected,
+.tier-option-selected:hover {
+  border-color: var(--green);
+  background: #f0fbf3;
+}
+
+.tier-option-selected span { color: var(--green-dark); }
+
+/* --- Branded facial-verification card --- */
+.verification-branded-card { margin-top: 18px; }
+
+.verification-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.verification-badge-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--red);
+  flex-shrink: 0;
+}
+
+.verification-badge-mark .ninja-logo-mark {
+  width: 24px;
+  height: 24px;
+  color: #fff;
+}
+
+.verification-badge-title {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.verification-badge-subtitle {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.card h2 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card h2::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.hint {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+input, select {
+  display: block;
+  width: 100%;
+  margin-top: 5px;
+  padding: 11px 12px;
+  background: #fff;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--red);
+}
+
+/* --- Buttons: green primary CTA (SportyBet's "Register"/action color) --- */
+button {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 13px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover:not(:disabled) { background: var(--green-dark); }
+button:disabled { opacity: 0.55; cursor: default; }
+button.secondary { background: var(--navy); }
+button.secondary:hover:not(:disabled) { background: #000; }
+button.danger { background: var(--red); }
+button.danger:hover:not(:disabled) { background: var(--red-dark); }
+
+.error {
+  color: var(--red);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.success {
+  color: var(--green-dark);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  background: var(--border);
+  color: var(--text);
+}
+
+.badge-verified { background: var(--green); color: #fff; }
+.badge-flagged_duplicate_identity { background: #f59e0b; color: #fff; }
+.badge-blocked_underage,
+.badge-blocked_mismatch,
+.badge-blocked_lookup_failed { background: var(--red); color: #fff; }
+
+/* --- Real-numbers strip (fraud-signals page) --- */
+.impact-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 40px;
+}
+
+.impact-tile {
+  background: var(--navy);
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.impact-value {
+  font-family: var(--font-mono);
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.impact-label {
+  font-size: 12px;
+  color: #8b95a8;
+  line-height: 1.4;
+}
+
+.wallet-row {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 14px;
+}
+
+.wallet-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  letter-spacing: 0.03em;
+}
+
+.wallet-amount {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--text);
+  margin-top: 2px;
+}
+
+.wallet-amount-win { color: var(--green-dark); }
+
+.live-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--red);
+  letter-spacing: 0.02em;
+  display: block;
+}
+
+/* --- Sportsbook layout: sidebar + match list + persistent betslip --- */
+.page-wide { max-width: 1360px; }
+
+.link-button {
+  display: inline;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: var(--green-dark);
+  font-size: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.link-button:hover:not(:disabled) { color: var(--green); }
+
+.sb-layout {
+  display: grid;
+  grid-template-columns: 210px 1fr 300px;
+  gap: 16px;
+  align-items: start;
+  margin-top: 18px;
+}
+
+@media (max-width: 1100px) {
+  .sb-layout { grid-template-columns: 1fr; }
+}
+
+.sb-sidebar .card h2 { margin-bottom: 10px; }
+
+.sb-league-list { list-style: none; margin: 0; padding: 0; }
+
+.sb-league-list li { margin-bottom: 2px; }
+
+.sb-league-list button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 9px 10px;
+  background: transparent;
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13px;
+  border-radius: 6px;
+  text-align: left;
+}
+
+.sb-league-list button:hover:not(:disabled) { background: var(--bg); }
+
+.sb-league-list button.sb-league-active { background: var(--bg); color: var(--red); font-weight: 800; }
+
+.sb-league-list button span {
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.sb-main { display: flex; flex-direction: column; gap: 16px; }
+
+.sb-league-group h2 {
+  font-size: 14px;
+  margin-bottom: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sb-col-headers {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 56px;
+  gap: 8px;
+  padding: 0 2px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.sb-col-headers span:first-child { text-align: left; }
+
+.sb-match-row {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 56px;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 2px;
+  border-top: 1px solid var(--border);
+}
+
+.sb-match-info { display: flex; flex-direction: column; gap: 2px; }
+
+.sb-match-time { font-size: 11px; color: var(--muted); font-weight: 700; }
+
+.sb-live-inline { display: inline; }
+
+.sb-match-teams { font-weight: 700; font-size: 13px; line-height: 1.35; }
+
+.sb-odd {
+  width: auto;
+  margin: 0;
+  padding: 9px 4px;
+  background: var(--bg);
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  font-weight: 800;
+  font-size: 13px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+}
+
+.sb-odd:hover:not(:disabled) { border-color: var(--green); }
+
+.sb-odd-selected { background: var(--green); border-color: var(--green); color: #fff; }
+
+.sb-betslip-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+}
+
+.betslip-panel { background: var(--navy-panel); border: none; }
+
+.betslip-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.betslip-tab-active {
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  border-bottom: 2px solid var(--green);
+  padding-bottom: 6px;
+}
+
+.sandbox-pill {
+  background: rgba(23, 184, 75, 0.18);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.betslip-panel .hint { color: #8b95a8; }
+.betslip-panel label { color: #8b95a8; }
+.betslip-panel input {
+  background: #060a14;
+  border-color: #1f2a44;
+  color: #fff;
+}
+.betslip-panel .fixture { background: #0d1424; border-color: #1f2a44; }
+.betslip-panel .fixture-league { color: #8b95a8; }
+.betslip-panel .fixture-teams { color: #fff; }
+
+.section-divider {
+  margin-top: 40px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  font-size: 18px;
+}
+
+.fixture {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 4px 0 12px;
+}
+
+.fixture-teams {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.fixture-vs {
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 12px;
+  margin: 0 4px;
+}
+
+.fixture-league {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.odds-pill {
+  background: var(--green);
+  color: #fff;
+  font-weight: 900;
+  font-size: 15px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.lookup-summary {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 10px;
+}
+
+.lookup-photo {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+}
+
+.result {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+table.fields {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+table.fields th {
+  text-align: left;
+  padding: 8px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 2px solid var(--border);
+}
+
+table.fields td {
+  text-align: left;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+
+/* --- Ninja Call Inspector: dark panel, like SportyBet's betslip sidebar --- */
+.log-entry {
+  background: var(--navy-panel);
+  border: 1px solid #1f2a44;
+  border-radius: 10px;
+  padding: 20px;
+  color: #e5e7eb;
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.log-header strong { color: #fff; }
+.log-header .error { color: #ff6b7a; }
+.log-header .success { color: #4ade80; }
+.log-header .hint { color: #8b95a8; }
+
+.log-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.log-body h4 {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #8b95a8;
+}
+
+.view-more-btn {
+  width: auto;
+  margin: 6px 0 0;
+  padding: 4px 10px;
+  background: #1f2a44;
+  color: #9aa5b8;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 5px;
+}
+
+.view-more-btn:hover:not(:disabled) { background: #2a3855; color: #fff; }
+
+pre {
+  background: #060a14;
+  border: 1px solid #1f2a44;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: #d1d5db;
+}
+
+/* --- Code snippet panels: real source, shown next to the feature it powers --- */
+.demo-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-top: 18px;
+  align-items: start;
+}
+
+/* Keep the code-behind-this panel in view while its paired form scrolls,
+   pinned just under the nav bar — this is the "stay at the top" fix. */
+.demo-row > .snippet {
+  position: sticky;
+  top: 76px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+}
+
+.snippet-stack {
+  position: sticky;
+  top: 76px;
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .demo-row > .snippet,
+  .snippet-stack { position: static; max-height: none; }
+}
+
+.snippet-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .demo-row { grid-template-columns: 1fr; }
+}
+
+.snippet {
+  background: var(--navy-panel);
+  border: 1px solid #1f2a44;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.snippet-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #0d1424;
+  border-bottom: 1px solid #1f2a44;
+}
+
+.snippet-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  flex-shrink: 0;
+}
+
+.snippet-path {
+  font-family: 'SFMono-Regular', Consolas, Menlo, monospace;
+  font-size: 12px;
+  color: #9aa5b8;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.snippet-lang {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #6b7690;
+  background: #1f2a44;
+  padding: 3px 8px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.snippet-copy {
+  width: auto;
+  margin: 0;
+  padding: 5px 11px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #1f2a44;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.snippet-copy:hover:not(:disabled) { background: #2a3855; }
+
+.lang-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 8px 10px 0;
+  background: #0d1424;
+}
+
+.lang-tab {
+  width: auto;
+  margin: 0;
+  padding: 7px 13px;
+  background: transparent;
+  color: #8b95a8;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px 6px 0 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.lang-tab:hover:not(:disabled) { background: #1a2338; color: #d1d5db; }
+
+.lang-tab-active,
+.lang-tab-active:hover {
+  background: #060a14;
+  color: #fff;
+}
+
+.snippet pre {
+  margin: 0;
+  background: #060a14;
+  border: none;
+  border-radius: 0;
+  padding: 16px;
+  font-size: 12.5px;
+  line-height: 1.65;
+  overflow: auto;
+  max-height: 460px;
+  white-space: pre;
+  scrollbar-width: thin;
+  scrollbar-color: #2a3855 #0d1424;
+}
+
+.snippet pre::-webkit-scrollbar { height: 9px; width: 9px; }
+.snippet pre::-webkit-scrollbar-track { background: #0d1424; }
+.snippet pre::-webkit-scrollbar-thumb { background: #2a3855; border-radius: 5px; }
+.snippet pre::-webkit-scrollbar-thumb:hover { background: #3a4a6b; }
+
+.snippet code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  color: #d1d5db;
+}
+
+/* Hand-rolled Prism token palette, tuned for the .snippet dark panel */
+.snippet .token.comment { color: #6b7690; font-style: italic; }
+.snippet .token.keyword { color: #ff7ab8; }
+.snippet .token.string { color: #a5e77a; }
+.snippet .token.function { color: #6fd6ff; }
+.snippet .token.number,
+.snippet .token.boolean { color: #ffb86b; }
+.snippet .token.operator,
+.snippet .token.punctuation { color: #9aa5b8; }
+.snippet .token.builtin,
+.snippet .token.class-name { color: #ffd76b; }
+
+/* --- Error modal --- */
+.error-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 15, 26, 0.55);
+  padding: 20px;
+}
+
+.error-modal {
+  width: 100%;
+  max-width: 420px;
+  background: var(--card);
+  border-radius: 12px;
+  border-top: 4px solid var(--red);
+  padding: 24px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.error-modal h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--red);
+}
+
+.error-modal p {
+  margin: 0 0 20px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.error-modal-close {
+  width: auto;
+  margin: 0;
+  padding: 9px 22px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 800;
+  border-radius: 6px;
+  float: right;
+}
+
+.error-modal-close:hover:not(:disabled) { background: var(--red-dark); }
+
+/* --- Guided tour: spotlight cutout + tooltip --- */
+.tour-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.tour-hole {
+  position: fixed;
+  border-radius: 10px;
+  outline: 2px solid var(--green);
+  box-shadow: 0 0 0 9999px rgba(11, 15, 26, 0.68);
+  transition: top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease;
+  pointer-events: none;
+}
+
+.tour-tooltip {
+  position: fixed;
+  background: var(--navy);
+  color: #fff;
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  pointer-events: auto;
+  transition: top 0.25s ease, left 0.25s ease;
+}
+
+.tour-step-count {
+  margin: 0 0 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--green);
+}
+
+.tour-tooltip h4 {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.tour-tooltip p:not(.tour-step-count) {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #c7cddb;
+}
+
+.tour-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  gap: 10px;
+}
+
+.tour-skip {
+  width: auto;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border: none;
+  color: #8b95a8;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.tour-next {
+  width: auto;
+  margin: 0;
+  padding: 8px 18px;
+  background: var(--green);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  border-radius: 6px;
+}
+
+.tour-next:hover:not(:disabled) { background: var(--green-dark); }
+
+.tour-restart {
+  width: auto;
+  margin: 0 0 16px;
+  padding: 8px 16px;
+  background: var(--card);
+  border: 1px solid var(--green);
+  border-radius: 999px;
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tour-restart::before {
+  content: '▶';
+  font-size: 9px;
+}
+
+.tour-restart:hover:not(:disabled) {
+  background: var(--green);
+  color: #fff;
+}

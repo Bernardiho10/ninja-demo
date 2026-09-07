@@ -1,0 +1,183 @@
+<div class="page page-wide"
+  data-ham-page-config='{ "layout": "default.lhtml" }'
+>
+  <h1>Welcome, <span data-role="player-name"></span></h1>
+  <button type="button" class="tour-restart" id="tour-restart-btn">Take the guided tour</button>
+
+  <div class="sb-layout">
+    <aside class="sb-sidebar">
+      <div class="card">
+        <h2>Leagues</h2>
+        <ul class="sb-league-list" id="league-list">
+          <li><button class="sb-league-active" data-league="all">All matches <span>7</span></button></li>
+          <li><button data-league="Premier League">Premier League <span>2</span></button></li>
+          <li><button data-league="La Liga">La Liga <span>2</span></button></li>
+          <li><button data-league="Bundesliga">Bundesliga <span>1</span></button></li>
+          <li><button data-league="Ligue 1">Ligue 1 <span>1</span></button></li>
+          <li><button data-league="Serie A">Serie A <span>1</span></button></li>
+        </ul>
+      </div>
+    </aside>
+
+    <main class="sb-main" id="fixtures-main">
+      <section class="card sb-league-group" data-league="Premier League">
+        <h2>Premier League</h2>
+        <div class="sb-col-headers"><span></span><span>1</span><span>X</span><span>2</span></div>
+        <div class="sb-match-row" data-fixture="f1">
+          <div class="sb-match-info">
+            <span class="sb-match-time">31/08 Monday &middot; 20:00</span>
+            <span class="sb-match-teams">Arsenal<br/>Chelsea</span>
+          </div>
+          <button class="sb-odd" data-fixture="f1" data-pick="home" data-tour="odds">2.10</button>
+          <button class="sb-odd" data-fixture="f1" data-pick="draw">3.30</button>
+          <button class="sb-odd" data-fixture="f1" data-pick="away">3.40</button>
+        </div>
+        <div class="sb-match-row" data-fixture="f2">
+          <div class="sb-match-info">
+            <span class="sb-match-time">31/08 Monday &middot; 17:30</span>
+            <span class="sb-match-teams">Man City<br/>Liverpool</span>
+          </div>
+          <button class="sb-odd" data-fixture="f2" data-pick="home">2.35</button>
+          <button class="sb-odd" data-fixture="f2" data-pick="draw">3.40</button>
+          <button class="sb-odd" data-fixture="f2" data-pick="away">2.90</button>
+        </div>
+      </section>
+
+      <section class="card sb-league-group" data-league="La Liga">
+        <h2>La Liga</h2>
+        <div class="sb-col-headers"><span></span><span>1</span><span>X</span><span>2</span></div>
+        <div class="sb-match-row" data-fixture="f3">
+          <div class="sb-match-info">
+            <span class="live-badge sb-live-inline">&#9679; LIVE 63'</span>
+            <span class="sb-match-teams">Real Madrid<br/>Barcelona</span>
+          </div>
+          <button class="sb-odd" data-fixture="f3" data-pick="home">1.85</button>
+          <button class="sb-odd" data-fixture="f3" data-pick="draw">3.60</button>
+          <button class="sb-odd" data-fixture="f3" data-pick="away">4.20</button>
+        </div>
+        <div class="sb-match-row" data-fixture="f4">
+          <div class="sb-match-info">
+            <span class="sb-match-time">04/09 Friday &middot; 19:00</span>
+            <span class="sb-match-teams">Atletico Madrid<br/>Sevilla</span>
+          </div>
+          <button class="sb-odd" data-fixture="f4" data-pick="home">1.72</button>
+          <button class="sb-odd" data-fixture="f4" data-pick="draw">3.50</button>
+          <button class="sb-odd" data-fixture="f4" data-pick="away">4.60</button>
+        </div>
+      </section>
+
+      <section class="card sb-league-group" data-league="Bundesliga">
+        <h2>Bundesliga</h2>
+        <div class="sb-col-headers"><span></span><span>1</span><span>X</span><span>2</span></div>
+        <div class="sb-match-row" data-fixture="f5">
+          <div class="sb-match-info">
+            <span class="sb-match-time">05/09 Saturday &middot; 15:30</span>
+            <span class="sb-match-teams">Bayern Munich<br/>Dortmund</span>
+          </div>
+          <button class="sb-odd" data-fixture="f5" data-pick="home">1.55</button>
+          <button class="sb-odd" data-fixture="f5" data-pick="draw">4.20</button>
+          <button class="sb-odd" data-fixture="f5" data-pick="away">5.40</button>
+        </div>
+      </section>
+
+      <section class="card sb-league-group" data-league="Ligue 1">
+        <h2>Ligue 1</h2>
+        <div class="sb-col-headers"><span></span><span>1</span><span>X</span><span>2</span></div>
+        <div class="sb-match-row" data-fixture="f6">
+          <div class="sb-match-info">
+            <span class="live-badge sb-live-inline">&#9679; LIVE 28'</span>
+            <span class="sb-match-teams">PSG<br/>Marseille</span>
+          </div>
+          <button class="sb-odd" data-fixture="f6" data-pick="home">1.45</button>
+          <button class="sb-odd" data-fixture="f6" data-pick="draw">4.60</button>
+          <button class="sb-odd" data-fixture="f6" data-pick="away">6.20</button>
+        </div>
+      </section>
+
+      <section class="card sb-league-group" data-league="Serie A">
+        <h2>Serie A</h2>
+        <div class="sb-col-headers"><span></span><span>1</span><span>X</span><span>2</span></div>
+        <div class="sb-match-row" data-fixture="f7">
+          <div class="sb-match-info">
+            <span class="sb-match-time">05/09 Saturday &middot; 18:00</span>
+            <span class="sb-match-teams">Napoli<br/>Inter Milan</span>
+          </div>
+          <button class="sb-odd" data-fixture="f7" data-pick="home">2.65</button>
+          <button class="sb-odd" data-fixture="f7" data-pick="draw">3.20</button>
+          <button class="sb-odd" data-fixture="f7" data-pick="away">2.55</button>
+        </div>
+      </section>
+    </main>
+
+    <aside class="sb-betslip-rail">
+      <div class="card betslip-panel">
+        <div class="betslip-tabs">
+          <span class="betslip-tab-active">Betslip</span>
+          <span class="sandbox-pill">NINJA SANDBOX</span>
+        </div>
+        <div id="betslip-body"><p class="hint">Click any odds to add a selection.</p></div>
+        <button type="button" id="simulate-win-btn" class="secondary" data-tour="simulate-win">Simulate a match win (+₦250,000)</button>
+      </div>
+
+      <div class="card" data-tour="wallet">
+        <h2>Wallet</h2>
+        <div class="wallet-row">
+          <div>
+            <span class="wallet-label">Balance</span>
+            <span class="wallet-amount" data-role="balance"></span>
+          </div>
+          <div>
+            <span class="wallet-label">Winnings</span>
+            <span class="wallet-amount wallet-amount-win" data-role="winnings"></span>
+          </div>
+        </div>
+        <p id="self-excluded-note" class="error" hidden>Self-excluded — betting and payouts frozen.</p>
+        <button type="button" id="reset-demo-btn" class="secondary">Reset demo balances</button>
+      </div>
+
+      <div class="card" data-tour="identity">
+        <h2>Identity</h2>
+        <div class="lookup-summary" id="identity-body"></div>
+      </div>
+    </aside>
+  </div>
+
+  <p id="page-error" class="error" style="margin-top: 16px" hidden></p>
+  <p id="page-note" class="success" style="margin-top: 16px" hidden></p>
+
+  <h2 class="section-divider">Account &amp; compliance</h2>
+
+  <div class="demo-row">
+    <form class="card" id="payout-form" data-tour="withdraw">
+      <h2>Request payout</h2>
+      <p class="hint">
+        Two independent checks run on submit: <code>identify(mode=verify)</code> re-checks the
+        <strong>beneficiary name</strong> against your NIN, then again against the <strong>BVN</strong> below —
+        a name can be typed correctly for a bank account that isn't really yours, a BVN can't. Try changing
+        either one.
+      </p>
+      <label>Amount (₦)<input id="payout_amount" type="number" min="100" step="100" value="250000" /></label>
+      <label>Beneficiary name<input id="beneficiary_name" /></label>
+      <label>Bank<input id="bank_name" value="GTBank" /></label>
+      <label>Account number<input id="account_number" value="0123456789" /></label>
+      <label>Account BVN<input id="bvn" value="77777777777" maxlength="11" /></label>
+      <button type="submit" id="payout-submit-btn">Withdraw</button>
+      <button type="button" id="self-exclude-btn" class="danger">Self-exclude (Responsible Gaming)</button>
+    </form>
+    <div class="snippet-stack">
+      <div id="payout-tabs"></div>
+      <div id="payout-bvn-tabs"></div>
+    </div>
+  </div>
+
+  <div class="demo-row">
+    <div class="card">
+      <h2>Bet history</h2>
+      <div id="bet-history"><p class="hint">No bets yet.</p></div>
+    </div>
+    <div class="card">
+      <h2>Payout history</h2>
+      <div id="payout-history"><p class="hint">No payout attempts yet.</p></div>
+    </div>
+  </div>
+</div>
