@@ -15,6 +15,11 @@ type IdentifyRequest struct {
 	Reference   string `json:"reference,omitempty"`
 }
 
+// IdentifyData is the registry record returned by lookup mode. NIN lookups
+// return more of these fields than BVN lookups do (confirmed against the
+// live sandbox: a BVN lookup for 77777777777 has no address_town/
+// address_line/country; the same fixture under NIN does) — all the
+// NIN-only fields are omitempty so a BVN response still decodes cleanly.
 type IdentifyData struct {
 	IDNumber     string `json:"id_number"`
 	Type         string `json:"type"`
@@ -25,6 +30,9 @@ type IdentifyData struct {
 	Gender       string `json:"gender"`
 	Mobile       string `json:"mobile"`
 	AddressState string `json:"address_state"`
+	AddressTown  string `json:"address_town,omitempty"`
+	AddressLine  string `json:"address_line,omitempty"`
+	Country      string `json:"country,omitempty"`
 	Image        string `json:"image"`
 }
 

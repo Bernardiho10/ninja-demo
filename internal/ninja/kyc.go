@@ -7,13 +7,23 @@ import (
 )
 
 // CreateFlowRequest maps to POST /api/flows (hosted KYC flow config).
+// SelfieRequired/LivenessRequired are confirmed real, top-level request
+// fields (not nested under Rules) — verified directly against the live
+// sandbox: a flow created with both set to true reflects
+// "selfie_required":true,"liveness_required":true back in the response,
+// alongside selfie_threshold/liveness_threshold (85/90 by default, not
+// independently configurable via any field found so far). Omitted
+// entirely, both default to false — a flow with no selfie/liveness step
+// at all, just name/DOB matching.
 type CreateFlowRequest struct {
-	Name        string         `json:"name"`
-	IDTypes     []string       `json:"id_types"`
-	Rules       map[string]any `json:"rules,omitempty"`
-	Branding    map[string]any `json:"branding,omitempty"`
-	RedirectURL string         `json:"redirect_url,omitempty"`
-	WebhookURL  string         `json:"webhook_url,omitempty"`
+	Name             string         `json:"name"`
+	IDTypes          []string       `json:"id_types"`
+	SelfieRequired   bool           `json:"selfie_required,omitempty"`
+	LivenessRequired bool           `json:"liveness_required,omitempty"`
+	Rules            map[string]any `json:"rules,omitempty"`
+	Branding         map[string]any `json:"branding,omitempty"`
+	RedirectURL      string         `json:"redirect_url,omitempty"`
+	WebhookURL       string         `json:"webhook_url,omitempty"`
 }
 
 type FlowResponse struct {
