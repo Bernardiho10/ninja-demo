@@ -72,49 +72,6 @@ export function renderLanguageTabs(container: HTMLElement, opts: { title: string
   })
 
   copyBtn.addEventListener('click', () => copyToClipboard(copyBtn, current.code))
+
   renderCurrent()
-}
-
-export function renderCodeDrawer(
-  container: HTMLElement,
-  opts: {
-    title: string
-    subtitle?: string
-    buttonLabel?: string
-    tabs: LanguageTab[]
-    defaultOpen?: boolean
-  }
-) {
-  const btnText = opts.buttonLabel || 'View Ninja API Integration'
-  const isDefaultOpen = !!opts.defaultOpen
-
-  container.innerHTML = `
-    <div class="code-drawer ${isDefaultOpen ? 'code-drawer-open' : ''}">
-      <button type="button" class="code-drawer-toggle">
-        <span class="toggle-icon">&lt;/&gt;</span>
-        <span class="toggle-title">${escapeHtml(btnText)}</span>
-        <span class="toggle-meta">${escapeHtml(opts.title)}</span>
-        <span class="toggle-chevron">${isDefaultOpen ? '▲' : '▼'}</span>
-      </button>
-      <div class="code-drawer-content" ${isDefaultOpen ? '' : 'hidden'}>
-        ${opts.subtitle ? `<div class="code-drawer-subtitle">${escapeHtml(opts.subtitle)}</div>` : ''}
-        <div class="code-tabs-mount"></div>
-      </div>
-    </div>
-  `
-
-  const toggleBtn = container.querySelector('.code-drawer-toggle') as HTMLButtonElement
-  const contentEl = container.querySelector('.code-drawer-content') as HTMLElement
-  const chevronEl = container.querySelector('.toggle-chevron') as HTMLElement
-  const drawerEl = container.querySelector('.code-drawer') as HTMLElement
-  const mountEl = container.querySelector('.code-tabs-mount') as HTMLElement
-
-  renderLanguageTabs(mountEl, { title: opts.title, tabs: opts.tabs })
-
-  toggleBtn.addEventListener('click', () => {
-    const isOpen = !contentEl.hidden
-    contentEl.hidden = isOpen
-    chevronEl.textContent = isOpen ? '▼' : '▲'
-    drawerEl.classList.toggle('code-drawer-open', !isOpen)
-  })
 }

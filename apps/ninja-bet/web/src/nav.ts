@@ -1,45 +1,68 @@
-// Populates the shared nav partial (src/nav.phtml) on every page — HAM's
-// layout is static HTML at build time, so login state, balance, and the
-// KYC badge are filled in client-side after fetching /api/players/me. Also
-// wires the logout button. Linked directly from default.lhtml (not one of
-// each page's own bundles) so it runs identically everywhere.
-import { api, formatNaira, STATUS_LABEL } from './lib/api'
+import { api, formatNaira, STATUS_LABEL, type Player } from './lib/api'
 
-async function initNav() {
-  const guestEls = document.querySelectorAll<HTMLElement>('[data-visibility="guest"]')
-  const playerEls = document.querySelectorAll<HTMLElement>('[data-visibility="player"]')
+export async function refreshNavPlayer(): Promise<Player | null> {
   const nameEl = document.querySelector<HTMLElement>('[data-role="account-name"]')
   const balanceEl = document.querySelector<HTMLElement>('[data-role="balance"]')
   const badgeEl = document.querySelector<HTMLElement>('[data-role="status-badge"]')
-  const logoutBtn = document.querySelector<HTMLButtonElement>('[data-role="logout"]')
+  const pillEl = document.querySelector<HTMLElement>('[data-role="player-pill"]')
 
-  let player
   try {
-    player = await api.me()
-  } catch {
-    player = null
-  }
-
-  guestEls.forEach((el) => (el.hidden = !!player))
-  playerEls.forEach((el) => (el.hidden = !player))
-
-  if (player) {
+    const player = await api.me()
     if (nameEl) nameEl.textContent = `${player.first_name} ${player.last_name}`
     if (balanceEl) balanceEl.textContent = formatNaira(player.balance_kobo)
     if (badgeEl) {
       badgeEl.textContent = STATUS_LABEL[player.kyc_status] ?? player.kyc_status
       badgeEl.className = `nav-status-badge badge-${player.kyc_status}`
     }
+    if (pillEl) pillEl.style.opacity = '1'
+    return player
+  } catch {
+    if (nameEl) nameEl.textContent = 'Guest / Unregistered'
+    if (balanceEl) balanceEl.textContent = '₦0'
+    if (badgeEl) {
+      badgeEl.textContent = 'Not Registered'
+      badgeEl.className = 'nav-status-badge badge-pending'
+    }
+    return null
   }
+}
 
-  logoutBtn?.addEventListener('click', async () => {
-    await api.logout()
-    window.location.href = '/register.html'
+function initNav() {
+  refreshNavPlayer()
+
+  // Smooth anchor scrolling
+  document.querySelectorAll<HTMLAnchorElement>('.nav-anchor, .nav-stage-pill').forEach((link) => {
+    link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href')
+      if (href?.startsWith('#')) {
+        e.preventDefault()
+        const target = document.querySelector(href)
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          window.history.pushState(null, '', href)
+        }
+      }
+    })
   })
 
-  const path = window.location.pathname
-  document.querySelectorAll<HTMLAnchorElement>('.nav a[href]').forEach((a) => {
-    if (a.getAttribute('href') === path) a.classList.add('nav-active')
+  // Global reset demo button
+  const resetBtn = document.getElementById('global-reset-btn') as HTMLButtonElement
+  resetBtn?.addEventListener('click', async () => {
+    if (confirm('Reset all demo players, balances, bets, and payouts back to clean initial state?')) {
+      resetBtn.disabled = true
+      resetBtn.textContent = 'Resetting...'
+      try {
+        await api.resetDemo()
+        await refreshNavPlayer()
+        window.dispatchEvent(new CustomEvent('ninja-demo-reset'))
+        window.location.reload()
+      } catch (err) {
+        alert('Failed to reset demo: ' + (err as Error).message)
+      } finally {
+        resetBtn.disabled = false
+        resetBtn.textContent = 'Reset Demo'
+      }
+    }
   })
 }
 

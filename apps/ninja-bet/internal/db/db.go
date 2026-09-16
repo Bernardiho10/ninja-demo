@@ -23,6 +23,8 @@ func Open(path string) (*sql.DB, error) {
 		conn.Close()
 		return nil, fmt.Errorf("apply schema: %w", err)
 	}
+	_, _ = conn.Exec("ALTER TABLE players ADD COLUMN require_face_for_payout INTEGER NOT NULL DEFAULT 1")
+	_, _ = conn.Exec("ALTER TABLE players ADD COLUMN liveness_threshold REAL NOT NULL DEFAULT 0.85")
 	return conn, nil
 }
 

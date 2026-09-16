@@ -12,5 +12,6 @@ web/public/
 web/src/index.ts
 tutor.md
 apps/DEPLOYMENT.md
+voice-note-script.md
 
 .playwright-mcp/

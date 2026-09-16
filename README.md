@@ -51,7 +51,7 @@ requirement for withdrawals, with a strictness level they choose
 themselves, so even a fully compromised password can't move real money
 out without a live face matching the registry photo.
 
-### `apps/ninja-fintech` — *planned*
+### `apps/ninja-fintech` — fintech onboarding & re-KYC
 
 **The problem**: fintechs onboarding customers need more than a yes/no
 identity check — they need to know *how confident* a name match is (a
@@ -95,7 +95,7 @@ to each other, what to copy when starting the next app).
 apps/
   README.md          the pattern every app follows
   ninja-bet/          sports betting — built
-  ninja-fintech/       (planned)
+  ninja-fintech/      fintech onboarding & re-KYC — built
   ninja-bank/          (planned)
 internal/
   ninja/              the shared Go client every app imports — one proven

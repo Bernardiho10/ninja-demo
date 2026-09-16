@@ -1,0 +1,32 @@
+<div class="page page-wide"
+  data-ham-page-config='{ "layout": "default.lhtml" }'
+>
+  <h1>Onboard a customer</h1>
+  <p class="lede">
+    Calls Ninja's real sandbox — <code>identify(mode=verify)</code> — and shows the per-field match score it
+    returns, not a blunt pass/fail. A typo in a name is a different risk than a completely different person;
+    the field-by-field detail is what tells them apart.
+  </p>
+
+  <div class="demo-row">
+    <div>
+      <form id="onboard-form" class="card">
+        <label>Full name<input id="full_name" value="James Bond" required /></label>
+        <label>Date of birth<input id="date_of_birth" type="date" value="1975-01-01" required /></label>
+        <label>ID type
+          <select id="id_type">
+            <option value="nin">NIN</option>
+            <option value="bvn">BVN</option>
+          </select>
+        </label>
+        <label>ID number<input id="id_number" value="77777777777" maxlength="11" required /></label>
+        <p id="form-error" class="error" hidden></p>
+        <button type="submit" id="submit-btn">Verify &amp; onboard</button>
+      </form>
+
+      <div id="result" hidden></div>
+    </div>
+
+    <div id="onboard-tabs"></div>
+  </div>
+</div>

@@ -1,0 +1,41 @@
+<div class="page page-wide"
+  data-ham-page-config='{ "layout": "default.lhtml" }'
+>
+  <h1>Customer dashboard</h1>
+  <p class="lede">
+    Every customer here was onboarded with a real Ninja <code>identify()</code> call. Flagged accounts are frozen
+    for transfers until a re-KYC clears them — verification isn't a one-time gate, it's a status that can change.
+  </p>
+
+  <div class="dash-layout">
+    <div class="card dash-list-card">
+      <h2>Customers</h2>
+      <div id="customer-list"><p class="hint">Loading…</p></div>
+    </div>
+
+    <div id="detail-panel" class="card" hidden>
+      <div id="detail-header"></div>
+
+      <div class="detail-actions">
+        <button id="rekyc-btn" class="secondary">Run re-KYC</button>
+        <button id="upgrade-btn" class="secondary">Upgrade tier</button>
+      </div>
+      <p id="detail-error" class="error" hidden></p>
+
+      <h2 style="margin-top: 22px">Send transfer</h2>
+      <form id="transfer-form">
+        <label>Amount (₦)<input id="t_amount" type="number" min="1" value="250000" required /></label>
+        <label>Recipient name<input id="t_name" value="Chukwuemeka Okafor" required /></label>
+        <label>Recipient bank<input id="t_bank" value="GTBank" required /></label>
+        <label>Recipient account<input id="t_account" value="0123456789" required /></label>
+        <button type="submit" id="transfer-btn">Send transfer</button>
+      </form>
+      <p id="transfer-result" hidden></p>
+
+      <h2 style="margin-top: 22px">Transfer history</h2>
+      <div id="transfer-history"><p class="hint">No transfers yet.</p></div>
+    </div>
+
+    <div id="empty-state" class="card hint">Select a customer to view details, run re-KYC, or send a transfer.</div>
+  </div>
+</div>

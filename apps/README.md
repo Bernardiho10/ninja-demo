@@ -9,7 +9,7 @@ one proven, tested integration with the Ninja sandbox underneath every app.
 | App | Vertical | Status |
 |---|---|---|
 | [`ninja-bet`](./ninja-bet) | Sports betting — KYC-first signup, bonus-farming defense, payout re-verification, facial verification | Built |
-| `ninja-fintech` | Hosted KYC lifecycle, scored onboarding, re-KYC | Not started |
+| [`ninja-fintech`](./ninja-fintech) | Scored onboarding (per-field match, not pass/fail), tiered transfer limits, re-KYC lifecycle | Built |
 | `ninja-bank` | KYB, bulk-identify for directors, agent networks | Not started |
 
 ## Conventions every app here follows

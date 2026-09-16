@@ -1,21 +1,56 @@
-<nav class="nav">
-  <a href="/" class="brand"><embed type="ham/partial" src="logo.phtml"/>ninja-bet</a>
-  <span class="sandbox-badge">Ninja Sandbox</span>
-  <a href="/fraud-signals.html" data-tour="fraud-signals">Fraud signals</a>
+<nav class="navbar-top">
+  <div class="nav-brand-group">
+    <a href="#hero" class="brand-link">
+      <embed type="ham/partial" src="logo.phtml"/>
+      <span class="brand-title">ninja-bet</span>
+    </a>
+    <span class="nav-env-badge">
+      <span class="live-dot-pulse"></span>
+      <span>Sandbox Active</span>
+    </span>
+  </div>
 
-  <a href="/play.html" data-visibility="player" hidden>Play</a>
-  <a href="/profile.html" data-tour="profile" data-visibility="player" hidden>Account</a>
-  <a href="/inspector.html" data-tour="inspector" data-visibility="player" hidden>Ninja Call Inspector</a>
+  <div class="nav-stage-links">
+    <a href="#onboarding" class="nav-stage-pill">
+      <span class="nav-num">01</span>
+      <span>18+ Onboarding</span>
+    </a>
+    <a href="#bonus-defense" class="nav-stage-pill">
+      <span class="nav-num">02</span>
+      <span>Sybil Trap</span>
+    </a>
+    <a href="#sportsbook-payout" class="nav-stage-pill">
+      <span class="nav-num">03</span>
+      <span>ATO Payout Rail</span>
+    </a>
+    <a href="#biometrics" class="nav-stage-pill">
+      <span class="nav-num">04</span>
+      <span>Face Liveness</span>
+    </a>
+    <a href="#telemetry" class="nav-stage-pill">
+      <span class="nav-num">05</span>
+      <span>Audit Telemetry</span>
+    </a>
+  </div>
 
-  <span class="nav-spacer"></span>
+  <div class="nav-actions-group">
+    <div class="player-identity-card" data-role="player-pill">
+      <div class="player-avatar-icon">👤</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" data-role="account-name">James Bond</span>
+          <span class="player-status-badge" data-role="status-badge">Verified ✓</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">Active Wallet:</span>
+          <strong class="balance-val" data-role="balance">₦100,000</strong>
+        </div>
+      </div>
+    </div>
 
-  <a href="/login.html" data-visibility="guest">Log in</a>
-  <a href="/register.html" class="nav-register-cta" data-visibility="guest">Register</a>
-
-  <span class="nav-status-badge" data-role="status-badge" data-visibility="player" hidden></span>
-  <span class="nav-account" data-visibility="player" hidden>
-    <span data-role="account-name"></span>
-    <span class="nav-balance" data-role="balance"></span>
-  </span>
-  <button type="button" class="nav-logout" data-role="logout" data-visibility="player" hidden>Log out</button>
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset all demo databases, accounts, and fraud logs back to clean state">
+      <span class="reset-icon">↺</span>
+      <span>Reset Demo</span>
+    </button>
+  </div>
 </nav>

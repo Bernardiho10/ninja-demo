@@ -155,6 +155,89 @@ export const VERIFY_PAYOUT_BVN_CALL: CallExample = {
   },
 }
 
+export const HOSTED_LIVENESS_CALL: CallExample = {
+  path: '/api/flows',
+  body: {
+    name: 'ninja-bet Biometric Liveness Gate',
+    idTypes: 'nin',
+    selfieRequired: 'true',
+    livenessRequired: 'true',
+    redirectUrl: 'http://localhost:5671/#biometrics?face=complete',
+    webhookUrl: 'http://localhost:4100/webhooks/ninja',
+  },
+}
+
+export function hostedFlowCurlExample(): string {
+  return `# 1. Generate session token
+curl -s -X POST ${BASE_URL}/auth/session \\
+  -H "Content-Type: application/json" \\
+  -d '{"client_key": "'"$NINJA_CLIENT_KEY"'", "client_secret": "'"$NINJA_CLIENT_SECRET"'"}'
+
+# 2. Create Hosted Face & Liveness Verification Flow
+curl -s -X POST ${BASE_URL}/api/flows \\
+  -H "Authorization: Bearer $NINJA_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "name": "ninja-bet Biometric Liveness",
+    "id_types": ["nin"],
+    "selfie_required": true,
+    "liveness_required": true,
+    "redirect_url": "https://yourdomain.com/payout?status=complete",
+    "webhook_url": "https://api.yourdomain.com/webhooks/ninja"
+  }'
+# => { "id": "flow_...", "url": "https://verify.ninja.ng/..." }`
+}
+
+export function hostedFlowTsExample(): string {
+  return `import axios from 'axios'
+
+// 1. Session token
+const { data: session } = await axios.post('${BASE_URL}/auth/session', {
+  client_key: process.env.NINJA_CLIENT_KEY,
+  client_secret: process.env.NINJA_CLIENT_SECRET,
+})
+
+// 2. Create hosted selfie + liveness verification flow
+const { data: flow } = await axios.post(
+  '${BASE_URL}/api/flows',
+  {
+    name: 'Biometric Payout Clearance',
+    id_types: ['nin'],
+    selfie_required: true,
+    liveness_required: true,
+    redirect_url: 'https://yourdomain.com/payout?status=complete',
+    webhook_url: 'https://api.yourdomain.com/webhooks/ninja',
+  },
+  { headers: { Authorization: \`Bearer \${session.token}\` } }
+)
+
+// Redirect user to Ninja's hosted camera verification
+console.log('Redirecting player to:', flow.url)`
+}
+
+export function webhookVerifyGoExample(): string {
+  return `// Webhook Handler with HMAC-SHA256 Signature Verification
+func WebhookReceiver(w http.ResponseWriter, r *http.Request) {
+    body, _ := io.ReadAll(r.Body)
+    signatureHeader := r.Header.Get("X-Ninja-Signature")
+
+    // Verify HMAC
+    mac := hmac.New(sha256.New, []byte(os.Getenv("NINJA_WEBHOOK_SECRET")))
+    mac.Write(body)
+    expected := hex.EncodeToString(mac.Sum(nil))
+
+    if !hmac.Equal([]byte(expected), []byte(signatureHeader)) {
+        http.Error(w, "invalid signature", http.StatusUnauthorized)
+        return
+    }
+
+    var event ninja.WebhookEvent
+    json.Unmarshal(body, &event)
+    // event.Type: "verification.completed", event.Data.LivenessScore >= 0.85
+    w.WriteHeader(http.StatusOK)
+}`
+}
+
 export function buildLanguageSnippets(example: CallExample, mode: 'lookup' | 'verify') {
   return {
     curl: curlExample(example),
