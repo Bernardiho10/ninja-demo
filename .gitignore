@@ -15,3 +15,17 @@ apps/DEPLOYMENT.md
 voice-note-script.md
 
 .playwright-mcp/
+
+# Build output — never commit, workflow builds it in CI
+docs/
+
+# Scratch / temp files
+scratch/
+
+# Junk docs that should never be in the repo
+ninja-docs-issues.md
+spec.md
+guide.md
+tutor.md
+voice-note-script.md
+apps/DEPLOYMENT.md
