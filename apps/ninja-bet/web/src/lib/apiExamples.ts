@@ -5,7 +5,7 @@
 // two-step auth pattern (session token, then bearer-authenticated call)
 // matches internal/ninja/client.go exactly.
 
-const BASE_URL = 'https://api.sandbox.ninja.boucloud.io'
+const BASE_URL = 'https://api.ninja.ng'
 
 export interface CallExample {
   path: string
@@ -247,3 +247,100 @@ export function buildLanguageSnippets(example: CallExample, mode: 'lookup' | 've
     go: goExample(mode, example.body),
   }
 }
+
+export function companyLookupCurlExample(rcNumber: string, advanced = false): string {
+  const path = advanced ? '/api/company/advanced-lookup' : '/api/company/lookup'
+  return `# 1. Exchange keys for 5-minute session token
+curl -s -X POST ${BASE_URL}/auth/session \\
+  -H "Content-Type: application/json" \\
+  -d '{"client_key": "'"$NINJA_CLIENT_KEY"'", "client_secret": "'"$NINJA_CLIENT_SECRET"'"}'
+
+# 2. Corporate CAC Registry Lookup
+curl -s -X POST ${BASE_URL}${path} \\
+  -H "Authorization: Bearer $NINJA_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"rc_number": "${rcNumber}"}'`
+}
+
+export function companyLookupTsExample(rcNumber: string, advanced = false): string {
+  const path = advanced ? '/api/company/advanced-lookup' : '/api/company/lookup'
+  return `import axios from 'axios'
+
+// 1. Session token
+const { data: session } = await axios.post('${BASE_URL}/auth/session', {
+  client_key: process.env.NINJA_CLIENT_KEY,
+  client_secret: process.env.NINJA_CLIENT_SECRET,
+})
+
+// 2. Perform CAC corporate lookup
+const { data: company } = await axios.post(
+  '${BASE_URL}${path}',
+  { rc_number: '${rcNumber}' },
+  { headers: { Authorization: \`Bearer \${session.token}\` } }
+)
+console.log('Company Name:', company.data.name)
+console.log('CAC Status:', company.data.status)
+console.log('Directors:', company.data.directors)`
+}
+
+export function companyLookupGoExample(rcNumber: string, advanced = false): string {
+  if (advanced) {
+    return `resp, err := ninjaClient.CompanyAdvancedLookup(ctx, ninja.CompanyAdvancedLookupRequest{
+	RCNumber: "${rcNumber}",
+})
+if err != nil {
+	return err
+}
+// resp.Data.Name, resp.Data.Directors, resp.Data.Shareholders`
+  }
+  return `resp, err := ninjaClient.CompanyLookup(ctx, ninja.CompanyLookupRequest{
+	RCNumber: "${rcNumber}",
+})
+if err != nil {
+	return err
+}
+// resp.Data.Name, resp.Data.Status, resp.Data.Directors`
+}
+
+export function companyLookupPythonExample(rcNumber: string, advanced = false): string {
+  const path = advanced ? '/api/company/advanced-lookup' : '/api/company/lookup'
+  return `import requests
+
+session = requests.post(
+    "${BASE_URL}/auth/session",
+    json={"client_key": NINJA_CLIENT_KEY, "client_secret": NINJA_CLIENT_SECRET},
+).json()
+
+response = requests.post(
+    "${BASE_URL}${path}",
+    headers={"Authorization": f"Bearer {session['token']}"},
+    json={"rc_number": "${rcNumber}"},
+)
+company = response.json()`
+}
+
+export function bulkIdentifyCurlExample(): string {
+  return `# Bulk Identify up to 25 NINs/BVNs in one batch
+curl -s -X POST ${BASE_URL}/api/identity/bulk-identify \\
+  -H "Authorization: Bearer $NINJA_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "idType": "nin",
+    "idNumbers": "77777777777,66666666666,55555555555"
+  }'`
+}
+
+export function bulkIdentifyTsExample(): string {
+  return `import axios from 'axios'
+
+const { data: result } = await axios.post(
+  '${BASE_URL}/api/identity/bulk-identify',
+  {
+    idType: 'nin',
+    idNumbers: '77777777777,66666666666,55555555555',
+  },
+  { headers: { Authorization: \`Bearer \${token}\` } }
+)
+result.data.forEach(item => console.log(item.id_number, item.first_name, item.last_name))`
+}
+

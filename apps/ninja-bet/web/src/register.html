@@ -1,36 +1,133 @@
-<div class="page page-wide"
-  data-ham-page-config='{ "layout": "default.lhtml" }'
->
-  <h1>ninja-bet</h1>
-  <p class="lede">
-    We only ask for your NIN and phone number — no date of birth. We look up your details from the national
-    registry and confirm the name you typed matches.
-  </p>
+<div class="page page-wide" data-ham-page-config='{ "layout": "default.lhtml" }'>
+  <div style="max-width: 1040px; margin: 36px auto;">
 
-  <div class="demo-row">
-    <div>
-      <form id="register-form" class="card">
-        <label>First name<input id="first_name" value="James" required /></label>
-        <label>Last name<input id="last_name" value="Bond" required /></label>
-        <label>Phone number<input id="phone_number" value="08012345678" required /></label>
-        <label>NIN<input id="nin" value="77777777777" required /></label>
-        <label>Password<input id="password" type="password" value="password123" required /></label>
-        <p id="form-error" class="error" hidden></p>
-        <button type="submit" id="submit-btn">Create account — get ₦100,000 welcome credit</button>
-        <p class="hint">Already have an account? <a href="/login.html">Log in</a></p>
+    <div class="card" style="padding: 32px 36px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); background: linear-gradient(135deg, rgba(18, 26, 41, 0.98) 0%, rgba(13, 18, 29, 0.98) 100%);">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="background: #ffffff; padding: 4px 12px; border-radius: 8px; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            <img src="./assets/images/ninja-bet-white-bg.png" alt="ninja-bet official" style="height: 34px; width: auto; object-fit: contain; display: block;" />
+          </div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">ninja-bet Demo</div>
+            <div style="font-size: 12px; color: var(--muted);">Identity Verification via Ninja API</div>
+          </div>
+        </div>
+        <div class="nav-env-badge" style="padding: 6px 12px; font-size: 11px;">
+          <span class="live-dot-pulse"></span>
+          <span>Ninja Sandbox Active</span>
+        </div>
+      </div>
 
-        <div id="result" hidden></div>
-      </form>
-
-      <p class="hint" style="margin-top: 14px; text-align: center">
-        A betting company also has to catch minors before they can play —
-        <button type="button" id="simulate-underage-btn" class="link-button">try a simulated underage signup</button>.
+      <h1 style="font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -0.01em;">
+        Player Sign Up
+      </h1>
+      <p style="color: var(--muted); font-size: 14px; margin: 0 0 24px; max-width: 820px; line-height: 1.5;">
+        Ninja checks the player's name, NIN, and age in <strong>one simple API call</strong>.
       </p>
+
+      <!-- 1-Click Test Scenarios -->
+      <div class="presets-bar" style="background: rgba(255, 255, 255, 0.03); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 24px;">
+        <span class="preset-label" style="margin-right: 6px;">⚡ Quick Test Presets:</span>
+        <button type="button" class="preset-chip preset-pass" id="btn-preset-adult">
+          Adult Player (James Bond · 49 yrs)
+        </button>
+        <button type="button" class="preset-chip preset-fail" id="btn-preset-mismatch">
+          Name Mismatch (Chinedu Okafor)
+        </button>
+        <button type="button" class="preset-chip preset-fail" id="simulate-underage-btn">
+          Underage Minor (Tobi Minor · 16 yrs)
+        </button>
+        <button type="button" class="preset-chip" id="btn-open-bulk-modal">
+          Batch Identify (25 IDs)
+        </button>
+      </div>
+
+      <div class="spa-grid-2">
+        <!-- Form Column -->
+        <div>
+          <form id="register-form">
+            <div class="form-row">
+              <div class="field-group">
+                <label for="first_name">First Name</label>
+                <input id="first_name" value="James" required autocomplete="given-name" />
+              </div>
+              <div class="field-group">
+                <label for="last_name">Last Name</label>
+                <input id="last_name" value="Bond" required autocomplete="family-name" />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field-group">
+                <label for="phone_number">Phone Number</label>
+                <input id="phone_number" value="08012345678" required autocomplete="tel" />
+              </div>
+              <div class="field-group">
+                <label for="nin">National Identity Number (NIN)</label>
+                <input id="nin" value="77777777777" maxlength="11" required />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="password">Account Password</label>
+              <input id="password" type="password" value="password123" required />
+            </div>
+
+            <p id="form-error" class="error" hidden></p>
+
+            <button type="submit" id="submit-btn" style="width: 100%; margin-top: 10px; padding: 13px; font-size: 14px;">
+              Verify NIN &amp; Create Account (+₦100,000 Welcome Credit)
+            </button>
+
+            <div style="margin-top: 16px; text-align: center; font-size: 13px; color: var(--muted);">
+              Already have an account? <a href="/login.html" style="color: #34d399; font-weight: 700; text-decoration: none;">Log in to Sportsbook →</a>
+            </div>
+
+            <div id="result" hidden style="margin-top: 20px;"></div>
+          </form>
+        </div>
+
+        <!-- Right Side: API Integration Details & Registry Specs -->
+        <div>
+          <div id="lookup-tabs"></div>
+          <div id="verify-tabs" style="margin-top: 14px;"></div>
+
+          <div class="card" style="margin-top: 14px; padding: 14px 18px; border-color: rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+            <h4 style="margin: 0 0 6px; font-size: 12.5px; color: #fff; text-transform: uppercase; letter-spacing: 0.04em;">How Ninja Works</h4>
+            <p class="hint" style="margin: 0; font-size: 12px; line-height: 1.5;">
+              Ninja checks identity in real time. <strong>Lookup</strong> checks the NIN and date of birth; <strong>verify</strong> checks that the name matches.
+            </p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <div class="snippet-stack">
-      <div id="lookup-tabs"></div>
-      <div id="verify-tabs"></div>
+  </div>
+</div>
+
+<!-- Bulk Identify Modal -->
+<div id="bulk-modal-backdrop" class="modal-backdrop" hidden>
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="margin: 0; font-size: 17px; color: #fff;">Bulk Identity Verification (POST /api/identity/bulk-identify)</h3>
+      <button type="button" id="close-bulk-modal-btn" class="btn-reset-ghost" style="font-size: 16px;">✕</button>
     </div>
+    <p class="hint" style="font-size: 13px;">
+      Verify up to 25 NINs/BVNs in a single synchronous call.
+    </p>
+
+    <div class="field-group">
+      <label>ID Numbers (comma-separated 11-digit NINs)</label>
+      <textarea id="bulk-nins-input" style="width: 100%; height: 80px; padding: 10px; background: var(--card-input); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: var(--font-mono); font-size: 13px;">77777777777,66666666666,55555555555</textarea>
+    </div>
+
+    <button type="button" id="bulk-submit-btn" style="width: 100%;">
+      Execute Bulk Identify (3 NINs)
+    </button>
+
+    <div id="bulk-result-container" style="margin-top: 16px;" hidden></div>
   </div>
 </div>

@@ -1,626 +1,454 @@
-<div class="spa-page" data-ham-page-config='{ "layout": "default.lhtml" }'>
-
-  <!-- ================================================================= -->
-  <!-- HERO SECTION -->
-  <!-- ================================================================= -->
-  <header class="spa-hero" id="hero">
-    <div class="hero-container">
-      <div class="hero-badge-row">
-        <span class="hero-pill live-pill">
-          <span class="pulsing-dot"></span> Live Ninja Sandbox Connected
-        </span>
-        <span class="hero-pill reg-pill">NLRC Act 2005 §34 Compliant</span>
-        <span class="hero-pill speed-pill">⚡ Sub-50ms Verification</span>
-      </div>
-
-      <h1 class="hero-title">
-        Government-Grade Identity &amp; Fraud Defense
-      </h1>
-      <p class="hero-subtitle">
-        A real, interactive sportsbook proving how Ninja's authoritative Nigerian identity APIs eradicate
-        <strong>underage gambling</strong>, <strong>multi-accounting bonus syndicates</strong>,
-        <strong>payout hijacking</strong>, and <strong>credential theft</strong> live in production.
+<div class="workbench-container" data-ham-page-config='{ "layout": "default.lhtml" }'>
+  <div class="workbench-page-header">
+    <div class="workbench-page-title-group">
+      <h1 class="workbench-page-title">Ninja Identity API &mdash; Live Demo</h1>
+      <p class="workbench-page-subtitle">
+        See how Ninja verifies customers, matches BVNs, and protects payouts in real time.
+        <strong>Every button makes a real API call.</strong>
       </p>
-
-      <div class="hero-stats-grid">
-        <div class="hero-stat-card">
-          <div class="stat-icon">⚡</div>
-          <div class="stat-content">
-            <span class="stat-num">&lt; 45ms</span>
-            <span class="stat-label">Registry Lookup Latency</span>
-          </div>
-        </div>
-        <div class="hero-stat-card">
-          <div class="stat-icon">🛡️</div>
-          <div class="stat-content">
-            <span class="stat-num">₦100,000</span>
-            <span class="stat-label">Bonus Farming Defense</span>
-          </div>
-        </div>
-        <div class="hero-stat-card">
-          <div class="stat-icon">🏦</div>
-          <div class="stat-content">
-            <span class="stat-num">100% Match</span>
-            <span class="stat-label">Bank BVN Beneficiary Rail</span>
-          </div>
-        </div>
-        <div class="hero-stat-card">
-          <div class="stat-icon">📷</div>
-          <div class="stat-content">
-            <span class="stat-num">Biometric</span>
-            <span class="stat-label">Hosted 3D Liveness Armor</span>
-          </div>
-        </div>
-      </div>
     </div>
-  </header>
+  </div>
+  <div class="workbench-grid">
 
-  <!-- ================================================================= -->
-  <!-- STICKY STORY STEPPER NAVIGATION -->
-  <!-- ================================================================= -->
-  <nav class="story-stepper">
-    <a href="#onboarding" class="stepper-item active">
-      <span class="step-badge">01</span>
-      <span class="step-text">18+ Onboarding Gate</span>
-    </a>
-    <a href="#bonus-defense" class="stepper-item">
-      <span class="step-badge">02</span>
-      <span class="step-text">Sybil Bonus Trap</span>
-    </a>
-    <a href="#sportsbook-payout" class="step-badge-wrap">
-      <span class="step-badge">03</span>
-      <span class="step-text">ATO Payout Defense</span>
-    </a>
-    <a href="#biometrics" class="stepper-item">
-      <span class="step-badge">04</span>
-      <span class="step-text">Face Liveness Armor</span>
-    </a>
-    <a href="#telemetry" class="stepper-item">
-      <span class="step-badge">05</span>
-      <span class="step-text">Live API Stream</span>
-    </a>
-  </nav>
+    <!-- =====================================================================
+         LEFT COLUMN: INTERACTIVE DEMO WORKBENCH
+         ===================================================================== -->
+    <div class="workbench-main">
 
-  <main class="spa-content">
+      <!-- -------------------------------------------------------------------
+           VERTICAL A: SPORTSBOOK KYC FLOW (ninja-bet)
+           ------------------------------------------------------------------- -->
+      <div id="flow-sportsbook">
 
-    <!-- ================================================================= -->
-    <!-- STAGE 1: 18+ ONBOARDING & REGISTRY MATCH GATE -->
-    <!-- ================================================================= -->
-    <section class="stage-section" id="onboarding">
-      <div class="stage-header">
-        <div class="stage-tag">STAGE 01 · REGULATORY COMPLIANCE</div>
-        <h2>18+ Age Verification &amp; Registry Matching</h2>
-        <p class="stage-desc">
-          <strong>The Vulnerability:</strong> Under Nigerian law (NLRC Act §34), operators face fines up to ₦10,000,000 for accepting bets from minors. Traditional registration asks users to type their birthdate—which minors trivially falsify.<br/>
-          <strong>The Ninja Solution:</strong> The player <em>never</em> enters a date of birth. Ninja calls <code>mode=lookup</code> to fetch the authoritative date of birth and biometric photo from the National Identity Database, then <code>mode=verify</code> confirms name identity.
-        </p>
-      </div>
-
-      <div class="stage-grid">
-        <!-- Left Column: Interactive Scenario Workbench -->
-        <div class="stage-panel card">
-          <div class="panel-header">
-            <div>
-              <h3>Interactive KYC Registration Workbench</h3>
-              <span class="panel-sub">Select a test scenario below to simulate live compliance checking:</span>
-            </div>
-          </div>
-
-          <!-- Scenario Cards Grid -->
-          <div class="scenario-cards-grid">
-            <div class="scenario-card active" id="scenario-adult-card">
-              <div class="scenario-card-header">
-                <span class="scenario-icon">✓</span>
-                <strong class="scenario-title">Adult Citizen (James Bond)</strong>
-                <span class="scenario-pill pill-pass">18+ Cleared</span>
+        <!-- STEP 1: SIGN UP & NIN VERIFICATION -->
+        <div id="view-step-1" class="step-card-view">
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Step 1 of 3 · Registration</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Player Sign Up</h2>
               </div>
-              <p class="scenario-desc">Authoritative DOB retrieved from National Registry confirms age 51. ₦100,000 bonus unlocked.</p>
-              <button type="button" class="scenario-select-btn" id="preset-adult-btn">Select Adult Scenario</button>
+              <span class="nav-env-badge">Ninja Verify</span>
             </div>
 
-            <div class="scenario-card" id="scenario-minor-card">
-              <div class="scenario-card-header">
-                <span class="scenario-icon">⛔</span>
-                <strong class="scenario-title">Underage Minor (Tobi Minor)</strong>
-                <span class="scenario-pill pill-fail">NLRC Freeze</span>
-              </div>
-              <p class="scenario-desc">National registry proves age 16. Account created with permanent lock; ₦0 bonus granted.</p>
-              <button type="button" class="scenario-select-btn" id="preset-minor-btn">Select Minor Scenario</button>
-            </div>
-
-            <div class="scenario-card" id="scenario-mismatch-card">
-              <div class="scenario-card-header">
-                <span class="scenario-icon">⚠️</span>
-                <strong class="scenario-title">Borrowed / Stolen NIN</strong>
-                <span class="scenario-pill pill-warn">Name Mismatch</span>
-              </div>
-              <p class="scenario-desc">User enters a fake name ("Impostor") with someone else's NIN. Ninja catches the mismatch.</p>
-              <button type="button" class="scenario-select-btn" id="preset-mismatch-btn">Select Mismatch Scenario</button>
-            </div>
-          </div>
-
-          <!-- Registration Form -->
-          <form id="onboarding-form" class="flow-form">
-            <div class="form-row">
-              <label>First Name<input type="text" id="ob-first-name" value="James" required /></label>
-              <label>Last Name<input type="text" id="ob-last-name" value="Bond" required /></label>
-            </div>
-            <div class="form-row">
-              <label>Phone Number<input type="tel" id="ob-phone" value="08012345678" required /></label>
-              <label>National ID Number (NIN)<input type="text" id="ob-nin" value="77777777777" maxlength="11" required /></label>
-            </div>
-            <label>Account Password<input type="password" id="ob-password" value="password123" required /></label>
-
-            <button type="submit" class="cta-btn primary-cta" id="ob-submit-btn">
-              <span>Verify with Ninja Identity API &amp; Create Account →</span>
-            </button>
-          </form>
-
-          <!-- Dynamic Result Box / National Identity Hologram Pass -->
-          <div id="ob-result" class="result-box" hidden></div>
-        </div>
-
-        <!-- Right Column: Live API Architecture & Code Console -->
-        <div class="intelligence-column">
-          <!-- Live Architecture Card -->
-          <div class="intel-card card">
-            <div class="intel-header">
-              <span class="intel-badge">API CONTRACT</span>
-              <h4>Two-Step Authoritative KYC Architecture</h4>
-            </div>
-            <div class="pipeline-visualizer">
-              <div class="pipe-step">
-                <span class="pipe-num">1</span>
-                <div class="pipe-info">
-                  <strong>mode=lookup</strong>
-                  <span>Extract authoritative DOB &amp; official photo from National Database</span>
-                </div>
-              </div>
-              <div class="pipe-connector">↓</div>
-              <div class="pipe-step">
-                <span class="pipe-num">2</span>
-                <div class="pipe-info">
-                  <strong>NLRC §34 Gate</strong>
-                  <span>Compute authoritative age. If &lt; 18: Account frozen &amp; bonus denied</span>
-                </div>
-              </div>
-              <div class="pipe-connector">↓</div>
-              <div class="pipe-step">
-                <span class="pipe-num">3</span>
-                <div class="pipe-info">
-                  <strong>mode=verify</strong>
-                  <span>Cryptographically match submitted name against official citizen record</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Live Response Preview Pane -->
-            <div class="live-payload-preview">
-              <div class="preview-header">
-                <span class="preview-title">Live Ninja Sandbox Payload</span>
-                <span class="latency-chip" id="ob-latency-chip">142ms</span>
-              </div>
-              <pre class="json-code-preview" id="ob-payload-preview"><code>{
-  "endpoint": "/api/identity/identify",
-  "mode": "lookup + verify",
-  "id_type": "nin",
-  "status": "ready"
-}</code></pre>
-            </div>
-          </div>
-
-          <!-- Collapsible Multi-Language Code Drawer -->
-          <div id="code-drawer-onboarding"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- STAGE 2: THE BONUS-FARMING DEFENSE (SYBIL ATTACK TRAP) -->
-    <!-- ================================================================= -->
-    <section class="stage-section" id="bonus-defense">
-      <div class="stage-header">
-        <div class="stage-tag">STAGE 02 · FRAUD SYNDICATE PREVENTION</div>
-        <h2>Bonus-Farming Sybil Defense</h2>
-        <p class="stage-desc">
-          <strong>The Vulnerability:</strong> Bonus hunters purchase disposable SIM cards and burner emails to open dozens of accounts, harvesting ₦100,000 welcome bonuses repeatedly and draining operator bank balances.<br/>
-          <strong>The Ninja Solution:</strong> Phone numbers and emails are cheap; a government-issued National Identity Number (NIN) is strictly one per citizen. Ninja-Bet anchors welcome credit to the national identity. Second accounts are created for genuine play, but duplicate bonuses are permanently blocked.
-        </p>
-      </div>
-
-      <div class="stage-grid">
-        <!-- Left Column: Sybil Attack Simulator Workbench -->
-        <div class="stage-panel card">
-          <div class="panel-header">
-            <div>
-              <h3>Sybil Attack Radar &amp; Syndicate Defense</h3>
-              <span class="panel-sub">Simulate a fraud syndicate attempting to harvest multiple ₦100,000 bonuses:</span>
-            </div>
-          </div>
-
-          <!-- Visual Syndicate Flow Diagram -->
-          <div class="sybil-flow-diagram">
-            <div class="sybil-node central-node">
-              <span class="node-icon">🪪</span>
-              <strong>Citizen NIN: 77777777777</strong>
-              <small>Authoritative National Anchor</small>
-            </div>
-            <div class="sybil-arrows-wrap">
-              <div class="sybil-branch branch-first">
-                <span class="branch-arrow">➔</span>
-                <span class="branch-pill pass-pill">SIM #1: 08012345678 (Account #1: ₦100,000 Bonus Approved)</span>
-              </div>
-              <div class="sybil-branch branch-second">
-                <span class="branch-arrow">➔</span>
-                <span class="branch-pill block-pill">SIM #2: Burner Number (Account #2: ₦0 Bonus BLOCKED)</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="simulator-action-box">
-            <button type="button" class="cta-btn warning-cta" id="sybil-attack-btn">
-              <span>⚡ Launch Sybil Attack: Register Account #2 with Burner SIM</span>
-            </button>
-          </div>
-
-          <!-- Fraud Metrics Counter -->
-          <div class="fraud-metrics-bar">
-            <div class="fraud-metric">
-              <span class="f-num" id="metric-dup-count">3</span>
-              <span class="f-label">Duplicate Accounts Caught</span>
-            </div>
-            <div class="fraud-metric">
-              <span class="f-num" id="metric-saved-amount">₦300,000</span>
-              <span class="f-label">Bonus Money Protected</span>
-            </div>
-            <div class="fraud-metric">
-              <span class="f-num">100%</span>
-              <span class="f-label">Sybil Detection Rate</span>
-            </div>
-          </div>
-
-          <!-- Real-Time National ID Fraud Ledger Table -->
-          <div class="ledger-container">
-            <h4>Live National Identity Fraud Ledger (Anchor NIN: 77777777777)</h4>
-            <div id="fraud-ledger-table"><p class="loading-hint">Loading fraud signals...</p></div>
-          </div>
-        </div>
-
-        <!-- Right Column: Sybil Intelligence & Code Console -->
-        <div class="intelligence-column">
-          <div class="intel-card card">
-            <div class="intel-header">
-              <span class="intel-badge">DEFENSE STRATEGY</span>
-              <h4>Identity Anchoring vs Synthetic Burners</h4>
-            </div>
-            <p class="intel-text">
-              Traditional iGaming systems use IP addresses, device fingerprints, or phone numbers to gate promotions.
-              Fraudsters rotate proxies and buy ₦200 SIM cards to harvest millions.
-              <br/><br/>
-              By enforcing <strong>one welcome bonus per government-verified identity</strong>, ninja-bet eliminates 100% of bonus-farming risk without turning away legitimate players who open second accounts for sport.
+            <p class="hint" style="margin: 0 0 16px; font-size: 13.5px; color: #94a3b8;">
+              Ninja checks the player's name, NIN, and age in <strong>one simple API call</strong>.
             </p>
 
-            <div class="live-payload-preview">
-              <div class="preview-header">
-                <span class="preview-title">Sybil Detection Query Engine</span>
-                <span class="latency-chip">0ms (Local SQL Index)</span>
-              </div>
-              <pre class="json-code-preview"><code>SELECT id, phone_number, kyc_status 
-FROM players 
-WHERE nin = '77777777777' 
-  AND balance_kobo > 0;
--- Result: Duplicate found -> Set balance = 0</code></pre>
-            </div>
-          </div>
-
-          <!-- Collapsible Multi-Language Code Drawer -->
-          <div id="code-drawer-bonus"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ================================================================= -->
-    <!-- STAGE 3: LIVE SPORTSBOOK & ATO PAYOUT PROTECTION RAIL -->
-    <!-- ================================================================= -->
-    <section class="stage-section" id="sportsbook-payout">
-      <div class="stage-header">
-        <div class="stage-tag">STAGE 03 · ACCOUNT TAKEOVER (ATO) DEFENSE</div>
-        <h2>Live Sportsbook &amp; Beneficiary Bank Re-Match Gate</h2>
-        <p class="stage-desc">
-          <strong>The Vulnerability:</strong> Even if a credential-stuffing attacker breaches a player's password, their ultimate goal is withdrawing winning funds to a mule bank account.<br/>
-          <strong>The Ninja Solution:</strong> Ninja-Bet executes a <strong>real-time double check</strong> on every withdrawal: verifying the beneficiary name against the player's NIN, and verifying the destination bank account BVN. If the destination belongs to anyone else, the withdrawal is blocked before money leaves.
-        </p>
-      </div>
-
-      <div class="stage-grid">
-        <!-- Left Column: Sportsbook Winnings Engine & Withdrawal Rail -->
-        <div class="stage-panel card">
-          <!-- Step 3A: Sportsbook Winnings Engine -->
-          <div class="sportsbook-box">
-            <div class="panel-header">
-              <div>
-                <h3>Step 3A: Live Premier League Match Betslip</h3>
-                <span class="panel-sub">Place a bet using your sign-up bonus, then simulate a winning settlement:</span>
-              </div>
-              <div class="wallet-pill-group">
-                <span class="wallet-chip">Sign-up Bonus: <strong id="sp-bonus-val">₦100,000</strong></span>
-                <span class="wallet-chip win-chip">Withdrawable Winnings: <strong id="sp-winnings-val">₦0</strong></span>
+            <!-- Quick Test Presets -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="preset-chip preset-pass" id="btn-preset-adult">
+                  ✓ Valid Adult (James Bond · 49 yrs)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-preset-mismatch">
+                  ✗ Wrong Name (Chinedu Okafor)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-preset-underage">
+                  ✗ Under 18 (Tobi · 16 yrs)
+                </button>
               </div>
             </div>
 
-            <!-- Live Match Odds Card -->
-            <div class="match-item">
-              <div class="match-meta">
-                <span class="live-dot">● LIVE 78'</span>
-                <span class="match-league">Premier League · Emirates Stadium</span>
+            <!-- Simulation Parameters (Wallet Balance) -->
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px;">
+              <span style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">
+                Starting Wallet Balance (Demo Simulation)
+              </span>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button type="button" class="param-preset-btn active" data-amount="250000" id="btn-param-250k">₦250,000</button>
+                <button type="button" class="param-preset-btn" data-amount="50000" id="btn-param-50k">₦50,000</button>
+                <button type="button" class="param-preset-btn" data-amount="10000" id="btn-param-10k">₦10,000</button>
+                <input type="number" id="sim-wallet-input" value="250000" style="width: 130px; padding: 6px 10px; font-size: 13px; font-family: var(--font-mono); margin: 0;" />
               </div>
-              <div class="match-teams">Arsenal <strong>2 - 1</strong> Chelsea</div>
-              <div class="odds-btn-group">
-                <button type="button" class="odds-btn active" data-odds="1.85">Arsenal (1.85)</button>
-                <button type="button" class="odds-btn" data-odds="3.40">Draw (3.40)</button>
-                <button type="button" class="odds-btn" data-odds="4.20">Chelsea (4.20)</button>
-              </div>
             </div>
 
-            <div class="betslip-action-row">
-              <button type="button" class="cta-btn secondary-cta" id="place-bet-btn">
-                Place ₦5,000 Bet on Arsenal (1.85)
-              </button>
-              <button type="button" class="cta-btn success-cta" id="simulate-win-btn">
-                🏆 Settle Match (Win ₦250,000 Winnings)
-              </button>
-            </div>
-          </div>
-
-          <div class="divider-line"></div>
-
-          <!-- Step 3B: Dual-Check Instant Withdrawal Rail -->
-          <div class="withdrawal-box">
-            <div class="withdrawal-header">
-              <h4>Step 3B: Request Instant Bank Withdrawal</h4>
-              <span class="payout-hint">Select a payout test scenario below:</span>
-            </div>
-
-            <div class="scenario-cards-grid scenario-payout-grid">
-              <div class="scenario-card active" id="scenario-legit-payout">
-                <div class="scenario-card-header">
-                  <span class="scenario-icon">✓</span>
-                  <strong class="scenario-title">Legitimate Owner (James Bond)</strong>
-                  <span class="scenario-pill pill-pass">GTBank</span>
+            <!-- Registration Form -->
+            <form id="form-step-1">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label for="input-first-name">First Name</label>
+                  <input id="input-first-name" value="James" required />
                 </div>
-                <p class="scenario-desc">Destination BVN matches account holder NIN 100%. Payout clears smoothly.</p>
-                <button type="button" class="scenario-select-btn" id="payout-legit-btn">Select Legitimate</button>
-              </div>
-
-              <div class="scenario-card" id="scenario-hacker-payout">
-                <div class="scenario-card-header">
-                  <span class="scenario-icon">⛔</span>
-                  <strong class="scenario-title">ATO Mule Hijack Attempt</strong>
-                  <span class="scenario-pill pill-fail">Mule BVN</span>
+                <div>
+                  <label for="input-last-name">Surname (Last Name)</label>
+                  <input id="input-last-name" value="Bond" required />
                 </div>
-                <p class="scenario-desc">Attacker with valid session attempts payout to mule bank account. Ninja catches BVN mismatch.</p>
-                <button type="button" class="scenario-select-btn" id="payout-hacker-btn">Select ATO Mule</button>
               </div>
-            </div>
 
-            <form id="payout-form" class="flow-form">
-              <div class="form-row">
-                <label>Amount to Withdraw (₦)<input type="number" id="po-amount" value="250000" min="100" required /></label>
-                <label>Beneficiary Name<input type="text" id="po-beneficiary" value="James Bond" required /></label>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-phone">Phone Number</label>
+                  <input id="input-phone" value="08012345678" required />
+                </div>
+                <div>
+                  <label for="input-nin">NIN (11 Digits)</label>
+                  <input id="input-nin" value="77777777777" maxlength="11" required />
+                </div>
               </div>
-              <div class="form-row">
-                <label>Destination Bank<input type="text" id="po-bank" value="GTBank" required /></label>
-                <label>Account Number<input type="text" id="po-account-number" value="0123456789" required /></label>
-              </div>
-              <label>Bank BVN (Nigeria Identity)<input type="text" id="po-bvn" value="77777777777" maxlength="11" required /></label>
 
-              <button type="submit" class="cta-btn primary-cta" id="po-submit-btn">
-                <span>Submit Withdrawal with Dual-Check Ninja Verification →</span>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-dob">Date of Birth</label>
+                  <input id="input-dob" type="date" value="1975-01-01" required />
+                </div>
+                <div>
+                  <label for="input-password">Account Password</label>
+                  <input id="input-password" type="password" value="password123" required />
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-step1" style="margin-top: 22px; padding: 14px; font-size: 15px; font-weight: 800;">
+                Verify NIN &amp; Create Account →
               </button>
             </form>
 
-            <div id="po-result" class="result-box" hidden></div>
+            <!-- Result Banner -->
+            <div id="step1-result" style="margin-top: 18px;" hidden></div>
+
           </div>
         </div>
 
-        <!-- Right Column: Payout Defense Intelligence Console -->
-        <div class="intelligence-column">
-          <div class="intel-card card">
-            <div class="intel-header">
-              <span class="intel-badge">DUAL-CHECK RAIL</span>
-              <h4>Why Simple Passwords Fail ATO Defense</h4>
+        <!-- STEP 2: ADD BANK ACCOUNT (BVN CHECK) -->
+        <div id="view-step-2" class="step-card-view" hidden>
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Step 2 of 3 · Bank Verification</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Add Payout Bank Account</h2>
+              </div>
+              <span class="nav-env-badge">BVN Match</span>
             </div>
-            <p class="intel-text">
-              If an attacker steals a player's credentials via phishing, session hijacking, or SIM swapping, simple 2FA can fail.
-              <br/><br/>
-              Ninja-Bet's <strong>dual-check payout rail</strong> enforces that money can <em>only</em> exit to a bank account whose <strong>Bank Verification Number (BVN)</strong> matches the verified national identity on file. Even if an attacker controls the account, they cannot steal the funds.
+
+            <p class="hint" style="margin: 0 0 16px; font-size: 13.5px; color: #94a3b8;">
+              Ninja checks that the bank account BVN belongs to <strong id="c2-player-label">James Bond</strong> so winnings cannot be diverted to third parties.
             </p>
 
-            <div class="live-payload-preview">
-              <div class="preview-header">
-                <span class="preview-title">Dual-Check Verification Calls</span>
-                <span class="latency-chip" id="po-latency-chip">155ms</span>
+            <!-- Quick Test Presets -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="preset-chip preset-pass" id="btn-preset-bvn-match">
+                  ✓ Owner's Account (James Bond)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-preset-bvn-mismatch">
+                  ✗ Other Person's Account (Emeka Ugo)
+                </button>
               </div>
-              <pre class="json-code-preview" id="po-payload-preview"><code>// Check 1: Beneficiary vs NIN
-ninja.identify({ idType: "nin", mode: "verify" })
-// Check 2: Destination Bank BVN
-ninja.identify({ idType: "bvn", mode: "verify" })</code></pre>
             </div>
-          </div>
 
-          <!-- Collapsible Multi-Language Code Drawer -->
-          <div id="code-drawer-payout"></div>
+            <form id="form-step-2">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label for="input-bank-name">Payout Bank</label>
+                  <select id="input-bank-name">
+                    <option value="Access Bank">Access Bank</option>
+                    <option value="GTBank">GTBank</option>
+                    <option value="Zenith Bank">Zenith Bank</option>
+                    <option value="First Bank">First Bank</option>
+                    <option value="Kuda Bank">Kuda Bank</option>
+                    <option value="OPay">OPay</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="input-acc-num">10-Digit Account Number</label>
+                  <input id="input-acc-num" value="0123456789" maxlength="10" required />
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-bvn">BVN (11 Digits)</label>
+                  <input id="input-bvn" value="77777777777" maxlength="11" required />
+                </div>
+                <div>
+                  <label for="input-holder-name">Account Holder Name</label>
+                  <input id="input-holder-name" value="James Bond" required />
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-step2" style="margin-top: 22px; padding: 14px; font-size: 15px; font-weight: 800;">
+                Verify BVN &amp; Save Bank Account →
+              </button>
+            </form>
+
+            <div id="step2-result" style="margin-top: 18px;" hidden></div>
+
+          </div>
         </div>
-      </div>
-    </section>
 
-    <!-- ================================================================= -->
-    <!-- STAGE 4: LAYER-2 BIOMETRIC ARMOR (FACIAL LIVENESS) -->
-    <!-- ================================================================= -->
-    <section class="stage-section" id="biometrics">
-      <div class="stage-header">
-        <div class="stage-tag">STAGE 04 · BIOMETRIC ANTI-SPOOFING</div>
-        <h2>Layer-2 Biometric Facial Liveness Armor</h2>
-        <p class="stage-desc">
-          <strong>The Vulnerability:</strong> What if a compromised insider or sophisticated fraudster possesses the victim's name, NIN, and bank BVN?<br/>
-          <strong>The Ninja Solution:</strong> Ninja Hosted Face Verification (<code>POST /api/flows</code>). The user must look into their smartphone or laptop camera. Ninja's computer vision matches the 3D face against the <strong>real government registry photo fetched in Stage 1</strong> and executes passive anti-spoofing liveness analysis.
-        </p>
-      </div>
-
-      <div class="stage-grid">
-        <!-- Left Column: Biometric HUD & Camera Console -->
-        <div class="stage-panel card">
-          <div class="panel-header">
-            <div>
-              <h3>Biometric Computer Vision HUD</h3>
-              <span class="panel-sub">Configure hardware-grade biometric facial protection on withdrawals:</span>
+        <!-- STEP 3: WITHDRAW FUNDS (FACE SELFIE CHECK) -->
+        <div id="view-step-3" class="step-card-view" hidden>
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Step 3 of 3 · Payout Security</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Withdraw Funds</h2>
+              </div>
+              <span class="nav-env-badge">Face Check</span>
             </div>
-            <span class="badge-tag" id="bio-status-badge">Requires Setup</span>
-          </div>
 
-          <!-- Visual Biometric Scanner HUD Mockup -->
-          <div class="bio-scanner-hud">
-            <div class="face-target-box">
-              <div class="scan-laser-line"></div>
-              <div class="corner-bracket top-left"></div>
-              <div class="corner-bracket top-right"></div>
-              <div class="corner-bracket bottom-left"></div>
-              <div class="corner-bracket bottom-right"></div>
-              <div class="face-silhouette">👤</div>
-            </div>
-            <div class="hud-telemetry-box">
-              <div class="hud-item"><span class="hud-k">3D Liveness:</span><strong class="hud-v v-active">ACTIVE</strong></div>
-              <div class="hud-item"><span class="hud-k">Depth Mesh:</span><strong class="hud-v v-active">384 POINTS</strong></div>
-              <div class="hud-item"><span class="hud-k">Anti-Spoofing:</span><strong class="hud-v v-active">REPLAY DEFENSE ON</strong></div>
-              <div class="hud-item"><span class="hud-k">Registry Match:</span><strong class="hud-v" id="hud-match-score">--</strong></div>
-            </div>
-          </div>
+            <p class="hint" style="margin: 0 0 16px; font-size: 13.5px; color: #94a3b8;">
+              Before releasing funds, Ninja runs a quick live face selfie to make sure it is really the registered player.
+            </p>
 
-          <!-- Biometric Security Controls -->
-          <div class="bio-settings-box">
-            <label class="toggle-control">
-              <input type="checkbox" id="bio-require-toggle" checked />
-              <span class="toggle-text">Require Biometric Facial Liveness Verification on All Payouts</span>
-            </label>
-
-            <div class="strictness-selector">
-              <span class="selector-label">Liveness Strictness Tier:</span>
-              <div class="tier-buttons">
-                <button type="button" class="tier-btn" data-tier="low" data-threshold="0.70">Low (70%)</button>
-                <button type="button" class="tier-btn active" data-tier="medium" data-threshold="0.85">Medium (85% Recommended)</button>
-                <button type="button" class="tier-btn" data-tier="high" data-threshold="0.95">High (95% Maximum)</button>
+            <!-- Withdrawal Target Summary Box -->
+            <div class="withdrawal-summary-box">
+              <div>
+                <span class="withdrawal-summary-label">Paying Out To:</span>
+                <strong class="withdrawal-summary-value" id="c3-bank-summary">Access Bank · 0123456789</strong>
+              </div>
+              <div style="text-align: right;">
+                <span class="withdrawal-summary-label">Withdrawal Amount:</span>
+                <strong class="withdrawal-amount" id="c3-amount-summary">₦250,000</strong>
               </div>
             </div>
-          </div>
 
-          <!-- Biometric Actions Grid -->
-          <div class="bio-actions-grid">
-            <button type="button" class="cta-btn primary-cta" id="launch-real-face-btn">
-              <span>📷 Launch Real Ninja Hosted Liveness Camera Check</span>
+            <!-- 3 Flow Link Options -->
+            <span style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 8px;">
+              Session Configuration (Prefilled vs Blank):
+            </span>
+            <div class="scenario-selector-grid">
+              <div class="scenario-card-btn active" data-scenario="prefilled" id="card-scen-1">
+                <div class="scenario-btn-top">
+                  <span class="scenario-btn-name">1. Pre-filled</span>
+                  <span class="scenario-btn-badge">Best UX</span>
+                </div>
+                <p class="scenario-btn-desc">Name &amp; DOB pre-populated. Customer goes straight to camera.</p>
+              </div>
+
+              <div class="scenario-card-btn" data-scenario="unfilled" id="card-scen-2">
+                <div class="scenario-btn-top">
+                  <span class="scenario-btn-name">2. Blank Form</span>
+                  <span class="scenario-btn-badge">Empty</span>
+                </div>
+                <p class="scenario-btn-desc">User types details manually on portal from scratch.</p>
+              </div>
+
+              <div class="scenario-card-btn" data-scenario="custom" id="card-scen-3">
+                <div class="scenario-btn-top">
+                  <span class="scenario-btn-name">3. Custom Ref</span>
+                  <span class="scenario-btn-badge">Tracking</span>
+                </div>
+                <p class="scenario-btn-desc">Attaches ledger payout reference directly to webhook session.</p>
+              </div>
+            </div>
+
+            <!-- Button to generate link -->
+            <button type="button" id="btn-generate-flow-link" style="margin-top: 18px; padding: 14px; font-size: 15px; font-weight: 800;">
+              Create Selfie Verification Link →
             </button>
-            <div class="sim-bio-row">
-              <button type="button" class="preset-btn bio-pass" id="sim-face-pass-btn">
-                <span>⚡ Simulate Genuine Live Face (Score: 0.97)</span>
-              </button>
-              <button type="button" class="preset-btn bio-fail" id="sim-face-fail-btn">
-                <span>⛔ Simulate Spoofed Photo / Mask (Score: 0.02)</span>
-              </button>
-            </div>
-          </div>
 
-          <div id="bio-result" class="result-box" hidden></div>
-        </div>
-
-        <!-- Right Column: Biometric Intelligence & Code Console -->
-        <div class="intelligence-column">
-          <div class="intel-card card">
-            <div class="intel-header">
-              <span class="intel-badge">BIOMETRIC FLOW</span>
-              <h4>Hosted Passive Liveness &amp; Webhook HMAC</h4>
-            </div>
-            <p class="intel-text">
-              Ninja's hosted verification flow operates without mobile SDK bloat.
-              The player receives an ephemeral, secure session URL.
-              Ninja captures the micro-movements of facial blood flow and depth geometry, comparing them directly to the <strong>government registry photo</strong> fetched in Stage 1.
-              <br/><br/>
-              Upon completion, Ninja dispatches a cryptographically signed HMAC-SHA256 webhook to <code>/webhooks/ninja</code>, releasing funds instantly.
-            </p>
-
-            <div class="live-payload-preview">
-              <div class="preview-header">
-                <span class="preview-title">Hosted Flow Initiation</span>
-                <span class="latency-chip">POST /api/flows</span>
+            <!-- Active Link Box -->
+            <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;" hidden>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 12px; font-weight: 800; color: #fff;">Verification Link Ready:</span>
+                <a href="#" target="_blank" id="link-open-camera" style="font-size: 12px; font-weight: 800; color: #34d399; text-decoration: underline;">
+                  Open Camera Link ↗
+                </a>
               </div>
-              <pre class="json-code-preview"><code>{
-  "name": "ninja-bet Biometric Clearance",
-  "selfie_required": true,
-  "liveness_required": true,
-  "id_types": ["nin"]
-}</code></pre>
+
+              <div style="background: #060a12; padding: 9px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 14px;" id="text-flow-url">
+                https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO
+              </div>
+
+              <!-- Quick Test Simulator -->
+              <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
+                <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 8px;">
+                  Biometric Outcome Simulator:
+                </span>
+                <div style="display: flex; gap: 8px;">
+                  <button type="button" class="preset-chip preset-pass" id="btn-sim-pass" style="flex: 1;">
+                    ✓ Test: Face Matched
+                  </button>
+                  <button type="button" class="preset-chip preset-fail" id="btn-sim-fail" style="flex: 1;">
+                    ✗ Test: Face Mismatch
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Release Payment CTA -->
+            <div id="step3-release-box" style="margin-top: 18px;" hidden>
+              <div class="success" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
+                ✓ Face matched with 98% confidence! You can now disburse the payout.
+              </div>
+              <button type="button" id="btn-release-payout" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-size: 15px; font-weight: 800; padding: 14px;">
+                💸 Send Money to Verified Bank Account →
+              </button>
+            </div>
+
+            <!-- Final Receipt -->
+            <div id="step3-receipt" style="margin-top: 16px;" hidden></div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- -------------------------------------------------------------------
+           VERTICAL B: DIGITAL BANKING & FINTECH ONBOARDING (ninja-fintech)
+           ------------------------------------------------------------------- -->
+      <div id="flow-fintech" hidden>
+        <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div>
+              <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Digital Banking &middot; Scored Onboarding</span>
+              <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Customer Account Opening</h2>
+            </div>
+            <span class="nav-env-badge">Per-Field Scoring</span>
+          </div>
+
+          <p class="hint" style="margin: 0 0 16px; font-size: 13.5px; color: #94a3b8;">
+            Ninja calls <code>identify(mode=verify)</code> to return <strong>individual match scores</strong> for each field — telling typos apart from real identity theft.
+          </p>
+
+          <!-- 1-Click Test Scenarios -->
+          <div style="margin-bottom: 18px;">
+            <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="preset-chip preset-pass" id="ft-preset-exact">
+                ✓ Exact Match (James Bond · Score: 100%)
+              </button>
+              <button type="button" class="preset-chip preset-pass" id="ft-preset-fuzzy">
+                ⚡ Minor Typo (Jams Bond · Score: 88%)
+              </button>
+              <button type="button" class="preset-chip preset-fail" id="ft-preset-mismatch">
+                ✗ Mismatch (Tony Stark · Score: 10%)
+              </button>
             </div>
           </div>
 
-          <!-- Collapsible Multi-Language Code Drawer -->
-          <div id="code-drawer-biometrics"></div>
+          <form id="form-fintech">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div>
+                <label for="ft-first-name">First Name</label>
+                <input id="ft-first-name" value="James" required />
+              </div>
+              <div>
+                <label for="ft-last-name">Surname (Last Name)</label>
+                <input id="ft-last-name" value="Bond" required />
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+              <div>
+                <label for="ft-id-type">ID Document Type</label>
+                <select id="ft-id-type">
+                  <option value="nin">National Identity Number (NIN)</option>
+                  <option value="bvn">Bank Verification Number (BVN)</option>
+                </select>
+              </div>
+              <div>
+                <label for="ft-id-number">ID Number (11 Digits)</label>
+                <input id="ft-id-number" value="77777777777" maxlength="11" required />
+              </div>
+            </div>
+
+            <div style="margin-top: 8px;">
+              <label for="ft-dob">Date of Birth</label>
+              <input id="ft-dob" type="date" value="1975-01-01" required />
+            </div>
+
+            <button type="submit" id="btn-submit-fintech" style="margin-top: 22px; padding: 14px; font-size: 15px; font-weight: 800;">
+              Verify &amp; Compute Match Scores →
+            </button>
+          </form>
+
+          <div id="ft-result" style="margin-top: 18px;" hidden></div>
+
         </div>
       </div>
-    </section>
 
-    <!-- ================================================================= -->
-    <!-- STAGE 5: REAL-TIME AUDIT TELEMETRY & API STREAM -->
-    <!-- ================================================================= -->
-    <section class="stage-section" id="telemetry">
-      <div class="stage-header">
-        <div class="stage-tag">STAGE 05 · OBSERVABILITY &amp; AUDIT</div>
-        <h2>Real-Time Ninja Sandbox API Stream</h2>
-        <p class="stage-desc">
-          Every single API call triggered on this page communicates directly with Ninja's live sandbox server (<code>api.sandbox.ninja.boucloud.io</code>). Below is the raw, real-time audit ledger with exact millisecond latencies, HTTP status codes, and complete request/response payloads.
-        </p>
-      </div>
-
-      <div class="telemetry-card card">
-        <div class="telemetry-toolbar">
-          <div class="telemetry-title">
-            <span class="pulsing-dot green"></span>
-            <strong>Live HTTP Traffic Gateway Stream</strong>
-            <span class="telemetry-sub-badge">Sandbox Direct</span>
-          </div>
-          <button type="button" class="refresh-btn" id="refresh-telemetry-btn">↻ Refresh Telemetry</button>
-        </div>
-
-        <div class="telemetry-table-container">
-          <table class="telemetry-table">
-            <thead>
-              <tr>
-                <th>Method &amp; Endpoint</th>
-                <th>Status</th>
-                <th>Latency</th>
-                <th>Mode</th>
-                <th>Timestamp</th>
-                <th>Payloads</th>
-              </tr>
-            </thead>
-            <tbody id="telemetry-tbody">
-              <tr><td colspan="6" class="loading-cell">Loading real-time API logs...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ================================================================= -->
-  <!-- FOOTER -->
-  <!-- ================================================================= -->
-  <footer class="spa-footer">
-    <div class="footer-inner">
-      <div class="footer-brand">
-        <embed type="ham/partial" src="logo.phtml"/>
-        <strong>ninja-bet</strong> — Production Identity &amp; Compliance Architecture
-      </div>
-      <p>Built with <a href="https://ninja.ng" target="_blank" rel="noopener">Ninja's Identity API</a> &middot; Compliant with Nigerian NLRC &amp; CBN AML Regulations.</p>
     </div>
-  </footer>
 
+    <!-- =====================================================================
+         RIGHT COLUMN: NINJA DEVELOPER INTELLIGENCE & TELEMETRY
+         ===================================================================== -->
+    <div class="workbench-sidebar">
+
+      <!-- Resource Savings Callout Card -->
+      <div class="resource-savings-card" id="resource-savings-card">
+        <div class="resource-savings-header">
+          <h3 class="resource-savings-title">
+            <span>⚡</span>
+            <span>How Ninja Saves You Money</span>
+          </h3>
+          <span class="resource-savings-badge">Smart</span>
+        </div>
+        <ul class="resource-savings-list">
+          <li class="resource-savings-item">
+            <span class="resource-icon">✓</span>
+            <div>
+              <strong style="color: #fff;">No re-typing on mobile:</strong>
+              Name and date of birth flow straight from Step 1 into the selfie check. Users skip the form and go straight to camera.
+            </div>
+          </li>
+          <li class="resource-savings-item">
+            <span class="resource-icon">✓</span>
+            <div>
+              <strong style="color: #fff;">Fewer API calls, lower cost:</strong>
+              We reuse the identity already verified. No second lookup. That cuts API spend and makes verification 3× faster.
+            </div>
+          </li>
+          <li class="resource-savings-item">
+            <span class="resource-icon">✓</span>
+            <div>
+              <strong style="color: #fff;">Less drop-off, fewer support calls:</strong>
+              No manual typing means no typos. Drop-off falls by up to 60% and support tickets go down too.
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Live Code Inspector Card -->
+      <div class="card" style="padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(18, 26, 41, 0.7); backdrop-filter: blur(12px); margin-bottom: 0;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="font-size: 14px;">💻</span>
+            <span style="font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">Live API Code</span>
+          </div>
+          <button type="button" class="btn-reset-ghost" id="btn-copy-code" style="padding: 4px 10px; font-size: 11px; white-space: nowrap; flex-shrink: 0;">
+            <span id="copy-status-text">📋 Copy</span>
+          </button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; gap: 8px; flex-wrap: wrap;">
+          <code style="font-family: var(--font-mono); font-size: 11.5px; color: #34d399; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px;" id="dev-endpoint-label">POST /api/identity/identify</code>
+          <div style="display: flex; gap: 4px; flex-shrink: 0;">
+            <button type="button" class="tab-btn active" data-tab="curl">cURL</button>
+            <button type="button" class="tab-btn" data-tab="ts">JS</button>
+            <button type="button" class="tab-btn" data-tab="python">Python</button>
+            <button type="button" class="tab-btn" data-tab="go">Go</button>
+          </div>
+        </div>
+
+        <pre class="code-inspector-pre language-bash" style="border-radius: 8px; margin: 0;"><code id="dev-code-block"># API snippet updates as you click...</code></pre>
+      </div>
+
+      <!-- API Call Log -->
+      <div class="card" style="padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(18, 26, 41, 0.7); backdrop-filter: blur(12px);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="font-size: 14px;">📡</span>
+            <span style="font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">API Call Log</span>
+          </div>
+          <button type="button" class="btn-reset-ghost" id="btn-clear-logs" style="padding: 4px 10px; font-size: 11px;">Clear</button>
+        </div>
+
+        <div id="dev-call-log-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+          <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 20px;" id="empty-logs-label">
+            No API calls yet. Click any button on the left.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
 </div>

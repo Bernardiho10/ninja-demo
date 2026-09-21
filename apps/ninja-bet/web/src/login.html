@@ -1,12 +1,51 @@
-<div class="page page-narrow"
-  data-ham-page-config='{ "layout": "default.lhtml" }'
->
-  <h1>Log in</h1>
-  <form id="login-form" class="card">
-    <label>Phone number<input id="phone_number" required /></label>
-    <label>Password<input id="password" type="password" required /></label>
-    <p id="form-error" class="error" hidden></p>
-    <button type="submit" id="submit-btn">Log in</button>
-  </form>
-  <p class="hint">No account yet? <a href="/register.html">Register</a></p>
+<div class="page page-narrow" data-ham-page-config='{ "layout": "default.lhtml" }'>
+  <div class="auth-container">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <div class="auth-logo-row" style="margin-bottom: 12px; justify-content: center; display: flex;">
+          <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" style="height: 44px; width: auto; max-width: 190px; object-fit: contain; display: block;" />
+        </div>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Log in to your sportsbook account to place bets and manage payouts</p>
+      </div>
+
+      <!-- 1-Click Demo Login -->
+      <div class="auth-preset-box">
+        <div class="preset-label">⚡ Demo Quick Login:</div>
+        <button type="button" id="quick-login-btn" class="quick-login-chip">
+          <span>⚡ Log in as <strong>James Bond</strong></span>
+          <span class="quick-login-sub">08012345678 · Verified 18+</span>
+        </button>
+      </div>
+
+      <div class="auth-divider">
+        <span>or log in with credentials</span>
+      </div>
+
+      <form id="login-form">
+        <div class="field-group">
+          <label for="phone_number">Phone Number</label>
+          <input id="phone_number" value="08012345678" required autocomplete="tel" placeholder="08012345678" />
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" value="password123" required autocomplete="current-password" />
+        </div>
+
+        <p id="form-error" class="error" hidden></p>
+
+        <button type="submit" id="submit-btn" class="auth-submit-btn">
+          Log in to Sportsbook
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>No account yet?</span>
+        <a href="/register.html" class="auth-link">Create Account &amp; Verify 18+ NIN →</a>
+      </div>
+    </div>
+
+    <div id="login-code-drawer" style="margin-top: 20px;"></div>
+  </div>
 </div>

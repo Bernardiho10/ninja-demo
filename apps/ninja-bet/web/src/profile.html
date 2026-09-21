@@ -87,9 +87,11 @@
     </p>
 
     <p id="face-status" hidden></p>
-    <p id="face-error" class="error" hidden></p>
-
-    <button type="button" id="start-face-btn">Start facial verification</button>
+    <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
+      <button type="button" id="start-face-btn" style="flex: 2; min-width: 220px;">Start real camera flow (Ninja hosted link)</button>
+      <button type="button" id="sim-face-pass-btn" class="secondary" style="flex: 1; min-width: 180px;">Simulate pass (97%)</button>
+      <button type="button" id="sim-face-fail-btn" class="secondary danger-ghost" style="flex: 1; min-width: 180px;">Simulate fail (2%)</button>
+    </div>
 
     <p class="hint" id="face-link" style="margin-top: 10px" hidden></p>
 

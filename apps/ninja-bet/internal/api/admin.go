@@ -27,11 +27,14 @@ func (e *Env) SelfExclude(w http.ResponseWriter, r *http.Request) {
 // POST /api/demo/reset
 func (e *Env) ResetDemo(w http.ResponseWriter, r *http.Request) {
 	player := e.currentPlayer(r)
-	if player == nil {
-		writeError(w, http.StatusUnauthorized, "not logged in")
-		return
+	if player != nil {
+		_ = betdb.ResetPlayer(e.DB, player.ID)
 	}
-	_ = betdb.ResetPlayer(e.DB, player.ID)
+	_, _ = e.DB.Exec("DELETE FROM sessions")
+	_, _ = e.DB.Exec("DELETE FROM bets")
+	_, _ = e.DB.Exec("DELETE FROM payouts")
+	_, _ = e.DB.Exec("DELETE FROM deposits")
+	_, _ = e.DB.Exec("DELETE FROM players WHERE phone_number = '08012345678'")
 	writeJSON(w, http.StatusOK, map[string]string{
 		"message": "Demo state reset.",
 	})

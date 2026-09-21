@@ -1,56 +1,63 @@
 <nav class="navbar-top">
   <div class="nav-brand-group">
-    <a href="#hero" class="brand-link">
-      <embed type="ham/partial" src="logo.phtml"/>
-      <span class="brand-title">ninja-bet</span>
+    <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
+      <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
+        <span style="color:#10b981;">NINJA</span>·DEMO
+      </span>
     </a>
     <span class="nav-env-badge">
       <span class="live-dot-pulse"></span>
-      <span>Sandbox Active</span>
+      <span>Ninja Sandbox</span>
     </span>
+
+    <!-- Demo Vertical Switcher (All Demos in 1 SPA) -->
+    <div class="demo-mode-switcher" id="demo-mode-switcher">
+      <button type="button" class="mode-btn active" data-mode="sportsbook" id="mode-btn-sportsbook">
+        <span>⚽ Sportsbook KYC</span>
+      </button>
+      <button type="button" class="mode-btn" data-mode="fintech" id="mode-btn-fintech">
+        <span>💳 Digital Banking KYC</span>
+      </button>
+    </div>
   </div>
 
-  <div class="nav-stage-links">
-    <a href="#onboarding" class="nav-stage-pill">
-      <span class="nav-num">01</span>
-      <span>18+ Onboarding</span>
-    </a>
-    <a href="#bonus-defense" class="nav-stage-pill">
-      <span class="nav-num">02</span>
-      <span>Sybil Trap</span>
-    </a>
-    <a href="#sportsbook-payout" class="nav-stage-pill">
-      <span class="nav-num">03</span>
-      <span>ATO Payout Rail</span>
-    </a>
-    <a href="#biometrics" class="nav-stage-pill">
-      <span class="nav-num">04</span>
-      <span>Face Liveness</span>
-    </a>
-    <a href="#telemetry" class="nav-stage-pill">
-      <span class="nav-num">05</span>
-      <span>Audit Telemetry</span>
-    </a>
+  <!-- 3 Simple Steps (Visible on Sportsbook mode) -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Sign Up</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="2" id="step-nav-2">
+      <span class="step-num">2</span>
+      <span class="step-label">Add Bank</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="3" id="step-nav-3">
+      <span class="step-num">3</span>
+      <span class="step-label">Withdraw</span>
+    </button>
   </div>
 
   <div class="nav-actions-group">
-    <div class="player-identity-card" data-role="player-pill">
+    <div class="player-identity-card" id="nav-player-pill">
       <div class="player-avatar-icon">👤</div>
       <div class="player-meta-box">
         <div class="player-top-line">
-          <span class="player-name" data-role="account-name">James Bond</span>
-          <span class="player-status-badge" data-role="status-badge">Verified ✓</span>
+          <span class="player-name" id="nav-player-name">James Bond</span>
+          <span class="player-status-badge badge-verified" id="nav-player-status">Step 1</span>
         </div>
         <div class="player-balance-line">
-          <span class="balance-label">Active Wallet:</span>
-          <strong class="balance-val" data-role="balance">₦100,000</strong>
+          <span class="balance-label">Wallet:</span>
+          <strong class="balance-val" id="nav-player-balance">₦250,000</strong>
         </div>
       </div>
     </div>
 
-    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset all demo databases, accounts, and fraud logs back to clean state">
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
       <span class="reset-icon">↺</span>
-      <span>Reset Demo</span>
+      <span>Reset</span>
     </button>
   </div>
 </nav>

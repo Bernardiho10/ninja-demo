@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "ham serve -p 5671",
-    "build": "ham build && rollup -c"
+    "dev": "rollup -c && ham serve -p 5671",
+    "build": "ham build && rollup -c",
+    "build:pages": "ham build && rollup -c && node ./scripts/export-docs.js"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",

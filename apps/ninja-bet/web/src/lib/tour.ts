@@ -1,5 +1,4 @@
-// Vanilla port of the old Tour.tsx React component — same spotlight +
-// tooltip guided tour, same steps, same localStorage-gated auto-start.
+// Guided Tour for ninja-bet demo presentation
 interface TourStep {
   target: string
   title: string
@@ -8,44 +7,39 @@ interface TourStep {
 
 const STEPS: TourStep[] = [
   {
-    target: '[data-tour="identity"]',
-    title: 'Your identity, confirmed',
-    body: "This badge is Ninja's real verification result from registration — your name, age, and NIN were checked against the national registry in real time, not simulated.",
-  },
-  {
     target: '[data-tour="wallet"]',
-    title: "Your ₦100,000 isn't withdrawable yet",
-    body: "That's the welcome bonus, sitting in your balance — betting companies never let you cash out a bonus directly. Play it first. Only winnings (right-hand number here) can ever be withdrawn.",
+    title: '1. Welcome Bonus (Non-Withdrawable)',
+    body: 'Notice your ₦100,000 balance: under NLRC regulations and anti-bonus-farming rules, welcome credit cannot be withdrawn directly. It must be wagered. Withdrawable winnings start at ₦0 until you play and win.',
   },
   {
     target: '[data-tour="odds"]',
-    title: 'Place a bet',
-    body: 'Click any odds to add a selection to your betslip.',
+    title: '2. Select Match Odds & Book Bet',
+    body: 'Click any match odds (e.g., Arsenal vs Chelsea @ 2.10) to add a pick to your betslip, specify your stake, and place your bet.',
   },
   {
     target: '[data-tour="simulate-win"]',
-    title: 'Simulate a win',
-    body: 'Skip the wait — simulate a match win and see the payout flow end to end. That credits real winnings, which now actually can be withdrawn.',
+    title: '3. Win a Ticket (+₦250,000 Winnings)',
+    body: 'Click "Simulate Match Win (+₦250,000)" to simulate winning the wager. Celebratory confetti will fire, and ₦250,000 will be credited directly into your Withdrawable Winnings balance!',
+  },
+  {
+    target: '[data-tour="bank-details"]',
+    title: '4. Add Bank Account & BVN Ownership Check',
+    body: 'Configure your payout bank account and 11-digit BVN. Ninja executes a real-time BVN ownership verification. If someone attempts to use a mismatched BVN (try 22222222222), the setup is immediately blocked!',
   },
   {
     target: '[data-tour="withdraw"]',
-    title: 'Withdraw — three independent checks',
-    body: "Ninja re-checks the beneficiary name against your NIN, then again against the account's BVN — a name can be typed correctly for a bank account that isn't really yours, a BVN can't. On top of both: this account also requires a passed liveness check before any withdrawal at all. Try submitting now — watch what happens.",
+    title: '5. Request High-Stakes Withdrawal',
+    body: 'Click Withdraw for ₦250,000. Because this is a high-stakes payout, the system automatically prompts for Layer-2 Biometric 2-Step Authentication to protect against Account Takeover (ATO).',
   },
   {
-    target: '[data-tour="profile"]',
-    title: 'Harden your account',
-    body: "Blocked? That's the layer-2 security you saw at withdrawal — on by default. Head to Account to complete a facial verification and set how strict the liveness bar is, then come back and withdraw again.",
+    target: '[data-tour="biometrics-card"]',
+    title: '6. Biometric Facial 2FA (user betID Link)',
+    body: 'Ninja generates a secure single-use camera verification link carrying your custom field "user betID". Complete the live webcam selfie or click "Simulate Pass (97%)" to clear the security gate.',
   },
   {
-    target: '[data-tour="fraud-signals"]',
-    title: 'What compliance sees',
-    body: "This is the compliance team's view — duplicate identities, bonus-farming attempts, all in one place.",
-  },
-  {
-    target: '[data-tour="inspector"]',
-    title: 'Every real API call',
-    body: "Every one of ninja-bet's calls to Ninja is logged here — request, response, timing. Nothing in this demo is faked.",
+    target: '[data-tour="instant-payout"]',
+    title: '7. Automated Instant Bank Disbursement',
+    body: 'Once facial verification clears the threshold, the instant bank withdrawal is approved and debited from your winnings balance. Funds are sent to your verified bank account!',
   },
 ]
 
@@ -59,17 +53,24 @@ export function hasTourRun(): boolean {
   }
 }
 
-function markTourDone() {
+export function markTourDone() {
   try {
     localStorage.setItem(STORAGE_KEY, '1')
-  } catch {
-    // storage unavailable — non-fatal, tour just won't remember
-  }
+  } catch {}
+}
+
+export function resetTourFlag() {
+  try {
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {}
 }
 
 export function startGuidedTour() {
   let step = 0
   let cleanupTargetListeners: (() => void) | null = null
+
+  // Remove existing tour overlay if present
+  document.querySelector('.tour-overlay')?.remove()
 
   const overlay = document.createElement('div')
   overlay.className = 'tour-overlay'
@@ -78,7 +79,7 @@ export function startGuidedTour() {
     <div class="tour-tooltip">
       <div class="tour-actions">
         <button type="button" class="tour-skip">Skip tour</button>
-        <button type="button" class="tour-next">Next</button>
+        <button type="button" class="tour-next">Next →</button>
       </div>
       <p class="tour-step-count"></p>
       <h4></h4>
@@ -115,10 +116,10 @@ export function startGuidedTour() {
       return
     }
 
-    stepCount.textContent = `Step ${step + 1} of ${STEPS.length}`
+    stepCount.textContent = `Demo Step ${step + 1} of ${STEPS.length}`
     titleEl.textContent = s.title
     bodyEl.textContent = s.body
-    nextBtn.textContent = step === STEPS.length - 1 ? 'Done' : 'Next'
+    nextBtn.textContent = step === STEPS.length - 1 ? 'Finish Tour ✓' : 'Next Step →'
 
     el.scrollIntoView({ block: 'center', behavior: 'smooth' })
 
@@ -134,12 +135,8 @@ export function startGuidedTour() {
       hole.style.width = `${width}px`
       hole.style.height = `${height}px`
 
-      const tooltipWidth = 320
-      // Measured, not guessed — body text length varies step to step, and
-      // a hardcoded height budget cut the actions row off-screen on any
-      // step whose text ran long enough to make the real card taller than
-      // the guess (this is what broke steps 5/6).
-      const tooltipHeight = tooltip.offsetHeight || 190
+      const tooltipWidth = 340
+      const tooltipHeight = tooltip.offsetHeight || 210
       const tooltipTop = Math.max(16, Math.min(top + height + 14, window.innerHeight - tooltipHeight - 16))
       const tooltipLeft = Math.max(16, Math.min(left, window.innerWidth - tooltipWidth - 16))
       tooltip.style.top = `${tooltipTop}px`
@@ -173,9 +170,9 @@ export function startGuidedTour() {
 }
 
 export function autoStartTourIfFirstTime() {
-  if (hasTourRun()) return
-  // Effectively immediate — just enough of a tick that the page's first
-  // paint (and refreshPlayer's DOM writes) land before the spotlight
-  // measures anything, not a deliberate delay.
-  setTimeout(startGuidedTour, 50)
+  const urlParams = new URLSearchParams(window.location.search)
+  const forceTour = urlParams.get('tour') === '1'
+  if (forceTour || !hasTourRun()) {
+    setTimeout(startGuidedTour, 300)
+  }
 }

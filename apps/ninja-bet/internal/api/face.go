@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 
@@ -32,7 +34,7 @@ func (e *Env) ensureFaceVerificationFlow(w http.ResponseWriter, r *http.Request)
 		// in production, where a reverse proxy routes that whole path to
 		// this process) — see apps/ninja-bet/tutor.md Chapter 12 for how
 		// that's configured per environment.
-		RedirectURL: e.PublicURL + "/play.html?face=complete",
+		RedirectURL: e.PublicURL + "/play.html",
 		WebhookURL:  e.WebhookPublicURL + "/webhooks/ninja",
 	})
 	if err != nil {
@@ -66,9 +68,28 @@ func (e *Env) StartFaceVerification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var req struct {
+		UserBetID string `json:"user_bet_id"`
+	}
+	_ = decodeJSON(r, &req)
+	betID := strings.TrimSpace(req.UserBetID)
+	if betID == "" {
+		betID = "BET-" + strings.ToUpper(uuid.NewString()[:8])
+	}
+
+	// In Ninja API, 'values' is strictly validated against the flow's rules.fields
+	// (only pre-fill identity fields like first_name, last_name, date_of_birth are allowed).
+	// Passing undeclared fields in 'values' causes HTTP 400 "unknown value field: ...".
+	// Custom business identifiers (like betID) are bound to the session via CustomerRef:
+	customerRef := fmt.Sprintf("%s:%s", player.ID, betID)
 	link, err := e.Ninja.CreateFlowLink(r.Context(), flowID, ninja.CreateFlowLinkRequest{
 		CustomerName: player.FullName(),
-		CustomerRef:  player.ID,
+		CustomerRef:  customerRef,
+		Values: map[string]any{
+			"first_name":    player.FirstName,
+			"last_name":     player.LastName,
+			"date_of_birth": player.DateOfBirth.String,
+		},
 	})
 	if err != nil {
 		writeError(w, http.StatusBadGateway, "could not create verification link: "+err.Error())
@@ -84,6 +105,8 @@ func (e *Env) StartFaceVerification(w http.ResponseWriter, r *http.Request) {
 		"verification_id":  link.ID,
 		"verification_url": link.URL,
 		"expires_at":       link.ExpiresAt,
+		"user_bet_id":      betID,
+		"customer_ref":     customerRef,
 	})
 }
 

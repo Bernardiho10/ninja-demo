@@ -141,6 +141,45 @@ func (c *Client) handleMockRequest(ctx context.Context, method, path string, req
 			*outPtr = map[string]any{"ok": true, "status": "canceled"}
 		}
 		return true, nil
+
+	case path == "/api/webhook-deliveries":
+		if outPtr, ok := out.(*[]WebhookDelivery); ok {
+			*outPtr = []WebhookDelivery{
+				{
+					ID:           "del_" + uuid.NewString()[:8],
+					BusinessID:   "biz_demo_01",
+					FlowID:       "flow_face_verification",
+					EventID:      "evt_01",
+					Event:        "verification.completed",
+					SessionID:    "vs_demo_live",
+					Status:       "delivered",
+					Attempts:     1,
+					MaxAttempts:  5,
+					ResponseCode: 200,
+					CreatedAt:    time.Now().Add(-15 * time.Minute).Format(time.RFC3339),
+					UpdatedAt:    time.Now().Add(-15 * time.Minute).Format(time.RFC3339),
+				},
+				{
+					ID:           "del_" + uuid.NewString()[:8],
+					BusinessID:   "biz_demo_01",
+					FlowID:       "flow_face_verification",
+					EventID:      "evt_02",
+					Event:        "verification.expired",
+					SessionID:    "vs_demo_old",
+					Status:       "failed",
+					Attempts:     5,
+					MaxAttempts:  5,
+					ResponseCode: 504,
+					LastError:    "Endpoint gateway timeout after 5000ms",
+					CreatedAt:    time.Now().Add(-2 * time.Hour).Format(time.RFC3339),
+					UpdatedAt:    time.Now().Add(-1 * time.Hour).Format(time.RFC3339),
+				},
+			}
+		}
+		return true, nil
+
+	case strings.HasPrefix(path, "/api/webhook-deliveries/") && strings.HasSuffix(path, "/retry"):
+		return true, nil
 	}
 
 	return false, nil

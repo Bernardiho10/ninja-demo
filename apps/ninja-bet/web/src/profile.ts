@@ -198,7 +198,36 @@ startFaceBtn.addEventListener('click', async () => {
     showErrorModal(msg, 'Could not start facial verification')
   } finally {
     startFaceBtn.disabled = false
-    startFaceBtn.textContent = 'Start facial verification'
+    startFaceBtn.textContent = 'Start real camera flow (Ninja hosted link)'
+  }
+})
+
+const simFacePassBtn = document.getElementById('sim-face-pass-btn') as HTMLButtonElement | null
+const simFaceFailBtn = document.getElementById('sim-face-fail-btn') as HTMLButtonElement | null
+
+simFacePassBtn?.addEventListener('click', async () => {
+  simFacePassBtn.disabled = true
+  try {
+    await api.simulateFaceVerificationOutcome('passed')
+    await refresh()
+  } catch (err) {
+    const msg = err instanceof APIError ? err.message : 'Simulation failed'
+    showErrorModal(msg, 'Face check simulation')
+  } finally {
+    simFacePassBtn.disabled = false
+  }
+})
+
+simFaceFailBtn?.addEventListener('click', async () => {
+  simFaceFailBtn.disabled = true
+  try {
+    await api.simulateFaceVerificationOutcome('failed')
+    await refresh()
+  } catch (err) {
+    const msg = err instanceof APIError ? err.message : 'Simulation failed'
+    showErrorModal(msg, 'Face check simulation')
+  } finally {
+    simFaceFailBtn.disabled = false
   }
 })
 

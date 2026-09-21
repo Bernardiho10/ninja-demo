@@ -1,6 +1,9 @@
 package ninja
 
-import "context"
+import (
+	"context"
+	"encoding/json"
+)
 
 // IdentifyRequest maps to POST /api/identity/identify.
 // Mode "lookup" returns the full registry record; "verify" checks the
@@ -91,6 +94,23 @@ type BulkIdentifyEntry struct {
 type BulkIdentifyResponse struct {
 	Status string              `json:"status"`
 	Data   []BulkIdentifyEntry `json:"data"`
+}
+
+// UnmarshalJSON handles both direct JSON array responses and wrapped objects from the sandbox.
+func (b *BulkIdentifyResponse) UnmarshalJSON(data []byte) error {
+	var entries []BulkIdentifyEntry
+	if err := json.Unmarshal(data, &entries); err == nil {
+		b.Status = "success"
+		b.Data = entries
+		return nil
+	}
+	type Alias BulkIdentifyResponse
+	var alias Alias
+	if err := json.Unmarshal(data, &alias); err != nil {
+		return err
+	}
+	*b = BulkIdentifyResponse(alias)
+	return nil
 }
 
 // BulkIdentify calls POST /api/identity/bulk-identify.
