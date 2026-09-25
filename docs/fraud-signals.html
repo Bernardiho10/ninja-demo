@@ -1,0 +1,100 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ninja Identity &amp; Biometrics Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
+  
+<link rel="stylesheet" href="./assets/css/fraud-signals.css"/>
+</head>
+<body>
+<nav class="navbar-top">
+  <div class="nav-brand-group">
+    <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
+        <span style="color:#10b981;">NINJA</span>·DEMO
+      </span>
+    </a>
+    <span class="nav-env-badge">
+      <span class="live-dot-pulse"></span>
+      <span>Ninja Sandbox</span>
+    </span>
+
+    <!-- Link to separate Digital Banking Demo -->
+    <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
+      <span>💳 Digital Banking KYC →</span>
+    </a>
+  </div>
+
+  <!-- 3 Simple Steps (Visible on Sportsbook mode) -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Sign Up</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="2" id="step-nav-2">
+      <span class="step-num">2</span>
+      <span class="step-label">Add Bank</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="3" id="step-nav-3">
+      <span class="step-num">3</span>
+      <span class="step-label">Withdraw</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-group">
+    <div class="player-identity-card" id="nav-player-pill">
+      <div class="player-avatar-icon">👤</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" id="nav-player-name">James Bond</span>
+          <span class="player-status-badge badge-verified" id="nav-player-status">Step 1</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">Wallet:</span>
+          <strong class="balance-val" id="nav-player-balance">₦250,000</strong>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
+      <span class="reset-icon">↺</span>
+      <span>Reset</span>
+    </button>
+  </div>
+</nav>
+
+<div class="page">
+  <h1>Fraud Signals</h1>
+  <p class="lede">Every NIN currently tied to more than one account. Only the first account on a given NIN keeps its welcome bonus.</p>
+
+  <div class="impact-strip" style="margin-top: 16px">
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-duplicates">0</span>
+      <span class="impact-label" id="impact-duplicates-label">duplicate accounts, ₦0 not paid</span>
+    </div>
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-mismatch">0</span>
+      <span class="impact-label">registrations blocked on name mismatch</span>
+    </div>
+    <div class="impact-tile">
+      <span class="impact-value" id="impact-payout-fraud">0</span>
+      <span class="impact-label" id="impact-payout-fraud-label">payouts blocked, ₦0</span>
+    </div>
+  </div>
+
+  <button type="button" id="refresh-btn" class="secondary" style="width: auto; padding: 8px 18px; margin-top: 20px; margin-bottom: 20px;">Refresh</button>
+
+  <div id="groups"></div>
+</div>
+
+<script type="module" src="./assets/js/nav.js"></script>
+<script type="module" src="./assets/js/fraud-signals.js"></script>
+
+
+</body></html>

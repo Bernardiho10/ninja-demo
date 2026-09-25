@@ -16,8 +16,6 @@ voice-note-script.md
 
 .playwright-mcp/
 
-# Build output — never commit, workflow builds it in CI
-docs/
 
 # Scratch / temp files
 scratch/

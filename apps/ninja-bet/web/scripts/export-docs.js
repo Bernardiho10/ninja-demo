@@ -9,33 +9,38 @@ const betPublicDir = path.resolve(__dirname, '../public')
 const repoRootDir = path.resolve(__dirname, '../../../../')
 const fintechPublicDir = path.resolve(repoRootDir, 'apps/ninja-fintech/web/public')
 const docsDir = path.resolve(repoRootDir, 'docs')
+const rootPublicDir = path.resolve(repoRootDir, 'public')
 
-console.log(`Exporting static suite to ${docsDir}...`)
+console.log(`Exporting static suite to ${docsDir} and ${rootPublicDir}...`)
 
 if (!fs.existsSync(betPublicDir)) {
   console.error(`Error: ninja-bet public directory not found at ${betPublicDir}. Run build first.`)
   process.exit(1)
 }
 
-// Clean and recreate docs directory
-if (fs.existsSync(docsDir)) {
-  fs.rmSync(docsDir, { recursive: true, force: true })
+function exportTo(targetDir) {
+  if (fs.existsSync(targetDir)) {
+    fs.rmSync(targetDir, { recursive: true, force: true })
+  }
+  fs.mkdirSync(targetDir, { recursive: true })
+
+  // 1. Copy ninja-bet into target root (Sportsbook KYC Demo)
+  fs.cpSync(betPublicDir, targetDir, { recursive: true })
+  console.log(`Exported ninja-bet to ${targetDir}`)
+
+  // 2. Copy ninja-fintech into target/fintech (Digital Banking KYC Demo)
+  if (fs.existsSync(fintechPublicDir)) {
+    const fintechDir = path.join(targetDir, 'fintech')
+    fs.mkdirSync(fintechDir, { recursive: true })
+    fs.cpSync(fintechPublicDir, fintechDir, { recursive: true })
+    console.log(`Exported ninja-fintech to ${fintechDir}`)
+  }
+
+  // 3. Create .nojekyll to prevent GitHub Pages from ignoring files starting with underscore
+  fs.writeFileSync(path.join(targetDir, '.nojekyll'), '')
 }
-fs.mkdirSync(docsDir, { recursive: true })
 
-// 1. Copy ninja-bet into docs root (Sportsbook KYC Demo)
-fs.cpSync(betPublicDir, docsDir, { recursive: true })
-console.log(`Exported ninja-bet to ${docsDir}`)
+exportTo(docsDir)
+exportTo(rootPublicDir)
 
-// 2. Copy ninja-fintech into docs/fintech (Digital Banking KYC Demo)
-if (fs.existsSync(fintechPublicDir)) {
-  const fintechDocsDir = path.join(docsDir, 'fintech')
-  fs.mkdirSync(fintechDocsDir, { recursive: true })
-  fs.cpSync(fintechPublicDir, fintechDocsDir, { recursive: true })
-  console.log(`Exported ninja-fintech to ${fintechDocsDir}`)
-}
-
-// 3. Create .nojekyll in docs to prevent GitHub Pages from ignoring files starting with underscore
-fs.writeFileSync(path.join(docsDir, '.nojekyll'), '')
-
-console.log(`Successfully exported both applications to ${docsDir} with .nojekyll for GitHub Pages!`)
+console.log(`Successfully exported both applications to docs/ and public/ with .nojekyll for GitHub Pages!`)

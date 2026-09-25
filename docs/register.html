@@ -1,0 +1,210 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ninja Identity &amp; Biometrics Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
+  
+<link rel="stylesheet" href="./assets/css/register.css"/>
+</head>
+<body>
+<nav class="navbar-top">
+  <div class="nav-brand-group">
+    <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
+        <span style="color:#10b981;">NINJA</span>·DEMO
+      </span>
+    </a>
+    <span class="nav-env-badge">
+      <span class="live-dot-pulse"></span>
+      <span>Ninja Sandbox</span>
+    </span>
+
+    <!-- Link to separate Digital Banking Demo -->
+    <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
+      <span>💳 Digital Banking KYC →</span>
+    </a>
+  </div>
+
+  <!-- 3 Simple Steps (Visible on Sportsbook mode) -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Sign Up</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="2" id="step-nav-2">
+      <span class="step-num">2</span>
+      <span class="step-label">Add Bank</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="3" id="step-nav-3">
+      <span class="step-num">3</span>
+      <span class="step-label">Withdraw</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-group">
+    <div class="player-identity-card" id="nav-player-pill">
+      <div class="player-avatar-icon">👤</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" id="nav-player-name">James Bond</span>
+          <span class="player-status-badge badge-verified" id="nav-player-status">Step 1</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">Wallet:</span>
+          <strong class="balance-val" id="nav-player-balance">₦250,000</strong>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
+      <span class="reset-icon">↺</span>
+      <span>Reset</span>
+    </button>
+  </div>
+</nav>
+
+<div class="page page-wide">
+  <div style="max-width: 1040px; margin: 36px auto;">
+
+    <div class="card" style="padding: 32px 36px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); background: linear-gradient(135deg, rgba(18, 26, 41, 0.98) 0%, rgba(13, 18, 29, 0.98) 100%);">
+      
+      <!-- Header -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 20px;">
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <div style="background: #ffffff; padding: 4px 12px; border-radius: 8px; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            <img src="./assets/images/ninja-bet-white-bg.png" alt="ninja-bet official" style="height: 34px; width: auto; object-fit: contain; display: block;"/>
+          </div>
+          <div>
+            <div style="font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.01em;">ninja-bet Demo</div>
+            <div style="font-size: 12px; color: var(--muted);">Identity Verification via Ninja API</div>
+          </div>
+        </div>
+        <div class="nav-env-badge" style="padding: 6px 12px; font-size: 11px;">
+          <span class="live-dot-pulse"></span>
+          <span>Ninja Sandbox Active</span>
+        </div>
+      </div>
+
+      <h1 style="font-size: 26px; font-weight: 900; color: #fff; margin: 0 0 8px; letter-spacing: -0.01em;">
+        Player Sign Up
+      </h1>
+      <p style="color: var(--muted); font-size: 14px; margin: 0 0 24px; max-width: 820px; line-height: 1.5;">
+        Ninja checks the player&#39;s name, NIN, and age in <strong>one simple API call</strong>.
+      </p>
+
+      <!-- 1-Click Test Scenarios -->
+      <div class="presets-bar" style="background: rgba(255, 255, 255, 0.03); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.06); margin-bottom: 24px;">
+        <span class="preset-label" style="margin-right: 6px;">⚡ Quick Test Presets:</span>
+        <button type="button" class="preset-chip preset-pass" id="btn-preset-adult">
+          Adult Player (James Bond · 49 yrs)
+        </button>
+        <button type="button" class="preset-chip preset-fail" id="btn-preset-mismatch">
+          Name Mismatch (Chinedu Okafor)
+        </button>
+        <button type="button" class="preset-chip preset-fail" id="simulate-underage-btn">
+          Underage Minor (Tobi Minor · 16 yrs)
+        </button>
+        <button type="button" class="preset-chip" id="btn-open-bulk-modal">
+          Batch Identify (25 IDs)
+        </button>
+      </div>
+
+      <div class="spa-grid-2">
+        <!-- Form Column -->
+        <div>
+          <form id="register-form">
+            <div class="form-row">
+              <div class="field-group">
+                <label for="first_name">First Name</label>
+                <input id="first_name" value="James" required="" autocomplete="given-name"/>
+              </div>
+              <div class="field-group">
+                <label for="last_name">Last Name</label>
+                <input id="last_name" value="Bond" required="" autocomplete="family-name"/>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="field-group">
+                <label for="phone_number">Phone Number</label>
+                <input id="phone_number" value="08012345678" required="" autocomplete="tel"/>
+              </div>
+              <div class="field-group">
+                <label for="nin">National Identity Number (NIN)</label>
+                <input id="nin" value="77777777777" maxlength="11" required=""/>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label for="password">Account Password</label>
+              <input id="password" type="password" value="password123" required=""/>
+            </div>
+
+            <p id="form-error" class="error" hidden=""></p>
+
+            <button type="submit" id="submit-btn" style="width: 100%; margin-top: 10px; padding: 13px; font-size: 14px;">
+              Verify NIN &amp; Create Account (+₦100,000 Welcome Credit)
+            </button>
+
+            <div style="margin-top: 16px; text-align: center; font-size: 13px; color: var(--muted);">
+              Already have an account? <a href="/login.html" style="color: #34d399; font-weight: 700; text-decoration: none;">Log in to Sportsbook →</a>
+            </div>
+
+            <div id="result" hidden="" style="margin-top: 20px;"></div>
+          </form>
+        </div>
+
+        <!-- Right Side: API Integration Details &amp; Registry Specs -->
+        <div>
+          <div id="lookup-tabs"></div>
+          <div id="verify-tabs" style="margin-top: 14px;"></div>
+
+          <div class="card" style="margin-top: 14px; padding: 14px 18px; border-color: rgba(255, 255, 255, 0.08); background: rgba(255, 255, 255, 0.02);">
+            <h4 style="margin: 0 0 6px; font-size: 12.5px; color: #fff; text-transform: uppercase; letter-spacing: 0.04em;">How Ninja Works</h4>
+            <p class="hint" style="margin: 0; font-size: 12px; line-height: 1.5;">
+              Ninja checks identity in real time. <strong>Lookup</strong> checks the NIN and date of birth; <strong>verify</strong> checks that the name matches.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- Bulk Identify Modal -->
+<div id="bulk-modal-backdrop" class="modal-backdrop" hidden="">
+  <div class="modal-card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+      <h3 style="margin: 0; font-size: 17px; color: #fff;">Bulk Identity Verification (POST /api/identity/bulk-identify)</h3>
+      <button type="button" id="close-bulk-modal-btn" class="btn-reset-ghost" style="font-size: 16px;">✕</button>
+    </div>
+    <p class="hint" style="font-size: 13px;">
+      Verify up to 25 NINs/BVNs in a single synchronous call.
+    </p>
+
+    <div class="field-group">
+      <label>ID Numbers (comma-separated 11-digit NINs)</label>
+      <textarea id="bulk-nins-input" style="width: 100%; height: 80px; padding: 10px; background: var(--card-input); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-family: var(--font-mono); font-size: 13px;">77777777777,66666666666,55555555555</textarea>
+    </div>
+
+    <button type="button" id="bulk-submit-btn" style="width: 100%;">
+      Execute Bulk Identify (3 NINs)
+    </button>
+
+    <div id="bulk-result-container" style="margin-top: 16px;" hidden=""></div>
+  </div>
+</div>
+
+<script type="module" src="./assets/js/nav.js"></script>
+<script type="module" src="./assets/js/register.js"></script>
+
+
+</body></html>
