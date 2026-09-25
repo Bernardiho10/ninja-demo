@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ninja Identity &amp; Biometrics Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
+  
+<link rel="stylesheet" href="./assets/css/login.css"/>
+</head>
+<body>
+<nav class="navbar-top">
+  <div class="nav-brand-group">
+    <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
+      <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
+        <span style="color:#10b981;">NINJA</span>·DEMO
+      </span>
+    </a>
+    <span class="nav-env-badge">
+      <span class="live-dot-pulse"></span>
+      <span>Ninja Sandbox</span>
+    </span>
+
+    <!-- Link to separate Digital Banking Demo -->
+    <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
+      <span>💳 Digital Banking KYC &rarr;</span>
+    </a>
+  </div>
+
+  <!-- 3 Simple Steps (Visible on Sportsbook mode) -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Sign Up</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="2" id="step-nav-2">
+      <span class="step-num">2</span>
+      <span class="step-label">Add Bank</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step" data-step="3" id="step-nav-3">
+      <span class="step-num">3</span>
+      <span class="step-label">Withdraw</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-group">
+    <div class="player-identity-card" id="nav-player-pill">
+      <div class="player-avatar-icon">👤</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" id="nav-player-name">James Bond</span>
+          <span class="player-status-badge badge-verified" id="nav-player-status">Step 1</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">Wallet:</span>
+          <strong class="balance-val" id="nav-player-balance">₦250,000</strong>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
+      <span class="reset-icon">↺</span>
+      <span>Reset</span>
+    </button>
+  </div>
+</nav>
+
+<div class="page page-narrow">
+  <div class="auth-container">
+    <div class="card auth-card">
+      <div class="auth-header">
+        <div class="auth-logo-row" style="margin-bottom: 12px; justify-content: center; display: flex;">
+          <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" style="height: 44px; width: auto; max-width: 190px; object-fit: contain; display: block;" />
+        </div>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Log in to your sportsbook account to place bets and manage payouts</p>
+      </div>
+
+      <!-- 1-Click Demo Login -->
+      <div class="auth-preset-box">
+        <div class="preset-label">⚡ Demo Quick Login:</div>
+        <button type="button" id="quick-login-btn" class="quick-login-chip">
+          <span>⚡ Log in as <strong>James Bond</strong></span>
+          <span class="quick-login-sub">08012345678 · Verified 18+</span>
+        </button>
+      </div>
+
+      <div class="auth-divider">
+        <span>or log in with credentials</span>
+      </div>
+
+      <form id="login-form">
+        <div class="field-group">
+          <label for="phone_number">Phone Number</label>
+          <input id="phone_number" value="08012345678" required autocomplete="tel" placeholder="08012345678" />
+        </div>
+
+        <div class="field-group">
+          <label for="password">Password</label>
+          <input id="password" type="password" value="password123" required autocomplete="current-password" />
+        </div>
+
+        <p id="form-error" class="error" hidden></p>
+
+        <button type="submit" id="submit-btn" class="auth-submit-btn">
+          Log in to Sportsbook
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        <span>No account yet?</span>
+        <a href="/register.html" class="auth-link">Create Account &amp; Verify 18+ NIN →</a>
+      </div>
+    </div>
+
+    <div id="login-code-drawer" style="margin-top: 20px;"></div>
+  </div>
+</div>
+
+<script type="module" src="./assets/js/nav.js"></script>
+
+<script type="module" src="./assets/js/login.js"></script>
+</body>
+</html>

@@ -3,6 +3,5 @@ data.db
 *.db
 *.log
 node_modules/
-public/
 .playwright-mcp/
 scratch/
