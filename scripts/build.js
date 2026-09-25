@@ -1,8 +1,9 @@
-import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { glob } from 'glob'
+import { rollup } from 'rollup'
+import rollupConfigs from '../rollup.config.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -96,90 +97,95 @@ function compileHamPages() {
   }
 }
 
-// Execute compilation
-compileHamPages()
+async function runBuild() {
+  // Step 1: HTML Compilation
+  compileHamPages()
 
-console.log('==> Step 2: Bundling TypeScript & Assets with Rollup...')
-execSync('npx rollup -c', { cwd: rootDir, stdio: 'inherit' })
+  // Step 2: In-process Rollup Bundling (Zero child processes, zero shell errors)
+  console.log('==> Step 2: Bundling TypeScript & Assets with in-process Rollup...')
+  for (const config of rollupConfigs) {
+    const bundle = await rollup(config)
+    await bundle.write(config.output)
+    await bundle.close()
+  }
+  console.log('  Bundling complete.')
 
-// Ensure images from src/assets/images are present in public/assets/images
-const srcImagesDir = path.resolve(srcDir, 'assets/images')
-const publicImagesDir = path.resolve(publicDir, 'assets/images')
-if (fs.existsSync(srcImagesDir)) {
-  fs.mkdirSync(publicImagesDir, { recursive: true })
-  fs.cpSync(srcImagesDir, publicImagesDir, { recursive: true })
+  // Ensure images from src/assets/images are present in public/assets/images
+  const srcImagesDir = path.resolve(srcDir, 'assets/images')
+  const publicImagesDir = path.resolve(publicDir, 'assets/images')
+  if (fs.existsSync(srcImagesDir)) {
+    fs.mkdirSync(publicImagesDir, { recursive: true })
+    fs.cpSync(srcImagesDir, publicImagesDir, { recursive: true })
+  }
+
+  // Step 3: Making asset URLs fully relative for static hosting
+  console.log('==> Step 3: Making asset URLs fully relative for static hosting...')
+  const rootHtmlFiles = glob.sync('public/*.html', { cwd: rootDir })
+  for (const relPath of rootHtmlFiles) {
+    const filePath = path.resolve(rootDir, relPath)
+    let content = fs.readFileSync(filePath, 'utf-8')
+    content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
+    content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
+    fs.writeFileSync(filePath, content, 'utf-8')
+  }
+
+  const playHtmlFiles = glob.sync('public/play/**/*.html', { cwd: rootDir })
+  for (const relPath of playHtmlFiles) {
+    const filePath = path.resolve(rootDir, relPath)
+    let content = fs.readFileSync(filePath, 'utf-8')
+    content = content.replace(/href=["']\/assets\//g, 'href="../assets/')
+    content = content.replace(/src=["']\/assets\//g, 'src="../assets/')
+    fs.writeFileSync(filePath, content, 'utf-8')
+  }
+
+  const fintechHtmlFiles = glob.sync('public/fintech/**/*.html', { cwd: rootDir })
+  for (const relPath of fintechHtmlFiles) {
+    const filePath = path.resolve(rootDir, relPath)
+    let content = fs.readFileSync(filePath, 'utf-8')
+    content = content.replace(/href=["']\/assets\/css\/fintech\//g, 'href="./assets/css/')
+    content = content.replace(/src=["']\/assets\/js\/fintech\//g, 'src="./assets/js/')
+    content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
+    content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
+    fs.writeFileSync(filePath, content, 'utf-8')
+  }
+
+  // Step 4: Exporting static build directly to repository root
+  console.log('==> Step 4: Exporting static build directly to repository root...')
+  for (const relPath of rootHtmlFiles) {
+    const fileName = path.basename(relPath)
+    fs.copyFileSync(path.resolve(rootDir, relPath), path.resolve(rootDir, fileName))
+    console.log(`  Exported ./${fileName}`)
+  }
+
+  if (fs.existsSync(path.resolve(publicDir, 'play'))) {
+    fs.cpSync(path.resolve(publicDir, 'play'), path.resolve(rootDir, 'play'), { recursive: true })
+    console.log('  Exported ./play/')
+  }
+
+  if (fs.existsSync(path.resolve(publicDir, 'assets'))) {
+    fs.cpSync(path.resolve(publicDir, 'assets'), path.resolve(rootDir, 'assets'), { recursive: true })
+    console.log('  Exported ./assets/')
+  }
+
+  if (fs.existsSync(path.resolve(publicDir, 'fintech'))) {
+    fs.cpSync(path.resolve(publicDir, 'fintech'), path.resolve(rootDir, 'fintech'), { recursive: true })
+    console.log('  Exported ./fintech/')
+  }
+
+  const cnamePath = path.resolve(rootDir, 'CNAME')
+  if (fs.existsSync(cnamePath)) {
+    fs.copyFileSync(cnamePath, path.resolve(publicDir, 'CNAME'))
+    console.log('  Copied CNAME to public/CNAME')
+  }
+
+  fs.writeFileSync(path.resolve(rootDir, '.nojekyll'), '')
+  fs.writeFileSync(path.resolve(publicDir, '.nojekyll'), '')
+  console.log('  Created .nojekyll')
+
+  console.log('==> Build complete! Output ready in public/ (for Vercel) and repository root.')
 }
 
-console.log('==> Step 3: Making asset URLs fully relative for static hosting...')
-// Process root HTML files
-const rootHtmlFiles = glob.sync('public/*.html', { cwd: rootDir })
-for (const relPath of rootHtmlFiles) {
-  const filePath = path.resolve(rootDir, relPath)
-  let content = fs.readFileSync(filePath, 'utf-8')
-  content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
-  content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
-  fs.writeFileSync(filePath, content, 'utf-8')
-}
-
-// Process play HTML files
-const playHtmlFiles = glob.sync('public/play/**/*.html', { cwd: rootDir })
-for (const relPath of playHtmlFiles) {
-  const filePath = path.resolve(rootDir, relPath)
-  let content = fs.readFileSync(filePath, 'utf-8')
-  content = content.replace(/href=["']\/assets\//g, 'href="../assets/')
-  content = content.replace(/src=["']\/assets\//g, 'src="../assets/')
-  fs.writeFileSync(filePath, content, 'utf-8')
-}
-
-// Process fintech HTML files
-const fintechHtmlFiles = glob.sync('public/fintech/**/*.html', { cwd: rootDir })
-for (const relPath of fintechHtmlFiles) {
-  const filePath = path.resolve(rootDir, relPath)
-  let content = fs.readFileSync(filePath, 'utf-8')
-  // Map fintech-specific asset tags to the fintech assets folder
-  content = content.replace(/href=["']\/assets\/css\/fintech\//g, 'href="./assets/css/')
-  content = content.replace(/src=["']\/assets\/js\/fintech\//g, 'src="./assets/js/')
-  content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
-  content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
-  fs.writeFileSync(filePath, content, 'utf-8')
-}
-
-console.log('==> Step 4: Exporting static build directly to repository root...')
-// 1. Copy root HTML files to repository root
-for (const relPath of rootHtmlFiles) {
-  const fileName = path.basename(relPath)
-  fs.copyFileSync(path.resolve(rootDir, relPath), path.resolve(rootDir, fileName))
-  console.log(`  Exported ./${fileName}`)
-}
-
-// 2. Copy play/
-if (fs.existsSync(path.resolve(publicDir, 'play'))) {
-  fs.cpSync(path.resolve(publicDir, 'play'), path.resolve(rootDir, 'play'), { recursive: true })
-  console.log('  Exported ./play/')
-}
-
-// 3. Copy assets/
-if (fs.existsSync(path.resolve(publicDir, 'assets'))) {
-  fs.cpSync(path.resolve(publicDir, 'assets'), path.resolve(rootDir, 'assets'), { recursive: true })
-  console.log('  Exported ./assets/')
-}
-
-// 4. Copy fintech/
-if (fs.existsSync(path.resolve(publicDir, 'fintech'))) {
-  fs.cpSync(path.resolve(publicDir, 'fintech'), path.resolve(rootDir, 'fintech'), { recursive: true })
-  console.log('  Exported ./fintech/')
-}
-
-// 5. Copy CNAME if present
-const cnamePath = path.resolve(rootDir, 'CNAME')
-if (fs.existsSync(cnamePath)) {
-  fs.copyFileSync(cnamePath, path.resolve(publicDir, 'CNAME'))
-  console.log('  Copied CNAME to public/CNAME')
-}
-
-// 6. Create .nojekyll in root and in public
-fs.writeFileSync(path.resolve(rootDir, '.nojekyll'), '')
-fs.writeFileSync(path.resolve(publicDir, '.nojekyll'), '')
-console.log('  Created .nojekyll')
-
-console.log('==> Build complete! Output ready in public/ (for Vercel) and repository root.')
+runBuild().catch((err) => {
+  console.error('Build failed:', err)
+  process.exit(1)
+})
