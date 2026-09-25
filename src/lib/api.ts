@@ -266,10 +266,16 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
   return { ok: true, message: 'Simulated response' } as T
 }
 
+let backendAvailable: boolean | null = null
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  if (backendAvailable === false) {
+    return simulateFallback<T>(path, init)
+  }
+
   try {
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 2000)
+    const timeoutId = setTimeout(() => controller.abort(), 120)
 
     const res = await fetch(API_BASE + path, {
       credentials: 'include',
@@ -278,6 +284,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       ...init,
     })
     clearTimeout(timeoutId)
+    backendAvailable = true
 
     const body = await res.json().catch(() => ({}))
     if (!res.ok) {
@@ -285,13 +292,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     return body as T
   } catch (err) {
-    // If backend server is unreachable (e.g. deployed statically to GitHub Pages),
-    // fallback to seamless high-fidelity in-browser simulation!
-    if ((err as Error).name === 'AbortError' || (err as Error).message?.includes('Failed to fetch') || !(err instanceof APIError)) {
-      console.info(`[SPA Simulation] Serving ${path} via client-side simulation (GitHub Pages / offline mode)`)
-      return simulateFallback<T>(path, init)
-    }
-    throw err
+    backendAvailable = false
+    return simulateFallback<T>(path, init)
   }
 }
 

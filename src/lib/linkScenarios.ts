@@ -1,5 +1,5 @@
 // =============================================================================
-// ninja-bet V2: Hosted Link Generation Scenarios
+// ninja-bet: Hosted Verification Link Scenarios
 // =============================================================================
 
 export interface LinkScenarioConfig {
@@ -49,9 +49,10 @@ const ninja = new NinjaClient({
   clientSecret: process.env.NINJA_CLIENT_SECRET!,
 })
 
-// Scenario 1: Pre-filled link — first name, surname, and DOB are pre-populated!
-// Customer skips all manual data entry and jumps straight to the live camera selfie.
-// Saves verification costs, eliminates drop-off, and avoids spelling typos.
+// Case 1: Pre-filled Verification Link (Recommended for Seamless UX)
+// Ninja pre-fills First Name, Last Name, and Date of Birth from your database.
+// The customer skips typing and proceeds straight into live facial verification.
+// Prevents player drop-off, eliminates keyboard typos, and stops fraud.
 const link = await ninja.flows.createLink('${flowId}', {
   customerName: '${playerName}',
   customerRef: '${playerId}:${withdrawalRef}',
@@ -62,13 +63,13 @@ const link = await ninja.flows.createLink('${flowId}', {
   },
 })
 
-console.log('Single-use hosted biometric URL:', link.url)`
+console.log('Hosted verification link:', link.url)`
 
     const python = `import os
 import requests
 
-# Scenario 1: Pre-filled flow link (first name, surname, date of birth)
-# Pre-populating prevents user friction and saves redundant verification calls.
+# Case 1: Pre-filled verification flow link
+# Pre-populating avoids user friction and accelerates checkout approval.
 response = requests.post(
     "https://api.ninja.ng/api/flows/${flowId}/links",
     headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
@@ -83,7 +84,7 @@ response = requests.post(
     }
 )
 link = response.json()
-print("Hosted camera link:", link["url"])`
+print("Hosted verification link:", link["url"])`
 
     const go = `package main
 
@@ -94,8 +95,8 @@ import (
 )
 
 func main() {
-	// Scenario 1: Pre-filled hosted verification link
-	// Passing registered name + DOB eliminates drop-off and saves verification resources.
+	// Case 1: Pre-filled hosted verification link
+	// Passing verified name + DOB eliminates drop-off and secures payout.
 	link, err := ninjaClient.CreateFlowLink(context.Background(), "${flowId}", ninja.CreateFlowLinkRequest{
 		CustomerName: "${playerName}",
 		CustomerRef:  "${playerId}:${withdrawalRef}",
@@ -108,15 +109,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("Hosted selfie URL:", link.URL)
+	fmt.Println("Hosted verification link:", link.URL)
 }`
 
     return {
       id: 'prefilled',
       name: 'Pre-filled Session (Recommended)',
-      badge: 'Best UX & Saves Resources',
+      badge: 'Best UX & High Conversion',
       description:
-        'Ninja pre-fills the first name, surname, and date of birth from your registration records. The customer jumps straight into the live camera selfie without re-entering details — eliminating drop-off, avoiding typos, and saving valuable verification resources.',
+        'Ninja pre-fills the first name, surname, and date of birth from your registration records. The customer skips manual typing and jumps straight into live biometric verification — eliminating drop-off and preventing spelling mistakes.',
       flowId,
       requestPayload: payload,
       curl,
@@ -137,15 +138,17 @@ func main() {
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(payload, null, 2)}'`
 
-    const ts = `// Scenario 2: Unfilled link — cold KYC where Ninja collects
-// identity details directly from the user on the hosted portal.
+    const ts = `// Case 2: Blank Form (Cold KYC Verification Link)
+// Generates an unfilled link where the customer enters their own identity details
+// directly on Ninja's secure portal before the live face check is conducted.
 const link = await ninja.flows.createLink('${flowId}', {
   customerName: '${playerName}',
   customerRef: '${playerId}:${withdrawalRef}',
 })
-console.log('Unfilled KYC URL:', link.url)`
 
-    const python = `# Scenario 2: Unfilled flow link
+console.log('Blank form verification link:', link.url)`
+
+    const python = `# Case 2: Blank Form verification flow link
 response = requests.post(
     "https://api.ninja.ng/api/flows/${flowId}/links",
     headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
@@ -154,9 +157,9 @@ response = requests.post(
         "customer_ref": "${playerId}:${withdrawalRef}"
     }
 )
-print("Unfilled URL:", response.json()["url"])`
+print("Blank form verification link:", response.json()["url"])`
 
-    const go = `// Scenario 2: Unfilled flow link
+    const go = `// Case 2: Blank Form verification flow link
 link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRequest{
 	CustomerName: "${playerName}",
 	CustomerRef:  "${playerId}:${withdrawalRef}",
@@ -165,9 +168,9 @@ link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRe
     return {
       id: 'unfilled',
       name: 'Blank Form (Cold KYC)',
-      badge: 'Cold Onboarding',
+      badge: 'Cold User Onboarding',
       description:
-        'Generates an unfilled single-use flow where the user manually types all their information from scratch into Ninja’s hosted portal.',
+        'Generates an unfilled verification link where the user manually types their details from scratch on Ninja’s hosted portal before live facial verification. Useful for re-verifying flagged accounts or cold onboarding.',
       flowId,
       requestPayload: payload,
       curl,
@@ -193,8 +196,9 @@ link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRe
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(payload, null, 2)}'`
 
-  const ts = `// Scenario 3: Custom Reference Tracking — bind your platform's internal
-// payout ledger ID and fraud tier to the single-use verification session.
+  const ts = `// Case 3: Custom Reference Tracking & Payout Ledger Audit
+// Bind your internal payout transaction ID and risk tier directly to the session.
+// Webhook events carry this exact customer_ref back for automated ledger reconciliation.
 const link = await ninja.flows.createLink('${flowId}', {
   customerName: '${playerName}',
   customerRef: 'wtd_sec_${withdrawalRef}:tier_strict',
@@ -203,9 +207,11 @@ const link = await ninja.flows.createLink('${flowId}', {
     last_name: '${lastName}',
     date_of_birth: '${dateOfBirth}',
   },
-})`
+})
 
-  const python = `# Scenario 3: Custom reference & telemetry tracking
+console.log('Audited verification link:', link.url)`
+
+  const python = `# Case 3: Custom reference & ledger audit tracking
 response = requests.post(
     "https://api.ninja.ng/api/flows/${flowId}/links",
     headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
@@ -220,7 +226,7 @@ response = requests.post(
     }
 )`
 
-  const go = `// Scenario 3: Custom reference tracking
+  const go = `// Case 3: Custom reference tracking
 link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRequest{
 	CustomerName: "${playerName}",
 	CustomerRef:  "wtd_sec_${withdrawalRef}:tier_strict",
@@ -234,9 +240,9 @@ link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRe
   return {
     id: 'custom',
     name: 'Custom Ref & Tracking',
-    badge: 'Ledger Audit',
+    badge: 'Ledger Audit Reconciled',
     description:
-      'Prefills the verified name and DOB while passing internal transaction references through customer_ref so webhooks automatically tie back to the specific withdrawal transaction in your ledger.',
+      'Prefills the verified identity and passes internal transaction references through customer_ref. Webhooks automatically correlate with your payout queue without extra database lookups.',
     flowId,
     requestPayload: payload,
     curl,
@@ -245,3 +251,111 @@ link, err := ninjaClient.CreateFlowLink(ctx, "${flowId}", ninja.CreateFlowLinkRe
     go,
   }
 }
+
+export interface FlowCreationConfig {
+  flowId: string
+  requestPayload: Record<string, any>
+  responsePayload: Record<string, any>
+  curl: string
+  ts: string
+  python: string
+  go: string
+}
+
+export function getFlowCreationConfig(): FlowCreationConfig {
+  const flowId = 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV'
+  const payload = {
+    name: 'Sportsbook Payout Face Verification',
+    id_types: ['nin'],
+    rules: {
+      allow_transposed_names: true,
+      require_liveness: true,
+      liveness_threshold: 85,
+    },
+  }
+
+  const curl = `curl -X POST https://api.ninja.ng/api/flows \\
+  -H "Authorization: Bearer $NINJA_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '${JSON.stringify(payload, null, 2)}'`
+
+  const ts = `import { NinjaClient } from '@bougroup/ninja-node'
+
+const ninja = new NinjaClient({
+  clientKey: process.env.NINJA_CLIENT_KEY!,
+  clientSecret: process.env.NINJA_CLIENT_SECRET!,
+})
+
+// Initial Setup: Create the Payout Verification Flow in Ninja Sandbox
+const flow = await ninja.flows.create({
+  name: 'Sportsbook Payout Face Verification',
+  idTypes: ['nin'],
+  rules: {
+    allowTransposedNames: true,
+    requireLiveness: true,
+    livenessThreshold: 85,
+  },
+})
+
+console.log('Flow ID created:', flow.id) // ${flowId}`
+
+  const python = `import os
+import requests
+
+# Initial Setup: Create Sandbox Verification Flow
+response = requests.post(
+    "https://api.ninja.ng/api/flows",
+    headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
+    json=${JSON.stringify(payload, null, 4)}
+)
+flow = response.json()
+print("Flow ID:", flow["id"])`
+
+  const go = `package main
+
+import (
+	"context"
+	"fmt"
+	"github.com/bougroup/ninja-go"
+)
+
+func main() {
+	// Initial Setup: Create Sandbox Verification Flow
+	flow, err := ninjaClient.CreateFlow(context.Background(), ninja.CreateFlowRequest{
+		Name:    "Sportsbook Payout Face Verification",
+		IDTypes: []string{"nin"},
+		Rules: ninja.FlowRules{
+			AllowTransposedNames: true,
+			RequireLiveness:      true,
+			LivenessThreshold:    85,
+		},
+	})
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println("Flow ID:", flow.ID)
+}`
+
+  return {
+    flowId,
+    requestPayload: payload,
+    responsePayload: {
+      id: flowId,
+      name: 'Sportsbook Payout Face Verification',
+      id_types: ['nin'],
+      rules: {
+        allow_transposed_names: true,
+        require_liveness: true,
+        liveness_threshold: 85,
+      },
+      status: 'active',
+      sandbox: true,
+      created_at: '2026-09-25T10:00:00Z',
+    },
+    curl,
+    ts,
+    python,
+    go,
+  }
+}
+

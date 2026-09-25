@@ -36,6 +36,7 @@ export interface WithdrawalState {
 export interface TelemetryLog {
   id: string
   timestamp: string
+  step: string
   method: 'POST' | 'GET'
   endpoint: string
   status: number
@@ -85,7 +86,16 @@ export function loadState(): V2State {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
-      return { ...DEFAULT_STATE, ...parsed }
+      const merged: V2State = { ...DEFAULT_STATE, ...parsed }
+      if (Array.isArray(merged.logs)) {
+        merged.logs = merged.logs.map((log: any) => ({
+          ...log,
+          step: log.step || 'API Call',
+          requestPayload: log.requestPayload || {},
+          responsePayload: log.responsePayload || {},
+        }))
+      }
+      return merged
     }
   } catch (e) {
     console.warn('Failed to load state from localStorage:', e)
@@ -104,7 +114,6 @@ export function saveState(state: V2State): void {
 export function resetDemoState(): V2State {
   try {
     localStorage.removeItem(STORAGE_KEY)
-    localStorage.removeItem('ninjabet_tour_done')
   } catch {}
   const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE))
   saveState(fresh)

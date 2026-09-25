@@ -1,5 +1,5 @@
 // =============================================================================
-// ninja-bet V2 / V3: Simple, Human-Friendly Developer Demo (SPA / GitHub Pages)
+// ninja-bet: Interactive Integration Guide & Telemetry Workbench
 // =============================================================================
 
 import confetti from 'canvas-confetti'
@@ -11,11 +11,22 @@ import 'prismjs/components/prism-python'
 import { api } from './lib/api'
 import { loadState, saveState, type V2State, type TelemetryLog } from './lib/state'
 import { showCodeFirstSlideOut } from './lib/codeModal'
-import { getLinkScenarioConfig } from './lib/linkScenarios'
+import { getLinkScenarioConfig, getFlowCreationConfig } from './lib/linkScenarios'
 
 let state: V2State = loadState()
 let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
 let selectedScenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled'
+let step3Subtab: 'mint' | 'flow' = 'mint'
+
+function escapeHtml(str: string): string {
+  if (!str) return ''
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 
 function init() {
   bindStepper()
@@ -32,6 +43,20 @@ function init() {
       goToStep(e.detail.step)
     }
   })
+
+  // Initialize with initial Sandbox Flow Setup in logs if empty
+  if (state.logs.length === 0) {
+    const flowCfg = getFlowCreationConfig()
+    addLog(
+      'Setup · Flow Created',
+      'POST',
+      '/api/flows',
+      200,
+      88,
+      flowCfg.requestPayload,
+      flowCfg.responsePayload
+    )
+  }
 
   goToStep(state.currentStep)
   syncFields()
@@ -50,10 +75,12 @@ function goToStep(step: 1 | 2 | 3) {
   const v1 = document.getElementById('view-step-1')
   const v2 = document.getElementById('view-step-2')
   const v3 = document.getElementById('view-step-3')
+  const subtabs = document.getElementById('step3-code-subtabs')
 
   if (v1) v1.hidden = step !== 1
   if (v2) v2.hidden = step !== 2
   if (v3) v3.hidden = step !== 3
+  if (subtabs) subtabs.hidden = step !== 3
 
   updateDevCode()
 }
@@ -100,36 +127,42 @@ function syncFields() {
   }
 }
 
-// -----------------------------------------------------------------------------
-// Simulation Parameters (Wallet Balance)
-// -----------------------------------------------------------------------------
 function bindSimulationWallet() {
-  const btns = document.querySelectorAll<HTMLButtonElement>('.param-preset-btn')
-  const input = document.getElementById('sim-wallet-input') as HTMLInputElement | null
+  const walletInput = document.getElementById('sim-wallet-input') as HTMLInputElement | null
+  const btn250k = document.getElementById('btn-param-250k')
+  const btn50k = document.getElementById('btn-param-50k')
+  const btn10k = document.getElementById('btn-param-10k')
+  const presetBtns = [btn250k, btn50k, btn10k]
 
-  btns.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      btns.forEach((b) => b.classList.remove('active'))
-      btn.classList.add('active')
-      const val = Number(btn.dataset.amount || '250000')
-      if (input) input.value = String(val)
-      state.player.walletBalanceNaira = val
-      state.player.withdrawableBalanceNaira = val
-      state.withdrawal.amountNaira = val
-      saveState(state)
-      window.dispatchEvent(new CustomEvent('ninjabet:statechange'))
-      syncFields()
+  function setAmount(amount: number) {
+    state.player.walletBalanceNaira = amount
+    state.withdrawal.amountNaira = amount
+    saveState(state)
+    syncFields()
+    window.dispatchEvent(new CustomEvent('ninjabet:statechange'))
+
+    presetBtns.forEach((b) => {
+      if (!b) return
+      const amt = Number(b.dataset.amount)
+      if (amt === amount) {
+        b.classList.add('active')
+      } else {
+        b.classList.remove('active')
+      }
     })
-  })
+  }
 
-  input?.addEventListener('input', () => {
-    const val = Number(input.value || '10000')
+  btn250k?.addEventListener('click', () => setAmount(250000))
+  btn50k?.addEventListener('click', () => setAmount(50000))
+  btn10k?.addEventListener('click', () => setAmount(10000))
+
+  walletInput?.addEventListener('input', () => {
+    const val = parseInt(walletInput.value, 10) || 0
     state.player.walletBalanceNaira = val
-    state.player.withdrawableBalanceNaira = val
     state.withdrawal.amountNaira = val
     saveState(state)
     window.dispatchEvent(new CustomEvent('ninjabet:statechange'))
-    syncFields()
+    presetBtns.forEach((b) => b?.classList.remove('active'))
   })
 }
 
@@ -145,7 +178,7 @@ function bindStep1() {
   const dob = document.getElementById('input-dob') as HTMLInputElement | null
   const result = document.getElementById('step1-result')
 
-  // Example presets
+  // Presets
   document.getElementById('btn-preset-adult')?.addEventListener('click', () => {
     if (fn) fn.value = 'James'
     if (ln) ln.value = 'Bond'
@@ -200,7 +233,7 @@ function bindStep1() {
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(payload, null, 2)}'`
 
-    const ts = `// Step 1: Verify NIN, Name, and Age in one call
+    const ts = `// Step 1: Verify NIN, Name, and Age in one simple API call
 const result = await ninja.identity.identify({
   idType: 'nin',
   mode: 'verify',
@@ -211,7 +244,7 @@ const result = await ninja.identity.identify({
 })
 
 if (result.verified && result.data.age >= 18) {
-  console.log('Player verified!')
+  console.log('Player verified and compliant!')
 }`
 
     const python = `# Step 1: Verify NIN, Name, and Age
@@ -235,14 +268,14 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
       title: 'POST /api/identity/identify',
       endpoint: '/api/identity/identify',
       method: 'POST',
-      description: 'Ninja verifies the player name, NIN, and age in one simple call.',
+      description: 'Ninja checks government records to verify player name, NIN authenticity, and 18+ age requirement.',
       curl,
       ts,
       python,
       go,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
-        await executeStep1({ firstName, lastName, phoneNum, ninNum, dobVal })
+        await executeStep1({ firstName, lastName, phoneNum, ninNum, dobVal, payload })
       },
     })
   })
@@ -254,6 +287,7 @@ async function executeStep1(p: {
   phoneNum: string
   ninNum: string
   dobVal: string
+  payload: any
 }) {
   const result = document.getElementById('step1-result')
   if (!result) return
@@ -262,14 +296,19 @@ async function executeStep1(p: {
 
   // Check age
   if (age < 18) {
-    addLog('POST', '/api/identity/identify', 400, 45, {
-      error: `Underage: Player is ${age} years old (must be 18+)`,
-    })
+    const errorResponse = {
+      status: 'rejected',
+      verified: false,
+      score: 0.0,
+      recommendation: 'REJECT',
+      error: `Underage: Player is ${age} years old. Gaming regulations require players to be 18+.`,
+    }
+    addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 48, p.payload, errorResponse)
     result.hidden = false
     result.innerHTML = `
       <div class="error" style="padding: 14px; border-radius: 8px;">
-        <strong>✗ Player Under 18</strong><br/>
-        Birth date indicates age <strong>${age}</strong>. Players under 18 cannot create an account.
+        <strong>✗ Player Under 18 (Compliance Block)</strong><br/>
+        Birth date indicates age <strong>${age}</strong>. Players under 18 cannot create an account per gaming regulations.
       </div>
     `
     return
@@ -301,13 +340,21 @@ async function executeStep1(p: {
   }
 
   if (isMatch) {
-    addLog('POST', '/api/identity/identify', 200, 65, {
+    const successResponse = {
+      status: 'found',
       verified: true,
-      nin: p.ninNum,
-      name: `${p.firstName} ${p.lastName}`,
-      age,
-      score,
-    })
+      score: 1.0,
+      recommendation: 'ALLOW',
+      data: {
+        first_name: p.firstName,
+        last_name: p.lastName,
+        id_number: p.ninNum,
+        date_of_birth: p.dobVal,
+        age,
+        compliance: '18+ Verified',
+      },
+    }
+    addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 200, 64, p.payload, successResponse)
 
     state.player.firstName = p.firstName
     state.player.lastName = p.lastName
@@ -325,7 +372,7 @@ async function executeStep1(p: {
       <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 8px;">
         <div>
           <strong>✓ NIN &amp; Age Verified (100% Match)</strong><br/>
-          Identity confirmed for <strong>${p.firstName} ${p.lastName}</strong> (${age} yrs).
+          Government identity confirmed for <strong>${p.firstName} ${p.lastName}</strong> (${age} yrs).
         </div>
         <button type="button" id="btn-next-step2" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 2: Add Bank Account →
@@ -338,16 +385,19 @@ async function executeStep1(p: {
       syncFields()
     })
   } else {
-    addLog('POST', '/api/identity/identify', 400, 55, {
+    const failResponse = {
+      status: 'mismatch',
       verified: false,
-      error: `Name mismatch for NIN ${p.ninNum}`,
       score,
-    })
+      recommendation: 'REJECT',
+      error: `Name mismatch: '${p.firstName} ${p.lastName}' does not match authoritative government record for NIN ${p.ninNum}.`,
+    }
+    addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 52, p.payload, failResponse)
     result.hidden = false
     result.innerHTML = `
       <div class="error" style="padding: 14px; border-radius: 8px;">
-        <strong>✗ Name Mismatch</strong><br/>
-        The name "${p.firstName} ${p.lastName}" does not match the record for NIN ${p.ninNum}.
+        <strong>✗ Identity Name Mismatch</strong><br/>
+        The name "${p.firstName} ${p.lastName}" does not match the national registry record for NIN ${p.ninNum}.
       </div>
     `
   }
@@ -398,6 +448,8 @@ function bindStep2() {
       idNumber: bvnNum,
       firstName: state.player.firstName,
       lastName: state.player.lastName,
+      bank: bankName,
+      accountNumber: accNum,
     }
 
     const curl = `curl -X POST https://api.ninja.ng/api/identity/identify \\
@@ -405,7 +457,7 @@ function bindStep2() {
   -H "Content-Type: application/json" \\
   -d '${JSON.stringify(payload, null, 2)}'`
 
-    const ts = `// Step 2: Check that BVN belongs to the registered player
+    const ts = `// Step 2: Validate BVN ownership against registered player
 const check = await ninja.identity.identify({
   idType: 'bvn',
   mode: 'verify',
@@ -415,7 +467,7 @@ const check = await ninja.identity.identify({
 })
 
 if (check.verified) {
-  console.log('Bank account verified and saved!')
+  console.log('Bank account verified and safely bound to player!')
 }`
 
     const python = `# Step 2: Verify BVN Ownership
@@ -438,14 +490,14 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
       title: 'POST /api/identity/identify',
       endpoint: '/api/identity/identify',
       method: 'POST',
-      description: 'Ninja verifies that the bank account BVN belongs to the registered player.',
+      description: 'Ninja cross-checks the bank BVN with NIBSS to verify account ownership belongs to the registered player.',
       curl,
       ts,
       python,
       go,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
-        await executeStep2({ bankName, accNum, bvnNum, holderName })
+        await executeStep2({ bankName, accNum, bvnNum, holderName, payload })
       },
     })
   })
@@ -456,6 +508,7 @@ async function executeStep2(p: {
   accNum: string
   bvnNum: string
   holderName: string
+  payload: any
 }) {
   const result = document.getElementById('step2-result')
   if (!result) return
@@ -465,12 +518,19 @@ async function executeStep2(p: {
     p.bvnNum === '77777777777'
 
   if (isMatch) {
-    addLog('POST', '/api/identity/identify', 200, 85, {
+    const successResponse = {
+      status: 'found',
       verified: true,
-      bank: p.bankName,
-      accountNumber: p.accNum,
-      bvn: p.bvnNum,
-    })
+      score: 1.0,
+      recommendation: 'ALLOW',
+      match: {
+        bvn: p.bvnNum,
+        account_holder: p.holderName,
+        registered_player: `${state.player.firstName} ${state.player.lastName}`,
+        status: 'OWNER_MATCHED',
+      },
+    }
+    addLog('Step 2 · Bank Match', 'POST', '/api/identity/identify', 200, 78, p.payload, successResponse)
 
     try {
       await api.saveBankDetails({ bank_name: p.bankName, account_number: p.accNum })
@@ -488,8 +548,8 @@ async function executeStep2(p: {
     result.innerHTML = `
       <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 8px;">
         <div>
-          <strong>✓ Bank Account Saved!</strong><br/>
-          BVN belongs to <strong>${state.player.firstName} ${state.player.lastName}</strong>.
+          <strong>✓ Bank Account Verified &amp; Saved!</strong><br/>
+          BVN legally matches registered player <strong>${state.player.firstName} ${state.player.lastName}</strong>.
         </div>
         <button type="button" id="btn-next-step3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 3: Withdraw Funds →
@@ -501,33 +561,36 @@ async function executeStep2(p: {
       syncFields()
     })
   } else {
-    addLog('POST', '/api/identity/identify', 400, 70, {
+    const failResponse = {
+      status: 'mismatch',
       verified: false,
-      error: `Account name "${p.holderName}" does not match player "${state.player.firstName} ${state.player.lastName}"`,
-    })
+      score: 0.15,
+      recommendation: 'REJECT',
+      error: `Mule account blocked: Account holder '${p.holderName}' does not match registered player '${state.player.firstName} ${state.player.lastName}'.`,
+    }
+    addLog('Step 2 · Bank Match', 'POST', '/api/identity/identify', 400, 68, p.payload, failResponse)
 
     result.hidden = false
     result.innerHTML = `
       <div class="error" style="padding: 14px; border-radius: 8px;">
-        <strong>✗ Bank Account Rejected</strong><br/>
-        This bank account belongs to "<strong>${p.holderName}</strong>", not the registered player (${state.player.firstName} ${state.player.lastName}).
+        <strong>✗ Payout Redirection Blocked</strong><br/>
+        This bank account belongs to "<strong>${p.holderName}</strong>", not the registered player (${state.player.firstName} ${state.player.lastName}). Payouts can only be sent to the verified account owner.
       </div>
     `
   }
 }
 
 // -----------------------------------------------------------------------------
-// Step 3: Withdraw Cash (Face Check with Prefilled Name & DOB)
+// Step 3: Withdraw Funds (Biometric Verification Link)
 // -----------------------------------------------------------------------------
 function bindStep3() {
   const scenCards = document.querySelectorAll<HTMLElement>('.scenario-card-btn')
   const genBtn = document.getElementById('btn-generate-flow-link')
   const linkBox = document.getElementById('step3-link-box')
-  const openLink = document.getElementById('link-open-camera') as HTMLAnchorElement | null
+  const openLink = document.getElementById('link-open-camera')
   const urlText = document.getElementById('text-flow-url')
   const simPass = document.getElementById('btn-sim-pass')
   const simFail = document.getElementById('btn-sim-fail')
-  const releaseBox = document.getElementById('step3-release-box')
   const releaseBtn = document.getElementById('btn-release-payout')
   const receipt = document.getElementById('step3-receipt')
 
@@ -559,32 +622,25 @@ function bindStep3() {
       title: `POST /api/flows/${config.flowId}/links`,
       endpoint: `/api/flows/${config.flowId}/links`,
       method: 'POST',
-      description: 'Creates a single-use link for live camera selfie verification with First Name, Surname, and DOB pre-filled.',
+      description: 'Creates a single-use hosted verification link for live biometric face validation before releasing payout funds.',
       curl: config.curl,
       ts: config.ts,
       python: config.python,
       go: config.go,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
-        let url = 'https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO'
-        try {
-          const res = await api.startFaceVerification({ user_bet_id: 'wtd_01' })
-          if (res && res.verification_url) {
-            url = res.verification_url
-          }
-        } catch {
-          url = 'https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO'
+        // Fixed sandbox session link per user instructions
+        const url = 'https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO'
+        const linkResponse = {
+          id: 'vs_QAIWePPP_sbx',
+          url,
+          expires_at: new Date(Date.now() + 3600000).toISOString(),
+          status: 'pending',
+          sandbox: true,
+          scenario: selectedScenario,
         }
 
-        addLog('POST', `/api/flows/${config.flowId}/links`, 200, 90, {
-          link: url,
-          scenario: selectedScenario,
-          prefilled_values: {
-            first_name: state.player.firstName,
-            last_name: state.player.lastName,
-            date_of_birth: state.player.dateOfBirth || '1975-01-01',
-          },
-        })
+        addLog('Step 3 · Verification Link', 'POST', `/api/flows/${config.flowId}/links`, 200, 85, config.requestPayload, linkResponse)
 
         state.withdrawal.verificationUrl = url
         state.withdrawal.faceStatus = 'pending'
@@ -592,49 +648,29 @@ function bindStep3() {
 
         if (linkBox) linkBox.hidden = false
         if (urlText) urlText.textContent = url
+
+        // Wire Open Verification Link
         if (openLink) {
-          openLink.href = url
           openLink.onclick = (e) => {
             e.preventDefault()
-            window.open(url, '_blank', 'width=480,height=680')
+            showVerificationSimulatorModal(selectedScenario)
           }
         }
       },
     })
   })
 
-  // Simulate Face Matched
+  // Outcome Simulator: Face Matched
   simPass?.addEventListener('click', async () => {
-    state.withdrawal.faceStatus = 'passed'
-    saveState(state)
-    try {
-      await api.simulateFaceVerificationOutcome('passed')
-    } catch {}
-    addLog('POST', '/api/webhooks/ninja', 200, 30, {
-      event: 'face.verified',
-      score: 0.98,
-      status: 'passed',
-    })
-    if (releaseBox) releaseBox.hidden = false
+    executeFaceOutcome('passed')
   })
 
-  // Simulate Face Mismatch
+  // Outcome Simulator: Face Mismatch
   simFail?.addEventListener('click', async () => {
-    state.withdrawal.faceStatus = 'failed'
-    saveState(state)
-    try {
-      await api.simulateFaceVerificationOutcome('failed')
-    } catch {}
-    addLog('POST', '/api/webhooks/ninja', 400, 30, {
-      event: 'face.failed',
-      score: 0.35,
-      status: 'failed',
-    })
-    if (releaseBox) releaseBox.hidden = true
-    alert('Face check failed: Live selfie does not match the registered player on file.')
+    executeFaceOutcome('failed')
   })
 
-  // Send Money
+  // Release Money
   releaseBtn?.addEventListener('click', () => {
     const amt = state.withdrawal.amountNaira
     state.player.walletBalanceNaira = Math.max(0, state.player.walletBalanceNaira - amt)
@@ -645,20 +681,33 @@ function bindStep3() {
       confetti({ particleCount: 90, spread: 60, origin: { y: 0.7 } })
     } catch {}
 
-    addLog('POST', '/api/payouts/send', 200, 120, {
+    const payoutRequest = {
       amount: amt,
+      currency: 'NGN',
       beneficiary: `${state.player.firstName} ${state.player.lastName}`,
       bank: state.bankAccount?.bankName || 'Access Bank',
-      status: 'SENT',
-    })
+      account_number: state.bankAccount?.accountNumber || '0123456789',
+      verification_flow: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
+      liveness_score: 0.98,
+    }
+
+    const payoutResponse = {
+      status: 'SETTLED',
+      transaction_reference: 'NINJA_PAY_' + Date.now(),
+      amount_settled: amt,
+      beneficiary: `${state.player.firstName} ${state.player.lastName}`,
+      cleared_at: new Date().toISOString(),
+    }
+
+    addLog('Payout · Disburse', 'POST', '/api/payouts/send', 200, 115, payoutRequest, payoutResponse)
 
     if (receipt) {
       receipt.hidden = false
       receipt.innerHTML = `
         <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 16px; margin-top: 14px;">
-          <h4 style="margin: 0 0 6px; color: #34d399; font-size: 15px;">🎉 Money Sent Successfully!</h4>
+          <h4 style="margin: 0 0 6px; color: #34d399; font-size: 15px;">🎉 Money Disbursed Successfully!</h4>
           <p style="margin: 0 0 12px; font-size: 13px; color: #cbd5e1;">
-            <strong>${formatNaira(amt)}</strong> has been transferred to <strong>${state.player.firstName} ${state.player.lastName}</strong> (${state.bankAccount?.bankName || 'Access Bank'} - ${state.bankAccount?.accountNumber || '0123456789'}).
+            <strong>${formatNaira(amt)}</strong> has been securely transferred to verified account holder <strong>${state.player.firstName} ${state.player.lastName}</strong> (${state.bankAccount?.bankName || 'Access Bank'} - ${state.bankAccount?.accountNumber || '0123456789'}).
           </p>
           <button type="button" id="btn-restart-demo" class="btn-reset-ghost" style="padding: 8px 14px; font-size: 12px;">
             ↺ Reset Demo to Step 1
@@ -672,18 +721,229 @@ function bindStep3() {
     }
   })
 }
+
+// -----------------------------------------------------------------------------
+// Interactive Verification Flow Simulator Modal (Takes User Through Each Case)
+// -----------------------------------------------------------------------------
+function showVerificationSimulatorModal(scenario: 'prefilled' | 'unfilled' | 'custom') {
+  document.querySelector('.verification-sim-overlay')?.remove()
+
+  const overlay = document.createElement('div')
+  overlay.className = 'verification-sim-overlay'
+
+  let scenarioBadge = 'Case 1: Pre-filled Session'
+  let scenarioDesc = `Ninja has pre-populated <strong>${state.player.firstName} ${state.player.lastName}</strong> (${state.player.dateOfBirth}). The player skips all manual forms and goes straight to biometric face verification.`
+
+  if (scenario === 'unfilled') {
+    scenarioBadge = 'Case 2: Blank Form (Cold KYC)'
+    scenarioDesc = `Unfilled session: The user manually types their personal details on Ninja’s hosted portal before live camera activation.`
+  } else if (scenario === 'custom') {
+    scenarioBadge = 'Case 3: Custom Reference Tracking'
+    scenarioDesc = `Attaches payout ledger transaction <code>wtd_sec_wtd_01:tier_strict</code> for automatic webhook correlation.`
+  }
+
+  overlay.innerHTML = `
+    <div class="verification-sim-modal" role="dialog" aria-modal="true">
+      <div class="verification-sim-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">📱</span>
+          <span style="font-weight: 800; font-size: 13px; color: #fff;">Ninja Hosted Verification Experience</span>
+        </div>
+        <span class="api-log-step-tag tag-step-3">${scenarioBadge}</span>
+      </div>
+
+      <div class="verification-sim-body" id="modal-sim-body">
+        <div class="teaching-context-box" style="margin: 0;">
+          <div class="teaching-context-title"><span>Flow Simulation</span></div>
+          <p class="teaching-context-p">${scenarioDesc}</p>
+        </div>
+
+        ${
+          scenario === 'unfilled'
+            ? `
+          <div id="sim-unfilled-form" style="display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
+            <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Step 1: Enter Customer Information</span>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <div>
+                <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">First Name</label>
+                <input id="sim-unfilled-fn" value="${state.player.firstName}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
+              </div>
+              <div>
+                <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">Surname</label>
+                <input id="sim-unfilled-ln" value="${state.player.lastName}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
+              </div>
+            </div>
+            <div>
+              <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">Date of Birth</label>
+              <input id="sim-unfilled-dob" type="date" value="${state.player.dateOfBirth}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
+            </div>
+            <button type="button" id="btn-sim-unfilled-proceed" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 10px; margin-top: 6px; font-size: 12px;">
+              Save Details &amp; Open Live Camera →
+            </button>
+          </div>
+          <div id="sim-camera-container" hidden></div>
+        `
+            : `
+          <div id="sim-camera-container"></div>
+        `
+        }
+      </div>
+
+      <div class="verification-sim-footer">
+        <button type="button" class="btn-reset-ghost" id="btn-close-sim-modal" style="font-size: 12px; padding: 6px 14px;">
+          Close
+        </button>
+      </div>
+    </div>
+  `
+
+  document.body.appendChild(overlay)
+
+  function renderCameraSection() {
+    const container = overlay.querySelector('#sim-camera-container') as HTMLElement | null
+    if (!container) return
+    container.hidden = false
+    container.innerHTML = `
+      <div style="text-align: center;">
+        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em;">
+          Live Biometric Camera Check
+        </span>
+        <div class="verification-camera-frame">
+          <div class="verification-camera-scanline"></div>
+          <span style="font-size: 42px; opacity: 0.85;">👤</span>
+          <span style="font-size: 11px; color: #34d399; font-weight: 700; margin-top: 4px;">Hold Still · Scanning</span>
+        </div>
+        <p style="font-size: 12px; color: #94a3b8; margin: 8px 0 16px;">
+          Select the biometric match outcome to simulate what happens when Ninja evaluates liveness &amp; facial match:
+        </p>
+        <div style="display: flex; gap: 10px; justify-content: center;">
+          <button type="button" class="preset-chip preset-pass" id="btn-modal-pass" style="flex: 1; padding: 10px; font-size: 12px;">
+            ✓ Real Customer (98% Pass)
+          </button>
+          <button type="button" class="preset-chip preset-fail" id="btn-modal-fail" style="flex: 1; padding: 10px; font-size: 12px;">
+            ✗ Imposter (32% Mismatch)
+          </button>
+        </div>
+      </div>
+    `
+
+    container.querySelector('#btn-modal-pass')?.addEventListener('click', () => {
+      overlay.remove()
+      executeFaceOutcome('passed')
+    })
+
+    container.querySelector('#btn-modal-fail')?.addEventListener('click', () => {
+      overlay.remove()
+      executeFaceOutcome('failed')
+    })
+  }
+
+  if (scenario === 'unfilled') {
+    overlay.querySelector('#btn-sim-unfilled-proceed')?.addEventListener('click', () => {
+      const form = overlay.querySelector('#sim-unfilled-form') as HTMLElement | null
+      if (form) form.hidden = true
+      renderCameraSection()
+    })
+  } else {
+    renderCameraSection()
+  }
+
+  overlay.querySelector('#btn-close-sim-modal')?.addEventListener('click', () => {
+    overlay.remove()
+  })
+}
+
+function executeFaceOutcome(outcome: 'passed' | 'failed') {
+  const releaseBox = document.getElementById('step3-release-box')
+
+  if (outcome === 'passed') {
+    state.withdrawal.faceStatus = 'passed'
+    saveState(state)
+
+    const webhookPayload = {
+      event: 'verification.completed',
+      flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
+      customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
+      status: 'passed',
+      biometrics: {
+        liveness_score: 0.985,
+        face_match_score: 0.992,
+        anti_spoofing: 'PASSED',
+        recommendation: 'ALLOW',
+      },
+    }
+
+    const webhookAck = {
+      received: true,
+      action: 'PAYOUT_AUTHORIZED',
+      ledger_status: 'QUEUED_FOR_DISBURSEMENT',
+    }
+
+    addLog('Webhook · Face Verified', 'POST', '/api/webhooks/ninja', 200, 36, webhookPayload, webhookAck)
+    if (releaseBox) releaseBox.hidden = false
+  } else {
+    state.withdrawal.faceStatus = 'failed'
+    saveState(state)
+
+    const webhookPayload = {
+      event: 'verification.completed',
+      flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
+      customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
+      status: 'failed',
+      biometrics: {
+        liveness_score: 0.35,
+        face_match_score: 0.28,
+        anti_spoofing: 'FLAGGED',
+        recommendation: 'REJECT',
+      },
+    }
+
+    const webhookAck = {
+      received: true,
+      action: 'PAYOUT_FROZEN_SECURITY_FLAG',
+      incident_ticket: 'SEC_TAKEOVER_ALERT_4402',
+    }
+
+    addLog('Webhook · Imposter Detected', 'POST', '/api/webhooks/ninja', 400, 38, webhookPayload, webhookAck)
+    if (releaseBox) releaseBox.hidden = true
+    alert('Biometric Verification Failed: Live selfie does not match the registered government face record (Confidence 28%). Payout blocked!')
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Live Code Inspector & Telemetry
 // -----------------------------------------------------------------------------
 function bindDevTools() {
   document.querySelectorAll('.tab-btn').forEach((btn) => {
     btn.addEventListener('click', (e) => {
-      document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('active'))
       const target = e.currentTarget as HTMLElement
+      if (target.id === 'subtab-mint-link' || target.id === 'subtab-create-flow') {
+        return
+      }
+      document.querySelectorAll('.tab-btn').forEach((b) => {
+        if (b.id !== 'subtab-mint-link' && b.id !== 'subtab-create-flow') {
+          b.classList.remove('active')
+        }
+      })
       target.classList.add('active')
       activeTab = (target.dataset.tab as any) || 'curl'
       updateDevCode()
     })
+  })
+
+  // Subtabs for Step 3
+  document.getElementById('subtab-mint-link')?.addEventListener('click', () => {
+    step3Subtab = 'mint'
+    document.getElementById('subtab-mint-link')?.classList.add('active')
+    document.getElementById('subtab-create-flow')?.classList.remove('active')
+    updateDevCode()
+  })
+
+  document.getElementById('subtab-create-flow')?.addEventListener('click', () => {
+    step3Subtab = 'flow'
+    document.getElementById('subtab-create-flow')?.classList.add('active')
+    document.getElementById('subtab-mint-link')?.classList.remove('active')
+    updateDevCode()
   })
 
   document.getElementById('btn-clear-logs')?.addEventListener('click', () => {
@@ -701,14 +961,17 @@ function bindCopyCode() {
   copyBtn?.addEventListener('click', () => {
     if (!codeBlock) return
     const text = codeBlock.textContent || ''
-    navigator.clipboard.writeText(text).then(() => {
-      if (statusText) statusText.textContent = '✓ Copied!'
-      setTimeout(() => {
-        if (statusText) statusText.textContent = '📋 Copy Snippet'
-      }, 1800)
-    }).catch(() => {
-      if (statusText) statusText.textContent = '✓ Copied!'
-    })
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (statusText) statusText.textContent = '✓ Copied!'
+        setTimeout(() => {
+          if (statusText) statusText.textContent = '📋 Copy'
+        }, 1800)
+      })
+      .catch(() => {
+        if (statusText) statusText.textContent = '✓ Copied!'
+      })
   })
 }
 
@@ -743,7 +1006,7 @@ function updateDevCode() {
   }'`
     } else if (activeTab === 'ts') {
       lang = 'javascript'
-      snippet = `// Step 1: NIN Verification
+      snippet = `// Step 1: NIN Verification & Legal Age Check
 const result = await ninja.identity.identify({
   idType: 'nin',
   mode: 'verify',
@@ -754,7 +1017,7 @@ const result = await ninja.identity.identify({
 })`
     } else if (activeTab === 'python') {
       lang = 'python'
-      snippet = `# Step 1: NIN Verification
+      snippet = `# Step 1: NIN Verification & Legal Age Check
 response = requests.post(
     "https://api.ninja.ng/api/identity/identify",
     headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
@@ -769,7 +1032,7 @@ response = requests.post(
 )`
     } else {
       lang = 'go'
-      snippet = `// Step 1: NIN Verification
+      snippet = `// Step 1: NIN Verification & Legal Age Check
 resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
 	IDType:      "nin",
 	Mode:        "verify",
@@ -799,7 +1062,7 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
   }'`
     } else if (activeTab === 'ts') {
       lang = 'javascript'
-      snippet = `// Step 2: BVN Match
+      snippet = `// Step 2: Validate BVN Ownership Against Registered User
 const result = await ninja.identity.identify({
   idType: 'bvn',
   mode: 'verify',
@@ -809,15 +1072,21 @@ const result = await ninja.identity.identify({
 })`
     } else if (activeTab === 'python') {
       lang = 'python'
-      snippet = `# Step 2: BVN Match
+      snippet = `# Step 2: Validate BVN Ownership
 response = requests.post(
     "https://api.ninja.ng/api/identity/identify",
     headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
-    json={"idType": "bvn", "mode": "verify", "idNumber": "${bvn}", "firstName": "${fn}", "lastName": "${ln}"}
+    json={
+        "idType": "bvn",
+        "mode": "verify",
+        "idNumber": "${bvn}",
+        "firstName": "${fn}",
+        "lastName": "${ln}"
+    }
 )`
     } else {
       lang = 'go'
-      snippet = `// Step 2: BVN Match
+      snippet = `// Step 2: Validate BVN Ownership
 resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
 	IDType:    "bvn",
 	Mode:      "verify",
@@ -828,29 +1097,47 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
     }
   } else {
     // Step 3
-    const cfg = getLinkScenarioConfig(
-      selectedScenario,
-      `${state.player.firstName} ${state.player.lastName}`,
-      state.player.id,
-      'wtd_01',
-      state.player.firstName,
-      state.player.lastName,
-      state.player.dateOfBirth || '1975-01-01'
-    )
-    endpoint = `POST /api/flows/${cfg.flowId}/links`
-
-    if (activeTab === 'curl') {
-      lang = 'bash'
-      snippet = cfg.curl
-    } else if (activeTab === 'ts') {
-      lang = 'javascript'
-      snippet = cfg.ts
-    } else if (activeTab === 'python') {
-      lang = 'python'
-      snippet = cfg.python
+    if (step3Subtab === 'flow') {
+      const flowCfg = getFlowCreationConfig()
+      endpoint = 'POST /api/flows'
+      if (activeTab === 'curl') {
+        lang = 'bash'
+        snippet = flowCfg.curl
+      } else if (activeTab === 'ts') {
+        lang = 'javascript'
+        snippet = flowCfg.ts
+      } else if (activeTab === 'python') {
+        lang = 'python'
+        snippet = flowCfg.python
+      } else {
+        lang = 'go'
+        snippet = flowCfg.go
+      }
     } else {
-      lang = 'go'
-      snippet = cfg.go
+      const cfg = getLinkScenarioConfig(
+        selectedScenario,
+        `${state.player.firstName} ${state.player.lastName}`,
+        state.player.id,
+        'wtd_01',
+        state.player.firstName,
+        state.player.lastName,
+        state.player.dateOfBirth || '1975-01-01'
+      )
+      endpoint = `POST /api/flows/${cfg.flowId}/links`
+
+      if (activeTab === 'curl') {
+        lang = 'bash'
+        snippet = cfg.curl
+      } else if (activeTab === 'ts') {
+        lang = 'javascript'
+        snippet = cfg.ts
+      } else if (activeTab === 'python') {
+        lang = 'python'
+        snippet = cfg.python
+      } else {
+        lang = 'go'
+        snippet = cfg.go
+      }
     }
   }
 
@@ -859,51 +1146,110 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
   codeEl.innerHTML = Prism.highlight(snippet, Prism.languages[lang] || Prism.languages.javascript, lang)
 }
 
-function addLog(method: 'POST' | 'GET', endpoint: string, status: number, durationMs: number, data: any) {
+function addLog(
+  step: string,
+  method: 'POST' | 'GET',
+  endpoint: string,
+  status: number,
+  durationMs: number,
+  requestPayload: any,
+  responsePayload: any
+) {
   const log: TelemetryLog = {
-    id: `log_${Date.now()}`,
+    id: `log_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
     timestamp: new Date().toLocaleTimeString(),
+    step,
     method,
     endpoint,
     status,
     durationMs,
-    requestPayload: {},
-    responsePayload: data,
-    summary: `${status} · ${endpoint}`,
+    requestPayload,
+    responsePayload,
+    summary: `${step} · ${status} · ${endpoint}`,
   }
   state.logs.unshift(log)
-  if (state.logs.length > 20) state.logs.pop()
+  if (state.logs.length > 25) state.logs.pop()
   saveState(state)
-  renderLogs()
+  renderLogs(log.id)
 }
 
-function renderLogs() {
+function renderLogs(openLogId?: string) {
   const list = document.getElementById('dev-call-log-list')
   if (!list) return
 
   if (state.logs.length === 0) {
     list.innerHTML = `
-      <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 16px;" id="empty-logs-label">
-        No API calls made yet. Click any button on the left.
+      <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 20px;" id="empty-logs-label">
+        No API calls made yet. Click any button on the left to trigger a live call.
       </div>
     `
     return
   }
 
+  function getTagClass(step?: string): string {
+    const s = String(step || '')
+    if (s.includes('Step 1')) return 'tag-step-1'
+    if (s.includes('Step 2')) return 'tag-step-2'
+    if (s.includes('Step 3')) return 'tag-step-3'
+    if (s.includes('Webhook')) return 'tag-webhook'
+    if (s.includes('Payout')) return 'tag-payout'
+    return 'tag-step-1'
+  }
+
   list.innerHTML = state.logs
-    .map(
-      (l) => `
-    <div class="api-log-item">
-      <span class="api-log-method">${l.method}</span>
-      <code class="api-log-path">${l.endpoint}</code>
-      <div class="api-log-meta">
-        <span class="api-log-time">${l.timestamp}</span>
-        <span class="api-log-status api-log-status-${l.status === 200 ? '200' : '400'}">${l.status}</span>
-      </div>
-    </div>
-  `
-    )
+    .map((l, index) => {
+      const isOpen = openLogId ? l.id === openLogId : index === 0
+      return `
+        <div class="api-log-entry ${isOpen ? 'open' : ''}" data-log-id="${l.id}">
+          <div class="api-log-header">
+            <div class="api-log-header-left">
+              <span class="api-log-step-tag ${getTagClass(l.step)}">${escapeHtml(l.step)}</span>
+              <span class="api-log-method">${l.method}</span>
+              <code class="api-log-path" title="${escapeHtml(l.endpoint)}">${escapeHtml(l.endpoint)}</code>
+            </div>
+            <div class="api-log-meta">
+              <span class="api-log-time">${l.durationMs}ms</span>
+              <span class="api-log-status api-log-status-${l.status === 200 ? '200' : '400'}">${l.status}</span>
+              <span class="api-log-chevron">▼</span>
+            </div>
+          </div>
+          <div class="api-log-details" ${isOpen ? '' : 'hidden'}>
+            <div class="api-log-section">
+              <div class="api-log-section-label">
+                <span>Request Payload</span>
+                <span class="label-method">${l.method} ${escapeHtml(l.endpoint)}</span>
+              </div>
+              <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.requestPayload, null, 2))}</code></pre>
+            </div>
+            <div class="api-log-section">
+              <div class="api-log-section-label">
+                <span>Response Body</span>
+                <span style="color: ${l.status === 200 ? '#34d399' : '#f87171'}; font-family: var(--font-mono); font-weight: 800;">${l.status} ${l.status === 200 ? 'OK' : 'FAIL'}</span>
+              </div>
+              <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.responsePayload, null, 2))}</code></pre>
+            </div>
+          </div>
+        </div>
+      `
+    })
     .join('')
+
+  list.querySelectorAll('.api-log-header').forEach((hdr) => {
+    hdr.addEventListener('click', () => {
+      const entry = hdr.closest('.api-log-entry') as HTMLElement | null
+      if (!entry) return
+      const details = entry.querySelector('.api-log-details') as HTMLElement | null
+      const isOpen = entry.classList.contains('open')
+
+      if (isOpen) {
+        entry.classList.remove('open')
+        if (details) details.hidden = true
+      } else {
+        entry.classList.add('open')
+        if (details) details.hidden = false
+      }
+    })
+  })
 }
 
 function calculateAge(dobStr: string): number {

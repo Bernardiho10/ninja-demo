@@ -98,6 +98,12 @@ function compileHamPages() {
 }
 
 async function runBuild() {
+  // Clean public directory to remove any old build artifacts
+  if (fs.existsSync(publicDir)) {
+    fs.rmSync(publicDir, { recursive: true, force: true })
+  }
+  fs.mkdirSync(publicDir, { recursive: true })
+
   // Step 1: HTML Compilation
   compileHamPages()
 
@@ -124,26 +130,6 @@ async function runBuild() {
   for (const relPath of rootHtmlFiles) {
     const filePath = path.resolve(rootDir, relPath)
     let content = fs.readFileSync(filePath, 'utf-8')
-    content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
-    content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
-    fs.writeFileSync(filePath, content, 'utf-8')
-  }
-
-  const playHtmlFiles = glob.sync('public/play/**/*.html', { cwd: rootDir })
-  for (const relPath of playHtmlFiles) {
-    const filePath = path.resolve(rootDir, relPath)
-    let content = fs.readFileSync(filePath, 'utf-8')
-    content = content.replace(/href=["']\/assets\//g, 'href="../assets/')
-    content = content.replace(/src=["']\/assets\//g, 'src="../assets/')
-    fs.writeFileSync(filePath, content, 'utf-8')
-  }
-
-  const fintechHtmlFiles = glob.sync('public/fintech/**/*.html', { cwd: rootDir })
-  for (const relPath of fintechHtmlFiles) {
-    const filePath = path.resolve(rootDir, relPath)
-    let content = fs.readFileSync(filePath, 'utf-8')
-    content = content.replace(/href=["']\/assets\/css\/fintech\//g, 'href="./assets/css/')
-    content = content.replace(/src=["']\/assets\/js\/fintech\//g, 'src="./assets/js/')
     content = content.replace(/href=["']\/assets\//g, 'href="./assets/')
     content = content.replace(/src=["']\/assets\//g, 'src="./assets/')
     fs.writeFileSync(filePath, content, 'utf-8')
