@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ninja Identity &amp; Biometrics Demo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
   
 <link rel="stylesheet" href="./assets/css/index.css"/>
@@ -13,7 +15,7 @@
 <nav class="navbar-top">
   <div class="nav-brand-group">
     <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
-      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
       <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
         <span style="color:#10b981;">NINJA</span>·DEMO
       </span>
@@ -25,7 +27,7 @@
 
     <!-- Link to separate Digital Banking Demo -->
     <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
-      <span>💳 Digital Banking KYC →</span>
+      <span>💳 Digital Banking KYC &rarr;</span>
     </a>
   </div>
 
@@ -72,7 +74,7 @@
 <div class="workbench-container">
   <div class="workbench-page-header">
     <div class="workbench-page-title-group">
-      <h1 class="workbench-page-title">Ninja Identity API — Live Demo</h1>
+      <h1 class="workbench-page-title">Ninja Identity API &mdash; Live Demo</h1>
       <p class="workbench-page-subtitle">
         See how Ninja verifies customers, matches BVNs, and protects payouts in real time.
         <strong>Every button makes a real API call.</strong>
@@ -91,7 +93,7 @@
            ------------------------------------------------------------------- -->
       <div id="flow-sportsbook">
 
-        <!-- STEP 1: SIGN UP &amp; NIN VERIFICATION -->
+        <!-- STEP 1: SIGN UP & NIN VERIFICATION -->
         <div id="view-step-1" class="step-card-view">
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
@@ -104,7 +106,7 @@
             </div>
 
             <p class="hint" style="margin: 0 0 16px; font-size: 13.5px; color: #94a3b8;">
-              Ninja checks the player&#39;s name, NIN, and age in <strong>one simple API call</strong>.
+              Ninja checks the player's name, NIN, and age in <strong>one simple API call</strong>.
             </p>
 
             <!-- Quick Test Presets -->
@@ -132,7 +134,7 @@
                 <button type="button" class="param-preset-btn active" data-amount="250000" id="btn-param-250k">₦250,000</button>
                 <button type="button" class="param-preset-btn" data-amount="50000" id="btn-param-50k">₦50,000</button>
                 <button type="button" class="param-preset-btn" data-amount="10000" id="btn-param-10k">₦10,000</button>
-                <input type="number" id="sim-wallet-input" value="250000" style="width: 130px; padding: 6px 10px; font-size: 13px; font-family: var(--font-mono); margin: 0;"/>
+                <input type="number" id="sim-wallet-input" value="250000" style="width: 130px; padding: 6px 10px; font-size: 13px; font-family: var(--font-mono); margin: 0;" />
               </div>
             </div>
 
@@ -141,33 +143,33 @@
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div>
                   <label for="input-first-name">First Name</label>
-                  <input id="input-first-name" value="James" required=""/>
+                  <input id="input-first-name" value="James" required />
                 </div>
                 <div>
                   <label for="input-last-name">Surname (Last Name)</label>
-                  <input id="input-last-name" value="Bond" required=""/>
+                  <input id="input-last-name" value="Bond" required />
                 </div>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-phone">Phone Number</label>
-                  <input id="input-phone" value="08012345678" required=""/>
+                  <input id="input-phone" value="08012345678" required />
                 </div>
                 <div>
                   <label for="input-nin">NIN (11 Digits)</label>
-                  <input id="input-nin" value="77777777777" maxlength="11" required=""/>
+                  <input id="input-nin" value="77777777777" maxlength="11" required />
                 </div>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-dob">Date of Birth</label>
-                  <input id="input-dob" type="date" value="1975-01-01" required=""/>
+                  <input id="input-dob" type="date" value="1975-01-01" required />
                 </div>
                 <div>
                   <label for="input-password">Account Password</label>
-                  <input id="input-password" type="password" value="password123" required=""/>
+                  <input id="input-password" type="password" value="password123" required />
                 </div>
               </div>
 
@@ -177,13 +179,13 @@
             </form>
 
             <!-- Result Banner -->
-            <div id="step1-result" style="margin-top: 18px;" hidden=""></div>
+            <div id="step1-result" style="margin-top: 18px;" hidden></div>
 
           </div>
         </div>
 
         <!-- STEP 2: ADD BANK ACCOUNT (BVN CHECK) -->
-        <div id="view-step-2" class="step-card-view" hidden="">
+        <div id="view-step-2" class="step-card-view" hidden>
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -203,10 +205,10 @@
               <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
               <div style="display: flex; gap: 8px; flex-wrap: wrap;">
                 <button type="button" class="preset-chip preset-pass" id="btn-preset-bvn-match">
-                  ✓ Owner&#39;s Account (James Bond)
+                  ✓ Owner's Account (James Bond)
                 </button>
                 <button type="button" class="preset-chip preset-fail" id="btn-preset-bvn-mismatch">
-                  ✗ Other Person&#39;s Account (Emeka Ugo)
+                  ✗ Other Person's Account (Emeka Ugo)
                 </button>
               </div>
             </div>
@@ -226,18 +228,18 @@
                 </div>
                 <div>
                   <label for="input-acc-num">10-Digit Account Number</label>
-                  <input id="input-acc-num" value="0123456789" maxlength="10" required=""/>
+                  <input id="input-acc-num" value="0123456789" maxlength="10" required />
                 </div>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-bvn">BVN (11 Digits)</label>
-                  <input id="input-bvn" value="77777777777" maxlength="11" required=""/>
+                  <input id="input-bvn" value="77777777777" maxlength="11" required />
                 </div>
                 <div>
                   <label for="input-holder-name">Account Holder Name</label>
-                  <input id="input-holder-name" value="James Bond" required=""/>
+                  <input id="input-holder-name" value="James Bond" required />
                 </div>
               </div>
 
@@ -246,13 +248,13 @@
               </button>
             </form>
 
-            <div id="step2-result" style="margin-top: 18px;" hidden=""></div>
+            <div id="step2-result" style="margin-top: 18px;" hidden></div>
 
           </div>
         </div>
 
         <!-- STEP 3: WITHDRAW FUNDS (FACE SELFIE CHECK) -->
-        <div id="view-step-3" class="step-card-view" hidden="">
+        <div id="view-step-3" class="step-card-view" hidden>
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
@@ -315,7 +317,7 @@
             </button>
 
             <!-- Active Link Box -->
-            <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;" hidden="">
+            <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;" hidden>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <span style="font-size: 12px; font-weight: 800; color: #fff;">Verification Link Ready:</span>
                 <a href="#" target="_blank" id="link-open-camera" style="font-size: 12px; font-weight: 800; color: #34d399; text-decoration: underline;">
@@ -344,7 +346,7 @@
             </div>
 
             <!-- Release Payment CTA -->
-            <div id="step3-release-box" style="margin-top: 18px;" hidden="">
+            <div id="step3-release-box" style="margin-top: 18px;" hidden>
               <div class="success" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
                 ✓ Face matched with 98% confidence! You can now disburse the payout.
               </div>
@@ -354,7 +356,7 @@
             </div>
 
             <!-- Final Receipt -->
-            <div id="step3-receipt" style="margin-top: 16px;" hidden=""></div>
+            <div id="step3-receipt" style="margin-top: 16px;" hidden></div>
 
           </div>
         </div>
@@ -363,7 +365,7 @@
     </div>
 
     <!-- =====================================================================
-         RIGHT COLUMN: NINJA DEVELOPER INTELLIGENCE &amp; TELEMETRY
+         RIGHT COLUMN: NINJA DEVELOPER INTELLIGENCE & TELEMETRY
          ===================================================================== -->
     <div class="workbench-sidebar">
 
@@ -449,7 +451,7 @@
 </div>
 
 <script type="module" src="./assets/js/nav.js"></script>
+
 <script type="module" src="./assets/js/index.js"></script>
-
-
-</body></html>
+</body>
+</html>

@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ninja Identity &amp; Biometrics Demo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
   
 <link rel="stylesheet" href="./assets/css/profile.css"/>
@@ -13,7 +15,7 @@
 <nav class="navbar-top">
   <div class="nav-brand-group">
     <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
-      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
       <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
         <span style="color:#10b981;">NINJA</span>·DEMO
       </span>
@@ -25,7 +27,7 @@
 
     <!-- Link to separate Digital Banking Demo -->
     <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
-      <span>💳 Digital Banking KYC →</span>
+      <span>💳 Digital Banking KYC &rarr;</span>
     </a>
   </div>
 
@@ -69,7 +71,8 @@
   </div>
 </nav>
 
-<div class="page page-wide">
+<div class="page page-wide"
+>
   <h1>Account settings</h1>
   <p class="lede" id="account-summary"></p>
 
@@ -77,10 +80,10 @@
     <form class="card" id="deposit-form">
       <h2>Deposit</h2>
       <p class="hint">
-        No real money moves — this credits your balance the same way a real sportsbook&#39;s deposit flow would, so
-        there&#39;s a normal, non-bonus way to fund the account.
+        No real money moves — this credits your balance the same way a real sportsbook's deposit flow would, so
+        there's a normal, non-bonus way to fund the account.
       </p>
-      <label>Amount (₦)<input id="deposit_amount" type="number" min="100" step="100" value="20000"/></label>
+      <label>Amount (₦)<input id="deposit_amount" type="number" min="100" step="100" value="20000" /></label>
       <label>Method
         <select id="deposit_method">
           <option value="card">Card</option>
@@ -88,7 +91,7 @@
           <option value="ussd">USSD</option>
         </select>
       </label>
-      <p id="deposit-note" class="hint" hidden=""></p>
+      <p id="deposit-note" class="hint" hidden></p>
       <button type="submit" id="deposit-submit-btn">Deposit ₦20,000</button>
     </form>
 
@@ -98,9 +101,9 @@
         Pre-fills the withdrawal form — purely a convenience. Ninja still re-checks whatever name is on the
         payout request at withdrawal time, saved or not.
       </p>
-      <label>Bank<input id="bank_name" value="GTBank" required=""/></label>
-      <label>Account number<input id="account_number" required=""/></label>
-      <p id="bank-note" class="hint" hidden=""></p>
+      <label>Bank<input id="bank_name" value="GTBank" required /></label>
+      <label>Account number<input id="account_number" required /></label>
+      <p id="bank-note" class="hint" hidden></p>
       <button type="submit">Save bank details</button>
     </form>
   </div>
@@ -108,7 +111,7 @@
   <div class="card security-card" id="security-card">
     <h2>Withdrawal security — layer 2</h2>
     <p class="hint">
-      A stolen password or a hijacked session still can&#39;t move your winnings out: every withdrawal re-checks a
+      A stolen password or a hijacked session still can't move your winnings out: every withdrawal re-checks a
       recent Ninja liveness score against the strictness you set here, on top of the beneficiary-name check
       that already runs at payout time. This is the backstop, not the first line of defense.
     </p>
@@ -116,7 +119,7 @@
     <p id="security-status" class="hint"></p>
 
     <label class="security-toggle-row">
-      <input type="checkbox" id="require-face-toggle"/>
+      <input type="checkbox" id="require-face-toggle" />
       Require a passed facial verification for every withdrawal
     </label>
 
@@ -135,13 +138,13 @@
       </button>
     </div>
 
-    <p id="security-note" class="hint" hidden=""></p>
+    <p id="security-note" class="hint" hidden></p>
     <button type="button" id="save-security-btn">Save security settings</button>
   </div>
 
   <div class="card verification-branded-card" id="face-card">
     <div class="verification-badge">
-      <span class="verification-badge-mark"><img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 38px; width: auto; object-fit: contain; display: inline-block; vertical-align: middle;"/>
+      <span class="verification-badge-mark"><img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 38px; width: auto; object-fit: contain; display: inline-block; vertical-align: middle;" />
 </span>
       <div>
         <div class="verification-badge-title">ninja-bet Secure Verification</div>
@@ -151,29 +154,29 @@
 
     <p class="hint">
       A second identity signal beyond the name/NIN match at registration: even someone who knows a stolen
-      identity&#39;s correct name and NIN still has to physically look like the registry photo and pass a
+      identity's correct name and NIN still has to physically look like the registry photo and pass a
       liveness check. This creates a real, one-time hosted link — a real human has to complete it for there
       to be a real pass/fail outcome.
     </p>
 
-    <p id="face-status" hidden=""></p>
+    <p id="face-status" hidden></p>
     <div style="display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap;">
       <button type="button" id="start-face-btn" style="flex: 2; min-width: 220px;">Start real camera flow (Ninja hosted link)</button>
       <button type="button" id="sim-face-pass-btn" class="secondary" style="flex: 1; min-width: 180px;">Simulate pass (97%)</button>
       <button type="button" id="sim-face-fail-btn" class="secondary danger-ghost" style="flex: 1; min-width: 180px;">Simulate fail (2%)</button>
     </div>
 
-    <p class="hint" id="face-link" style="margin-top: 10px" hidden=""></p>
+    <p class="hint" id="face-link" style="margin-top: 10px" hidden></p>
 
     <p class="hint" style="margin-top: 16px">
-      This opens Ninja&#39;s real hosted selfie/liveness flow — no shortcuts. Complete it on a phone or a webcam;
-      Ninja calls our webhook the moment it&#39;s done, and this page updates on its own.
+      This opens Ninja's real hosted selfie/liveness flow — no shortcuts. Complete it on a phone or a webcam;
+      Ninja calls our webhook the moment it's done, and this page updates on its own.
     </p>
   </div>
 </div>
 
 <script type="module" src="./assets/js/nav.js"></script>
+
 <script type="module" src="./assets/js/profile.js"></script>
-
-
-</body></html>
+</body>
+</html>

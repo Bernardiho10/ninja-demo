@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ninja Identity &amp; Biometrics Demo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
   
 <link rel="stylesheet" href="./assets/css/inspector.css"/>
@@ -13,7 +15,7 @@
 <nav class="navbar-top">
   <div class="nav-brand-group">
     <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
-      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
       <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
         <span style="color:#10b981;">NINJA</span>·DEMO
       </span>
@@ -25,7 +27,7 @@
 
     <!-- Link to separate Digital Banking Demo -->
     <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
-      <span>💳 Digital Banking KYC →</span>
+      <span>💳 Digital Banking KYC &rarr;</span>
     </a>
   </div>
 
@@ -69,11 +71,12 @@
   </div>
 </nav>
 
-<div class="page">
+<div class="page"
+>
   <h1>Ninja Call Inspector</h1>
   <p class="lede">
     Every request this app has sent to the Ninja sandbox, and exactly what came back — no mockups, this is the
-    real traffic from <code>internal/ninja/client.go</code>&#39;s logger hook.
+    real traffic from <code>internal/ninja/client.go</code>'s logger hook.
   </p>
   <button type="button" id="refresh-btn" class="secondary" style="width: auto; padding: 8px 18px; margin-bottom: 18px;">Refresh</button>
 
@@ -81,7 +84,7 @@
 </div>
 
 <script type="module" src="./assets/js/nav.js"></script>
+
 <script type="module" src="./assets/js/inspector.js"></script>
-
-
-</body></html>
+</body>
+</html>

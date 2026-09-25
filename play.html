@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ninja Identity &amp; Biometrics Demo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
   
 <link rel="stylesheet" href="./assets/css/play.css"/>
@@ -13,7 +15,7 @@
 <nav class="navbar-top">
   <div class="nav-brand-group">
     <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
-      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display=&#39;none&#39;; document.getElementById(&#39;brand-fallback&#39;).style.display=&#39;inline-flex&#39;;"/>
+      <img src="./assets/images/ninja-bet-dark-bg.png" alt="ninja-bet" class="ninja-logo-img" style="height: 30px; width: auto; max-width: 140px; object-fit: contain; display: block;" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
       <span id="brand-fallback" style="display:none; font-weight: 900; font-size: 18px; color: #fff; letter-spacing: -0.02em;">
         <span style="color:#10b981;">NINJA</span>·DEMO
       </span>
@@ -25,7 +27,7 @@
 
     <!-- Link to separate Digital Banking Demo -->
     <a href="./fintech/" class="nav-app-switcher-badge" title="Go to Digital Banking KYC Demo">
-      <span>💳 Digital Banking KYC →</span>
+      <span>💳 Digital Banking KYC &rarr;</span>
     </a>
   </div>
 
@@ -71,7 +73,7 @@
 
 <div class="page page-wide">
 
-  <!-- Top Hero &amp; Identity Overview -->
+  <!-- Top Hero & Identity Overview -->
   <div class="sb-hero-card">
     <div class="sb-hero-left">
       <div class="sb-player-badge-box">
@@ -90,7 +92,7 @@
       </div>
     </div>
 
-    <!-- Live Wallet Display &amp; Fast Simulator -->
+    <!-- Live Wallet Display & Fast Simulator -->
     <div class="sb-hero-wallet" data-tour="wallet">
       <div class="wallet-stat-card">
         <span class="wallet-stat-label">Main Balance</span>
@@ -107,11 +109,11 @@
   </div>
 
   <!-- Notification / Alert Banners -->
-  <p id="page-error" class="error" hidden=""></p>
-  <p id="page-note" class="success" hidden=""></p>
+  <p id="page-error" class="error" hidden></p>
+  <p id="page-note" class="success" hidden></p>
 
   <!-- =========================================================================
-       SECTION 1: SPORTSBOOK &amp; BET BOOKING
+       SECTION 1: SPORTSBOOK & BET BOOKING
        ========================================================================= -->
   <section id="sportsbook" class="dashboard-section">
     <div class="section-title-bar">
@@ -172,7 +174,7 @@
           <div class="sb-col-headers"><span>Match</span><span>1</span><span>X</span><span>2</span></div>
           <div class="sb-match-row" data-fixture="f3">
             <div class="sb-match-info">
-              <span class="live-badge sb-live-inline">● LIVE 63&#39;</span>
+              <span class="live-badge sb-live-inline">&#9679; LIVE 63'</span>
               <span class="sb-match-teams">Real Madrid<br/>Barcelona</span>
             </div>
             <button class="sb-odd" data-fixture="f3" data-pick="home">1.85</button>
@@ -209,7 +211,7 @@
           <div class="sb-col-headers"><span>Match</span><span>1</span><span>X</span><span>2</span></div>
           <div class="sb-match-row" data-fixture="f6">
             <div class="sb-match-info">
-              <span class="live-badge sb-live-inline">● LIVE 28&#39;</span>
+              <span class="live-badge sb-live-inline">&#9679; LIVE 28'</span>
               <span class="sb-match-teams">PSG<br/>Marseille</span>
             </div>
             <button class="sb-odd" data-fixture="f6" data-pick="home">1.45</button>
@@ -260,7 +262,7 @@
   </section>
 
   <!-- =========================================================================
-       SECTION 2: BANK ACCOUNT &amp; LAYER-2 BIOMETRICS
+       SECTION 2: BANK ACCOUNT & LAYER-2 BIOMETRICS
        ========================================================================= -->
   <section id="biometrics" class="dashboard-section">
     <div class="section-title-bar">
@@ -274,7 +276,7 @@
     </div>
 
     <div class="grid-2-col">
-      <!-- Bank Details &amp; Wallet Funding -->
+      <!-- Bank Details & Wallet Funding -->
       <div class="card" data-tour="bank-details">
         <h3 class="card-heading">1. Recipient Bank Account &amp; BVN</h3>
         <p class="hint">
@@ -284,15 +286,15 @@
         <form id="bank-form">
           <div class="field-group">
             <label for="bank_name">Bank Name</label>
-            <input id="bank_name" value="Guaranty Trust Bank (GTBank)" required=""/>
+            <input id="bank_name" value="Guaranty Trust Bank (GTBank)" required />
           </div>
           <div class="field-group">
             <label for="account_number">Account Number (10 Digits)</label>
-            <input id="account_number" value="0123456789" maxlength="10" required=""/>
+            <input id="account_number" value="0123456789" maxlength="10" required />
           </div>
           <div class="field-group">
             <label for="bank_bvn">Account BVN (Bank Verification Number)</label>
-            <input id="bank_bvn" value="77777777777" maxlength="11" required=""/>
+            <input id="bank_bvn" value="77777777777" maxlength="11" required />
           </div>
           <div style="display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap;">
             <button type="button" id="btn-bank-bvn-match" class="preset-chip preset-pass" style="font-size: 11px; padding: 6px 10px;">
@@ -302,8 +304,8 @@
               🔴 Mismatch BVN (22222222222)
             </button>
           </div>
-          <p id="bank-note" class="hint text-green" hidden=""></p>
-          <p id="bank-error" class="error" hidden=""></p>
+          <p id="bank-note" class="hint text-green" hidden></p>
+          <p id="bank-error" class="error" hidden></p>
           <button type="submit" id="save-bank-btn" class="secondary">
             Verify BVN &amp; Save Bank Details
           </button>
@@ -317,7 +319,7 @@
           <form id="deposit-form" style="display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap;">
             <div style="flex: 1; min-width: 130px;">
               <label for="deposit_amount" style="font-size: 11px;">Amount (₦)</label>
-              <input id="deposit_amount" type="number" min="100" step="100" value="20000" style="margin-top: 4px;"/>
+              <input id="deposit_amount" type="number" min="100" step="100" value="20000" style="margin-top: 4px;" />
             </div>
             <div style="flex: 1; min-width: 130px;">
               <label for="deposit_method" style="font-size: 11px;">Method</label>
@@ -331,7 +333,7 @@
               Deposit ₦20,000
             </button>
           </form>
-          <p id="deposit-note" class="hint text-green" hidden="" style="margin-top: 8px;"></p>
+          <p id="deposit-note" class="hint text-green" hidden style="margin-top: 8px;"></p>
         </div>
       </div>
 
@@ -339,7 +341,7 @@
       <div class="card verification-branded-card" id="face-card" data-tour="biometrics-card">
         <div class="verification-badge" style="display: flex; align-items: center; gap: 14px; margin-bottom: 12px;">
           <div style="background: #ffffff; padding: 3px 10px; border-radius: 8px; display: inline-flex; align-items: center; box-shadow: 0 4px 12px rgba(0,0,0,0.3); flex-shrink: 0;">
-            <img src="./assets/images/ninja-bet-white-bg.png" alt="ninja-bet" style="height: 30px; width: auto; object-fit: contain; display: block;"/>
+            <img src="./assets/images/ninja-bet-white-bg.png" alt="ninja-bet" style="height: 30px; width: auto; object-fit: contain; display: block;" />
           </div>
           <div>
             <div class="verification-badge-title">Layer-2 Biometric Face Verification</div>
@@ -348,7 +350,7 @@
         </div>
 
         <p class="hint">
-          Even if a fraudster steals the player&#39;s password or session, they cannot steal their biometric face: this matches a live camera selfie against the government NIN registry photo on file.
+          Even if a fraudster steals the player's password or session, they cannot steal their biometric face: this matches a live camera selfie against the government NIN registry photo on file.
         </p>
 
         <!-- Current Biometric Status Box -->
@@ -374,7 +376,7 @@
         <!-- Custom Field: User Bet ID -->
         <div class="field-group" style="margin-top: 14px; margin-bottom: 6px;">
           <label for="user_bet_id_input" style="font-size: 11px;">Custom KYC Field: User BetID (Embedded in Hosted Link)</label>
-          <input id="user_bet_id_input" value="BET-9824108" style="font-family: var(--font-mono); font-size: 13px; color: #34d399; margin-top: 2px;"/>
+          <input id="user_bet_id_input" value="BET-9824108" style="font-family: var(--font-mono); font-size: 13px; color: #34d399; margin-top: 2px;" />
         </div>
 
         <!-- Biometric Action Buttons -->
@@ -390,15 +392,15 @@
           </button>
         </div>
 
-        <p class="hint" id="face-link" style="margin-top: 12px; font-size: 12px; word-break: break-all;" hidden=""></p>
-        <p id="face-error" class="error" hidden=""></p>
+        <p class="hint" id="face-link" style="margin-top: 12px; font-size: 12px; word-break: break-all;" hidden></p>
+        <p id="face-error" class="error" hidden></p>
 
         <!-- Withdrawal Security Policy Settings -->
         <div class="policy-card" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
           <h4 style="font-size: 13px; font-weight: 800; color: #fff; margin: 0 0 8px;">Withdrawal Security Policy</h4>
           
           <label class="security-toggle-row" style="margin-bottom: 12px;">
-            <input type="checkbox" id="require-face-toggle" style="width: auto; margin-top: 0;"/>
+            <input type="checkbox" id="require-face-toggle" style="width: auto; margin-top: 0;" />
             <span>Require passed biometric verification before withdrawals</span>
           </label>
 
@@ -419,7 +421,7 @@
             </button>
           </div>
 
-          <p id="security-note" class="hint text-green" hidden="" style="margin-top: 8px;"></p>
+          <p id="security-note" class="hint text-green" hidden style="margin-top: 8px;"></p>
           <button type="button" id="save-security-btn" class="secondary" style="margin-top: 10px;">
             Save Security Policy
           </button>
@@ -466,28 +468,28 @@
 
         <div class="field-group">
           <label for="payout_amount">Withdrawal Amount (₦)</label>
-          <input id="payout_amount" type="number" min="100" step="100" value="250000" required=""/>
+          <input id="payout_amount" type="number" min="100" step="100" value="250000" required />
         </div>
 
         <div class="form-row">
           <div class="field-group">
             <label for="beneficiary_name">Beneficiary Name (Must match NIN)</label>
-            <input id="beneficiary_name" value="James Bond" required=""/>
+            <input id="beneficiary_name" value="James Bond" required />
           </div>
           <div class="field-group">
             <label for="bvn">Account BVN (Must match Player)</label>
-            <input id="bvn" value="77777777777" maxlength="11" required=""/>
+            <input id="bvn" value="77777777777" maxlength="11" required />
           </div>
         </div>
 
         <div class="form-row">
           <div class="field-group">
             <label for="payout_bank_name">Bank</label>
-            <input id="payout_bank_name" value="Guaranty Trust Bank" required=""/>
+            <input id="payout_bank_name" value="Guaranty Trust Bank" required />
           </div>
           <div class="field-group">
             <label for="payout_account_number">Account Number</label>
-            <input id="payout_account_number" value="0123456789" maxlength="10" required=""/>
+            <input id="payout_account_number" value="0123456789" maxlength="10" required />
           </div>
         </div>
 
@@ -503,7 +505,7 @@
         </div>
       </form>
 
-      <!-- Triple ATO Defense Explanation &amp; Payout History -->
+      <!-- Triple ATO Defense Explanation & Payout History -->
       <div class="card">
         <h3 class="card-heading">Triple ATO Defense Rail</h3>
         <div class="ato-checks-stack">
@@ -539,7 +541,7 @@
   </section>
 
   <!-- =========================================================================
-       SECTION 4: CORPORATE VIP &amp; SYNDICATE DUE DILIGENCE (CAC API)
+       SECTION 4: CORPORATE VIP & SYNDICATE DUE DILIGENCE (CAC API)
        ========================================================================= -->
   <section id="corporate-kyb" class="dashboard-section">
     <div class="section-title-bar">
@@ -563,7 +565,7 @@
       <form id="cac-lookup-form" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
         <div style="flex: 2; min-width: 200px;">
           <label for="cac_rc_number">Corporate Registration Number (RC / BN Number)</label>
-          <input id="cac_rc_number" value="0000000" placeholder="e.g. 0000000" required=""/>
+          <input id="cac_rc_number" value="0000000" placeholder="e.g. 0000000" required />
         </div>
         <div style="display: flex; gap: 8px; flex: 2; min-width: 260px;">
           <button type="button" id="btn-cac-basic" class="secondary" style="margin: 0; padding: 11px 14px; font-size: 13px;">
@@ -575,12 +577,12 @@
         </div>
       </form>
 
-      <div id="cac-result-box" style="margin-top: 20px;" hidden=""></div>
+      <div id="cac-result-box" style="margin-top: 20px;" hidden></div>
     </div>
   </section>
 
   <!-- =========================================================================
-       SECTION 5: COLLAPSIBLE API CODE DRAWERS &amp; LIVE AUDIT INSPECTOR
+       SECTION 5: COLLAPSIBLE API CODE DRAWERS & LIVE AUDIT INSPECTOR
        ========================================================================= -->
   <section id="fraud-telemetry" class="dashboard-section">
     <div class="section-title-bar">
@@ -604,7 +606,7 @@
       <div id="drawer-bulk-identify" style="margin-top: 10px;"></div>
     </div>
 
-    <!-- Live Webhook Deliveries &amp; API Log Ledger -->
+    <!-- Live Webhook Deliveries & API Log Ledger -->
     <div class="card" style="margin-top: 20px; padding: 20px;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
         <h3 class="card-heading" style="margin: 0;">Live Webhook Deliveries &amp; Audit Ledger</h3>
@@ -621,7 +623,7 @@
 </div>
 
 <script type="module" src="./assets/js/nav.js"></script>
+
 <script type="module" src="./assets/js/play.js"></script>
-
-
-</body></html>
+</body>
+</html>

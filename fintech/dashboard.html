@@ -1,10 +1,12 @@
-<!DOCTYPE html><html lang="en"><head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Ninja Digital Banking · Scored KYC &amp; Onboarding</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ninja Digital Banking &middot; Scored KYC &amp; Onboarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./assets/css/shared.css?v=20260924"/>
   
 <link rel="stylesheet" href="./assets/css/dashboard.css"/>
@@ -12,27 +14,28 @@
 <body>
 <nav class="nav">
   <a href="./dashboard.html" class="brand"><svg class="ninja-logo-mark" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="width: 22px; height: 22px; flex-shrink: 0; display: inline-block; vertical-align: middle;">
-  <path d="M12 1 L14.6 9.4 L23 12 L14.6 14.6 L12 23 L9.4 14.6 L1 12 L9.4 9.4 Z"></path>
-  <circle cx="12" cy="12" r="2.4" fill="var(--logo-hole, var(--red, #10b981))"></circle>
+  <path d="M12 1 L14.6 9.4 L23 12 L14.6 14.6 L12 23 L9.4 14.6 L1 12 L9.4 9.4 Z"/>
+  <circle cx="12" cy="12" r="2.4" fill="var(--logo-hole, var(--red, #10b981))"/>
 </svg>
-Ninja Bank · Fintech</a>
+Ninja Bank &middot; Fintech</a>
   <span class="sandbox-badge">Sandbox</span>
   <a href="./dashboard.html">Dashboard</a>
   <a href="./onboard.html">Onboard Customer</a>
   <a href="./inspector.html">Call Inspector</a>
   <span class="nav-spacer"></span>
   <a href="../" class="nav-app-switcher-badge" title="Switch to Sportsbook KYC Demo">
-    <span>⚽ Sportsbook KYC →</span>
+    <span>⚽ Sportsbook KYC &rarr;</span>
   </a>
 </nav>
 
-<div class="page page-wide">
+<div class="page page-wide"
+>
   <div class="dash-hero">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
       <div>
         <h1 style="margin: 0 0 6px;">Customer Dashboard &amp; Fund Withdrawals</h1>
         <p class="lede" style="margin: 0; max-width: 820px;">
-          Live demonstration of scored KYC onboarding, real-time re-verification, and payout security. Payouts and fund withdrawals are validated against recipient BVN records via Ninja API — frozen accounts cannot withdraw until verified.
+          Live demonstration of scored KYC onboarding, real-time re-verification, and payout security. Payouts and fund withdrawals are validated against recipient BVN records via Ninja API &mdash; frozen accounts cannot withdraw until verified.
         </p>
       </div>
       <a href="./onboard.html" class="primary" style="display: inline-flex; align-items: center; text-decoration: none; padding: 10px 18px; font-weight: 700; border-radius: 8px; width: auto;">+ Onboard Customer</a>
@@ -49,19 +52,19 @@ Ninja Bank · Fintech</a>
       <div id="customer-list"><p class="hint">Loading customers…</p></div>
     </div>
 
-    <!-- Customer Detail &amp; Action Workstation -->
-    <div id="detail-panel" class="card" hidden="">
-      <!-- Customer Identity &amp; Wallet Stats -->
+    <!-- Customer Detail & Action Workstation -->
+    <div id="detail-panel" class="card" hidden>
+      <!-- Customer Identity & Wallet Stats -->
       <div id="detail-header"></div>
 
       <!-- Compliance Alert Notice (Shown when account is flagged) -->
-      <div id="kyc-alert-banner" class="kyc-notice-card" hidden="">
+      <div id="kyc-alert-banner" class="kyc-notice-card" hidden>
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
           <div>
-            <strong style="color: #f87171; display: block; font-size: 13.5px; margin-bottom: 2px;">⚠️ Withdrawals Locked — Action Required</strong>
+            <strong style="color: #f87171; display: block; font-size: 13.5px; margin-bottom: 2px;">⚠️ Withdrawals Locked &mdash; Action Required</strong>
             <span style="color: var(--muted); font-size: 12px;">This account is currently flagged for review. Fund withdrawals are frozen until KYC verification is cleared.</span>
           </div>
-          <button type="button" id="trigger-verify-btn" class="primary" style="padding: 7px 16px; font-size: 12px; width: auto; margin: 0;">Verify KYC Now →</button>
+          <button type="button" id="trigger-verify-btn" class="primary" style="padding: 7px 16px; font-size: 12px; width: auto; margin: 0;">Verify KYC Now &rarr;</button>
         </div>
       </div>
 
@@ -87,7 +90,7 @@ Ninja Bank · Fintech</a>
         <form id="transfer-form">
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <label>Amount (₦)
-              <input id="t_amount" type="number" min="1000" value="50000" required=""/>
+              <input id="t_amount" type="number" min="1000" value="50000" required />
             </label>
             <label>Destination Bank
               <select id="t_bank" style="padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 8px; color: #fff; width: 100%;">
@@ -113,10 +116,10 @@ Ninja Bank · Fintech</a>
 
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
             <label>Destination Account Number
-              <input id="t_account" value="0123456789" maxlength="10" required=""/>
+              <input id="t_account" value="0123456789" maxlength="10" required />
             </label>
             <label>Recipient Account Name (BVN Verified)
-              <input id="t_name" value="James Bond" required=""/>
+              <input id="t_name" value="James Bond" required />
             </label>
           </div>
 
@@ -126,11 +129,11 @@ Ninja Bank · Fintech</a>
             </button>
           </div>
         </form>
-        <p id="transfer-result" hidden="" style="margin-top: 14px;"></p>
+        <p id="transfer-result" hidden style="margin-top: 14px;"></p>
       </div>
 
       <!-- Tab View 2: KYC Details -->
-      <div id="view-kyc" hidden="">
+      <div id="view-kyc" hidden>
         <div id="kyc-details-card"></div>
       </div>
 
@@ -151,7 +154,7 @@ Ninja Bank · Fintech</a>
 </div>
 
 <script type="module" src="./assets/js/nav.js"></script>
+
 <script type="module" src="./assets/js/dashboard.js"></script>
-
-
-</body></html>
+</body>
+</html>
