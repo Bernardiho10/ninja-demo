@@ -22,9 +22,9 @@ export default [
       copy({
         targets: [
           { src: 'src/*.css', dest: 'public/assets/css' },
-          { src: 'src/assets/**/*', dest: 'public/assets' },
+          { src: 'src/assets/images/*', dest: 'public/assets/images' },
         ],
-        flatten: false,
+        flatten: true,
       }),
       typescript({ tsconfig: './tsconfig.json' }),
       nodeResolve(),
@@ -46,7 +46,7 @@ export default [
         targets: [
           { src: 'src/fintech/*.css', dest: 'public/fintech/assets/css' },
         ],
-        flatten: false,
+        flatten: true,
       }),
       typescript({ tsconfig: './tsconfig.json' }),
       nodeResolve(),

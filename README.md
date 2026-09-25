@@ -15,35 +15,6 @@ Demonstrates how sports betting and iGaming platforms protect against fraud and 
 ### 2. Digital Banking KYC & Tiered Limits (`/fintech/`)
 Demonstrates digital bank customer onboarding, scored name matching, and account tier limits:
 - **1-Click Test Scenarios**: Exact Match, Minor Typo, and Fraud Mismatch.
-- **Customer Directory & Tier Limits**: Tier 1 (₦50K), Tier 2 (₦200K), Tier 3 (₦5M).
+- **Customer Directory & Tier Limits**: Tier 1 (₦50K), Tier 2 (₦500K), Tier 3 (₦5M).
 - **Flagging & Re-KYC**: Real-time account hold upon name discrepancies with self-service resolution.
 - **API Call Inspector**: Real-time request/response viewer with cURL, TypeScript, and Go code snippets.
-
-## Development & Build
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v20+)
-- [HAM](https://github.com/fobilow/ham) CLI:
-  ```bash
-  go install github.com/fobilow/ham/cmd/ham@latest
-  ```
-
-### Local Development
-```bash
-npm install
-npm run dev
-```
-Serves the site locally on `http://localhost:5671/`.
-
-### Compile Static Build
-```bash
-npm run build
-```
-Compiles HTML and TypeScript from `src/` directly into the repository root (`index.html`, `assets/`, `fintech/`), ready for GitHub Pages.
-
-## Deployment to GitHub Pages
-
-1. In GitHub, go to **Settings** &rarr; **Pages**.
-2. Under **Build and deployment** &rarr; **Source**, select **Deploy from a branch**.
-3. Set **Branch** to `main` and folder to **`/ (root)`**.
-4. Click **Save**.

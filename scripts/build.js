@@ -79,4 +79,10 @@ if (fs.existsSync(path.resolve(publicDir, 'fintech'))) {
 fs.writeFileSync(path.resolve(rootDir, '.nojekyll'), '')
 console.log('  Created ./.nojekyll')
 
+// 6. Clean up temporary public directory
+if (fs.existsSync(publicDir)) {
+  fs.rmSync(publicDir, { recursive: true, force: true })
+  console.log('  Cleaned up temporary public/ directory')
+}
+
 console.log('==> Build complete! All static files are in the repository root.')

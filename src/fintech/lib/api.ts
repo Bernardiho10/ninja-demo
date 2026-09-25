@@ -256,14 +256,31 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
     const customer = customers.find((c) => c.id === cid)
     if (!customer) throw new APIError(404, 'Customer not found')
 
+    const outcome = body.outcome || 'cleared'
+    if (outcome === 'failed') {
+      customer.status = 're_kyc_failed'
+      customer.score = 0.35
+      customer.recommendation = 'REJECT'
+      customer.last_checked_at = new Date().toISOString()
+      saveLocalCustomers(customers)
+      const resp = { customer, message: 'Re-KYC verification failed: Registry photo & live selfie mismatch.' }
+      addLocalLog('POST', 'https://api.ninja.ng/api/identity/identify (re-kyc)', 400, { customerId: cid, outcome }, resp)
+      return resp as T
+    }
+
     customer.status = 're_kyc_cleared'
-    customer.score = 0.96
+    customer.score = 0.98
     customer.recommendation = 'ALLOW'
+    customer.fields = [
+      { field: 'full_name', score: 1.0, match: 'exact', provided: customer.full_name },
+      { field: 'date_of_birth', score: 1.0, match: 'exact', provided: customer.date_of_birth },
+      { field: 'id_number', score: 1.0, match: 'exact', provided: customer.id_number },
+    ]
     customer.last_checked_at = new Date().toISOString()
     saveLocalCustomers(customers)
 
-    const resp = { customer, message: 'Re-KYC completed successfully via Ninja lookup.' }
-    addLocalLog('POST', `https://api.ninja.ng/api/identity/identify (re-kyc)`, 200, { customerId: cid }, resp)
+    const resp = { customer, message: 'Re-KYC verification cleared! Identity confirmed and withdrawals unlocked.' }
+    addLocalLog('POST', `https://api.ninja.ng/api/identity/identify (re-kyc)`, 200, { customerId: cid, outcome }, resp)
     return resp as T
   }
 
@@ -297,14 +314,19 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
 
     const amountNaira = Number(body.amount_naira || 0)
     const amountKobo = amountNaira * 100
-    const recipientName = body.recipient_name || 'Recipient'
+    const recipientName = (body.recipient_name || customer.full_name).trim()
     const recipientBank = body.recipient_bank || 'Access Bank'
     const recipientAccount = body.recipient_account || '0123456789'
 
     const allTransfers = loadLocalTransfers()
     if (!allTransfers[cid]) allTransfers[cid] = []
 
-    // Rule: flagged accounts require re-KYC before transfers
+    // Rule 1: Insufficient Balance
+    if (amountKobo > customer.balance_kobo) {
+      throw new APIError(400, `Insufficient wallet balance. Available: ${formatNaira(customer.balance_kobo)}`)
+    }
+
+    // Rule 2: Flagged accounts require re-KYC before withdrawals
     if (customer.status === 'flagged_review' || customer.status === 're_kyc_failed') {
       const heldTx: Transfer = {
         ID: 'tx_' + Date.now().toString(36),
@@ -314,7 +336,7 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
         RecipientAccount: recipientAccount,
         AmountKobo: amountKobo,
         Status: 'held_re_kyc',
-        Reason: 'Held: customer is flagged for identity re-KYC verification.',
+        Reason: 'Held: Account is flagged for KYC review. Withdrawals are frozen until verified.',
         CreatedAt: new Date().toISOString(),
       }
       allTransfers[cid].unshift(heldTx)
@@ -322,7 +344,7 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
       return { status: 'held_re_kyc', message: heldTx.Reason } as T
     }
 
-    // Rule: daily tier limit
+    // Rule 3: Daily tier limit
     if (amountKobo > customer.daily_limit_kobo) {
       const blockedTx: Transfer = {
         ID: 'tx_' + Date.now().toString(36),
@@ -332,7 +354,7 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
         RecipientAccount: recipientAccount,
         AmountKobo: amountKobo,
         Status: 'blocked_tier_limit',
-        Reason: `Blocked: ₦${amountNaira.toLocaleString()} exceeds Tier ${customer.tier} daily limit of ${formatNaira(customer.daily_limit_kobo)}.`,
+        Reason: `Blocked: ₦${amountNaira.toLocaleString()} exceeds Tier ${customer.tier} daily limit of ${formatNaira(customer.daily_limit_kobo)}. Upgrade tier to withdraw larger amounts.`,
         CreatedAt: new Date().toISOString(),
       }
       allTransfers[cid].unshift(blockedTx)
@@ -340,7 +362,28 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
       return { status: 'blocked_tier_limit', message: blockedTx.Reason } as T
     }
 
-    // Success: transfer completed
+    // Rule 4: Third-party name mismatch detection via Ninja Payout KYC Check
+    const isSelfWithdrawal = recipientName.toLowerCase() === customer.full_name.toLowerCase()
+    if (!isSelfWithdrawal && (recipientName.toLowerCase().includes('fraud') || recipientName.toLowerCase().includes('unknown') || recipientName.toLowerCase().includes('stark'))) {
+      const mismatchTx: Transfer = {
+        ID: 'tx_' + Date.now().toString(36),
+        CustomerID: cid,
+        RecipientName: recipientName,
+        RecipientBank: recipientBank,
+        RecipientAccount: recipientAccount,
+        AmountKobo: amountKobo,
+        Status: 'held_re_kyc',
+        Reason: `Payout Security Alert: Recipient name "${recipientName}" does not match destination account BVN records. Withdrawal held for review.`,
+        CreatedAt: new Date().toISOString(),
+      }
+      customer.status = 'flagged_review'
+      saveLocalCustomers(customers)
+      allTransfers[cid].unshift(mismatchTx)
+      saveLocalTransfers(allTransfers)
+      return { status: 'held_re_kyc', message: mismatchTx.Reason } as T
+    }
+
+    // Success: Withdrawal completed!
     customer.balance_kobo = Math.max(0, customer.balance_kobo - amountKobo)
     saveLocalCustomers(customers)
 
@@ -352,13 +395,26 @@ function simulateFallback<T>(path: string, init?: RequestInit): T {
       RecipientAccount: recipientAccount,
       AmountKobo: amountKobo,
       Status: 'completed',
-      Reason: `Disbursed to ${recipientName} (${recipientBank} · ${recipientAccount})`,
+      Reason: isSelfWithdrawal
+        ? `Withdrawal to verified personal account (${recipientBank} · ${recipientAccount})`
+        : `Transfer disbursed to ${recipientName} (${recipientBank} · ${recipientAccount})`,
       CreatedAt: new Date().toISOString(),
     }
     allTransfers[cid].unshift(completedTx)
     saveLocalTransfers(allTransfers)
 
-    return { status: 'completed', message: `₦${amountNaira.toLocaleString()} sent successfully to ${recipientName}!` } as T
+    addLocalLog('POST', 'https://api.ninja.ng/api/payouts/validate', 200, {
+      account_number: recipientAccount,
+      bank: recipientBank,
+      recipient_name: recipientName,
+      expected_name: customer.full_name
+    }, {
+      verified: true,
+      match_score: 1.0,
+      disbursement_ready: true
+    })
+
+    return { status: 'completed', message: `Withdrawal of ₦${amountNaira.toLocaleString()} successfully processed to ${recipientBank} · ${recipientAccount}!` } as T
   }
 
   // 6. GET /api/customers/:id/transfers
@@ -429,8 +485,11 @@ export const api = {
 
   listCustomers: () => request<Customer[] | null>('/api/customers'),
 
-  reKYC: (customerId: string) =>
-    request<{ customer: Customer; message: string }>(`/api/customers/${customerId}/re-kyc`, { method: 'POST' }),
+  reKYC: (customerId: string, outcome: 'cleared' | 'failed' = 'cleared') =>
+    request<{ customer: Customer; message: string }>(`/api/customers/${customerId}/re-kyc`, {
+      method: 'POST',
+      body: JSON.stringify({ outcome }),
+    }),
 
   upgradeTier: (customerId: string) =>
     request<{ customer: Customer }>(`/api/customers/${customerId}/upgrade-tier`, { method: 'POST' }),
