@@ -31,7 +31,7 @@ function renderResult(customer: Customer, message: string) {
       </tbody>
     </table>`
     }
-    <p class="hint" style="margin-top: 10px"><a href="/dashboard.html">View on the dashboard →</a></p>
+    <p class="hint" style="margin-top: 10px"><a href="./dashboard.html">View on the dashboard →</a></p>
   `
   resultEl.innerHTML = html
   resultEl.hidden = false
@@ -60,6 +60,34 @@ form.addEventListener('submit', async (e) => {
     submitBtn.disabled = false
     submitBtn.textContent = 'Verify & onboard'
   }
+})
+
+// 1-Click test presets
+document.getElementById('preset-exact')?.addEventListener('click', () => {
+  field('full_name').value = 'James Bond'
+  field('date_of_birth').value = '1975-01-01'
+  field('id_type').value = 'nin'
+  field('id_number').value = '77777777777'
+  errorEl.hidden = true
+  resultEl.hidden = true
+})
+
+document.getElementById('preset-fuzzy')?.addEventListener('click', () => {
+  field('full_name').value = 'Jams Bond'
+  field('date_of_birth').value = '1975-01-01'
+  field('id_type').value = 'nin'
+  field('id_number').value = '77777777777'
+  errorEl.hidden = true
+  resultEl.hidden = true
+})
+
+document.getElementById('preset-mismatch')?.addEventListener('click', () => {
+  field('full_name').value = 'Tony Stark'
+  field('date_of_birth').value = '1980-05-29'
+  field('id_type').value = 'bvn'
+  field('id_number').value = '22222222222'
+  errorEl.hidden = true
+  resultEl.hidden = true
 })
 
 const onboardSnippets = buildLanguageSnippets(ONBOARD_CALL)

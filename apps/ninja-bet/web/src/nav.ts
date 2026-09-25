@@ -80,29 +80,8 @@ function initNav() {
   ;[1, 2, 3].forEach((step) => {
     const btn = document.getElementById(`step-nav-${step}`)
     btn?.addEventListener('click', () => {
-      // Ensure we are in sportsbook mode when clicking stepper
-      window.dispatchEvent(new CustomEvent('ninjabet:navigate-mode', { detail: { mode: 'sportsbook' } }))
       window.dispatchEvent(new CustomEvent('ninjabet:navigate-step', { detail: { step } }))
     })
-  })
-
-  // Mode Switcher (Sportsbook vs Fintech)
-  const sbBtn = document.getElementById('mode-btn-sportsbook')
-  const ftBtn = document.getElementById('mode-btn-fintech')
-  const stepper = document.getElementById('checkpoint-stepper')
-
-  sbBtn?.addEventListener('click', () => {
-    sbBtn.classList.add('active')
-    ftBtn?.classList.remove('active')
-    if (stepper) stepper.style.display = 'flex'
-    window.dispatchEvent(new CustomEvent('ninjabet:navigate-mode', { detail: { mode: 'sportsbook' } }))
-  })
-
-  ftBtn?.addEventListener('click', () => {
-    ftBtn.classList.add('active')
-    sbBtn?.classList.remove('active')
-    if (stepper) stepper.style.display = 'none'
-    window.dispatchEvent(new CustomEvent('ninjabet:navigate-mode', { detail: { mode: 'fintech' } }))
   })
 
   // Global Reset button

@@ -3,11 +3,27 @@ import { nodeResolve } from '@rollup/plugin-node-resolve'
 import copy from 'rollup-plugin-copy'
 import commonjs from '@rollup/plugin-commonjs'
 import { glob } from 'glob'
+import fs from 'fs'
+import path from 'path'
 
-// One bundle per page entry (register.ts, play.ts, ...) plus the shared
-// nav.ts that every page's layout links directly — mirrors HAM's own
-// per-page .html/.css/.ts convention.
 const inputFiles = glob.sync('./src/*.ts')
+
+function makeAssetsRelative() {
+  return {
+    name: 'make-assets-relative',
+    closeBundle() {
+      const htmlFiles = glob.sync('public/**/*.html')
+      for (const file of htmlFiles) {
+        let content = fs.readFileSync(file, 'utf-8')
+        const relDir = path.relative(path.dirname(file), 'public/assets').replace(/\\/g, '/')
+        const relPrefix = relDir.startsWith('.') ? relDir : './' + relDir
+        content = content.replace(/href=["']\/assets\//g, `href="${relPrefix}/`)
+        content = content.replace(/src=["']\/assets\//g, `src="${relPrefix}/`)
+        fs.writeFileSync(file, content, 'utf-8')
+      }
+    }
+  }
+}
 
 export default {
   input: inputFiles,
@@ -29,5 +45,6 @@ export default {
     typescript({ tsconfig: './tsconfig.json' }),
     nodeResolve(),
     commonjs(),
+    makeAssetsRelative(),
   ],
 }

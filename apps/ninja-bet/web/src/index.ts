@@ -16,7 +16,6 @@ import { getLinkScenarioConfig } from './lib/linkScenarios'
 let state: V2State = loadState()
 let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
 let selectedScenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled'
-let currentMode: 'sportsbook' | 'fintech' = 'sportsbook'
 
 function init() {
   bindStepper()
@@ -24,8 +23,6 @@ function init() {
   bindStep1()
   bindStep2()
   bindStep3()
-  bindFintechFlow()
-  bindModeSwitcher()
   bindDevTools()
   bindCopyCode()
 
@@ -36,42 +33,10 @@ function init() {
     }
   })
 
-  // Mode switcher listener
-  window.addEventListener('ninjabet:navigate-mode', (e: any) => {
-    if (e.detail?.mode) {
-      setMode(e.detail.mode)
-    }
-  })
-
   goToStep(state.currentStep)
   syncFields()
   renderLogs()
   updateDevCode()
-}
-
-// -----------------------------------------------------------------------------
-// Mode Switcher (Sportsbook vs Fintech)
-// -----------------------------------------------------------------------------
-function setMode(mode: 'sportsbook' | 'fintech') {
-  currentMode = mode
-  const sbFlow = document.getElementById('flow-sportsbook')
-  const ftFlow = document.getElementById('flow-fintech')
-  const savingsCard = document.getElementById('resource-savings-card')
-
-  if (mode === 'sportsbook') {
-    if (sbFlow) sbFlow.hidden = false
-    if (ftFlow) ftFlow.hidden = true
-    if (savingsCard) savingsCard.style.display = 'block'
-  } else {
-    if (sbFlow) sbFlow.hidden = true
-    if (ftFlow) ftFlow.hidden = false
-    if (savingsCard) savingsCard.style.display = 'none'
-  }
-  updateDevCode()
-}
-
-function bindModeSwitcher() {
-  // Event listeners are set in nav.ts and dispatched via ninjabet:navigate-mode
 }
 
 // -----------------------------------------------------------------------------
@@ -96,7 +61,6 @@ function goToStep(step: 1 | 2 | 3) {
 function bindStepper() {
   ;[1, 2, 3].forEach((s) => {
     document.getElementById(`step-nav-${s}`)?.addEventListener('click', () => {
-      setMode('sportsbook')
       goToStep(s as any)
     })
   })
@@ -708,190 +672,6 @@ function bindStep3() {
     }
   })
 }
-
-// -----------------------------------------------------------------------------
-// Vertical B: Digital Banking & Fintech Onboarding (Scored Verification)
-// -----------------------------------------------------------------------------
-function bindFintechFlow() {
-  const fn = document.getElementById('ft-first-name') as HTMLInputElement | null
-  const ln = document.getElementById('ft-last-name') as HTMLInputElement | null
-  const idType = document.getElementById('ft-id-type') as HTMLSelectElement | null
-  const idNum = document.getElementById('ft-id-number') as HTMLInputElement | null
-  const dob = document.getElementById('ft-dob') as HTMLInputElement | null
-  const form = document.getElementById('form-fintech') as HTMLFormElement | null
-  const result = document.getElementById('ft-result')
-
-  // 1-Click test presets
-  document.getElementById('ft-preset-exact')?.addEventListener('click', () => {
-    if (fn) fn.value = 'James'
-    if (ln) ln.value = 'Bond'
-    if (idType) idType.value = 'nin'
-    if (idNum) idNum.value = '77777777777'
-    if (dob) dob.value = '1975-01-01'
-    if (result) result.hidden = true
-    updateDevCode()
-  })
-
-  document.getElementById('ft-preset-fuzzy')?.addEventListener('click', () => {
-    if (fn) fn.value = 'Jams'
-    if (ln) ln.value = 'Bond'
-    if (idType) idType.value = 'nin'
-    if (idNum) idNum.value = '77777777777'
-    if (dob) dob.value = '1975-01-01'
-    if (result) result.hidden = true
-    updateDevCode()
-  })
-
-  document.getElementById('ft-preset-mismatch')?.addEventListener('click', () => {
-    if (fn) fn.value = 'Tony'
-    if (ln) ln.value = 'Stark'
-    if (idType) idType.value = 'nin'
-    if (idNum) idNum.value = '77777777777'
-    if (dob) dob.value = '1980-05-29'
-    if (result) result.hidden = true
-    updateDevCode()
-  })
-
-  form?.addEventListener('submit', (e) => {
-    e.preventDefault()
-    const firstName = fn?.value.trim() || 'James'
-    const lastName = ln?.value.trim() || 'Bond'
-    const docType = idType?.value || 'nin'
-    const docNumber = idNum?.value.trim() || '77777777777'
-    const dobVal = dob?.value.trim() || '1975-01-01'
-
-    const payload = {
-      idType: docType,
-      mode: 'verify',
-      idNumber: docNumber,
-      firstName,
-      lastName,
-      dateOfBirth: dobVal,
-    }
-
-    const curl = `curl -X POST https://api.ninja.ng/api/identity/identify \\
-  -H "Authorization: Bearer $NINJA_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '${JSON.stringify(payload, null, 2)}'`
-
-    const ts = `// Digital Banking: Scored Verification
-const result = await ninja.identity.identify({
-  idType: '${docType}',
-  mode: 'verify',
-  idNumber: '${docNumber}',
-  firstName: '${firstName}',
-  lastName: '${lastName}',
-  dateOfBirth: '${dobVal}',
-})`
-
-    const python = `# Digital Banking: Scored Verification
-response = requests.post(
-    "https://api.ninja.ng/api/identity/identify",
-    headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
-    json=${JSON.stringify(payload, null, 4)}
-)`
-
-    const go = `// Digital Banking: Scored Verification
-resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
-	IDType:      "${docType}",
-	Mode:        "verify",
-	IDNumber:    "${docNumber}",
-	FirstName:   "${firstName}",
-	LastName:    "${lastName}",
-	DateOfBirth: "${dobVal}",
-})`
-
-    showCodeFirstSlideOut({
-      title: 'POST /api/identity/identify',
-      endpoint: '/api/identity/identify',
-      method: 'POST',
-      description: 'Ninja verifies individual fields and returns per-field confidence match scores.',
-      curl,
-      ts,
-      python,
-      go,
-      confirmLabel: 'Noted, Proceed →',
-      onProceed: async () => {
-        executeFintechVerification({ firstName, lastName, docType, docNumber, dobVal })
-      },
-    })
-  })
-}
-
-function executeFintechVerification(p: {
-  firstName: string
-  lastName: string
-  docType: string
-  docNumber: string
-  dobVal: string
-}) {
-  const result = document.getElementById('ft-result')
-  if (!result) return
-
-  let fnScore = 0.12
-  if (p.firstName.toLowerCase() === 'james') fnScore = 1.0
-  else if (p.firstName.toLowerCase() === 'jams') fnScore = 0.88
-
-  let lnScore = 0.10
-  if (p.lastName.toLowerCase() === 'bond') lnScore = 1.0
-
-  let dobScore = 0.0
-  if (p.dobVal === '1975-01-01') dobScore = 1.0
-
-  const overallScore = Math.round(((fnScore + lnScore + dobScore) / 3) * 100) / 100
-
-  let recommendation = 'REJECT'
-  let limit = '₦0 (Blocked)'
-  let tier = 'Unapproved'
-
-  if (overallScore >= 0.85) {
-    recommendation = 'ALLOW'
-    limit = '₦5,000,000'
-    tier = 'Tier 3 Full Access'
-  } else if (overallScore >= 0.70) {
-    recommendation = 'MANUAL REVIEW'
-    limit = '₦50,000'
-    tier = 'Tier 1 Limited'
-  }
-
-  addLog('POST', '/api/identity/identify', overallScore >= 0.7 ? 200 : 400, 68, {
-    mode: 'verify',
-    scores: { first_name: fnScore, last_name: lnScore, date_of_birth: dobScore },
-    overallScore,
-    recommendation,
-  })
-
-  result.hidden = false
-  result.innerHTML = `
-    <div class="score-badge-card">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-        <strong style="color: #fff; font-size: 14px;">Identity Match Breakdown:</strong>
-        <span class="score-pill ${overallScore >= 0.85 ? 'score-high' : overallScore >= 0.7 ? 'score-mid' : 'score-low'}">
-          Overall Score: ${Math.round(overallScore * 100)}% (${recommendation})
-        </span>
-      </div>
-
-      <div class="score-row">
-        <span style="color: var(--muted);">First Name ("${p.firstName}")</span>
-        <span class="score-pill ${fnScore >= 0.85 ? 'score-high' : fnScore >= 0.7 ? 'score-mid' : 'score-low'}">${Math.round(fnScore * 100)}%</span>
-      </div>
-      <div class="score-row">
-        <span style="color: var(--muted);">Surname ("${p.lastName}")</span>
-        <span class="score-pill ${lnScore >= 0.85 ? 'score-high' : 'score-low'}">${Math.round(lnScore * 100)}%</span>
-      </div>
-      <div class="score-row">
-        <span style="color: var(--muted);">Date of Birth ("${p.dobVal}")</span>
-        <span class="score-pill ${dobScore === 1.0 ? 'score-high' : 'score-low'}">${dobScore === 1.0 ? '100% (Match)' : '0% (Mismatch)'}</span>
-      </div>
-
-      <div style="margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 12px; color: var(--muted);">Assigned Account Limit:</span>
-        <strong style="color: #34d399; font-size: 13px;">${tier} &middot; ${limit}</strong>
-      </div>
-    </div>
-  `
-}
-
 // -----------------------------------------------------------------------------
 // Live Code Inspector & Telemetry
 // -----------------------------------------------------------------------------
@@ -941,59 +721,7 @@ function updateDevCode() {
   let snippet = ''
   let lang = 'bash'
 
-  if (currentMode === 'fintech') {
-    endpoint = 'POST /api/identity/identify'
-    const fn = (document.getElementById('ft-first-name') as HTMLInputElement)?.value || 'James'
-    const ln = (document.getElementById('ft-last-name') as HTMLInputElement)?.value || 'Bond'
-    const docType = (document.getElementById('ft-id-type') as HTMLSelectElement)?.value || 'nin'
-    const docNumber = (document.getElementById('ft-id-number') as HTMLInputElement)?.value || '77777777777'
-    const dob = (document.getElementById('ft-dob') as HTMLInputElement)?.value || '1975-01-01'
-
-    if (activeTab === 'curl') {
-      lang = 'bash'
-      snippet = `curl -X POST https://api.ninja.ng/api/identity/identify \\
-  -H "Authorization: Bearer $NINJA_TOKEN" \\
-  -H "Content-Type: application/json" \\
-  -d '{
-    "idType": "${docType}",
-    "mode": "verify",
-    "idNumber": "${docNumber}",
-    "firstName": "${fn}",
-    "lastName": "${ln}",
-    "dateOfBirth": "${dob}"
-  }'`
-    } else if (activeTab === 'ts') {
-      lang = 'javascript'
-      snippet = `// Fintech: Scored Verification
-const result = await ninja.identity.identify({
-  idType: '${docType}',
-  mode: 'verify',
-  idNumber: '${docNumber}',
-  firstName: '${fn}',
-  lastName: '${ln}',
-  dateOfBirth: '${dob}',
-})`
-    } else if (activeTab === 'python') {
-      lang = 'python'
-      snippet = `# Fintech: Scored Verification
-response = requests.post(
-    "https://api.ninja.ng/api/identity/identify",
-    headers={"Authorization": f"Bearer {os.environ['NINJA_TOKEN']}"},
-    json={"idType": "${docType}", "mode": "verify", "idNumber": "${docNumber}", "firstName": "${fn}", "lastName": "${ln}", "dateOfBirth": "${dob}"}
-)`
-    } else {
-      lang = 'go'
-      snippet = `// Fintech: Scored Verification
-resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
-	IDType:      "${docType}",
-	Mode:        "verify",
-	IDNumber:    "${docNumber}",
-	FirstName:   "${fn}",
-	LastName:    "${ln}",
-	DateOfBirth: "${dob}",
-})`
-    }
-  } else if (state.currentStep === 1) {
+  if (state.currentStep === 1) {
     endpoint = 'POST /api/identity/identify'
     const fn = state.player.firstName
     const ln = state.player.lastName

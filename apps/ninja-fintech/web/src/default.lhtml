@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ninja-fintech</title>
-  <link rel="stylesheet" href="/assets/css/shared.css"/>
+  <title>Ninja Digital Banking &middot; Scored KYC &amp; Onboarding</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260924"/>
   <link type="ham/layout-css"/>
 </head>
 <body>
 <embed type="ham/partial" src="nav.phtml"/>
 <embed type="ham/page"/>
-<script type="module" src="/assets/js/nav.js"></script>
+<script type="module" src="./assets/js/nav.js"></script>
 <embed type="ham/layout-js"/>
 </body>
 </html>

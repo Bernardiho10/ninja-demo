@@ -26,18 +26,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install HAM
+        run: |
+          go install github.com/fobilow/ham/cmd/ham@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '24'
 
-      - name: Install dependencies
-        working-directory: apps/ninja-bet/web
-        run: npm ci
+      - name: Install dependencies & build Digital Banking (ninja-fintech)
+        working-directory: apps/ninja-fintech/web
+        run: |
+          npm ci
+          npm run build
 
-      - name: Build
+      - name: Install dependencies & build Sportsbook KYC (ninja-bet)
         working-directory: apps/ninja-bet/web
-        run: npm run build:pages
+        run: |
+          npm ci
+          npm run build:pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

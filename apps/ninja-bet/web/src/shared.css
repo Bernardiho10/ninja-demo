@@ -2455,6 +2455,28 @@ body {
   margin: 0;
 }
 
+/* ── App switcher link in navbar ── */
+.nav-app-switcher-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 11.5px;
+  font-weight: 700;
+  padding: 5px 12px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.nav-app-switcher-badge:hover {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: #38bdf8;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 /* ── Workbench page header ── */
 .workbench-page-header {
   margin-bottom: 28px;

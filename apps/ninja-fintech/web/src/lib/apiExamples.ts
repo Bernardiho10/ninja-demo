@@ -4,8 +4,7 @@
 // genuinely copy-pasteable integration reference: the two-step auth
 // pattern (session token, then bearer-authenticated call) matches
 // internal/ninja/client.go exactly.
-
-const BASE_URL = 'https://api.sandbox.ninja.boucloud.io'
+const BASE_URL = 'https://api.ninja.ng'
 
 export interface CallExample {
   path: string
