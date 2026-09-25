@@ -3,27 +3,6 @@ data.db
 *.db
 *.log
 node_modules/
-apps/*/web/dist/
-server
-server.exe
-ninja-demo-server
-ninja-demo-server.exe
-web/public/
-web/src/index.ts
-tutor.md
-apps/DEPLOYMENT.md
-voice-note-script.md
-
+public/
 .playwright-mcp/
-
-
-# Scratch / temp files
 scratch/
-
-# Junk docs that should never be in the repo
-ninja-docs-issues.md
-spec.md
-guide.md
-tutor.md
-voice-note-script.md
-apps/DEPLOYMENT.md
