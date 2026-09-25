@@ -8,10 +8,9 @@ const __dirname = path.dirname(__filename)
 const betPublicDir = path.resolve(__dirname, '../public')
 const repoRootDir = path.resolve(__dirname, '../../../../')
 const fintechPublicDir = path.resolve(repoRootDir, 'apps/ninja-fintech/web/public')
-const docsDir = path.resolve(repoRootDir, 'docs')
 const rootPublicDir = path.resolve(repoRootDir, 'public')
 
-console.log(`Exporting static suite to ${docsDir} and ${rootPublicDir}...`)
+console.log(`Exporting static suite to ${rootPublicDir}...`)
 
 if (!fs.existsSync(betPublicDir)) {
   console.error(`Error: ninja-bet public directory not found at ${betPublicDir}. Run build first.`)
@@ -40,7 +39,6 @@ function exportTo(targetDir) {
   fs.writeFileSync(path.join(targetDir, '.nojekyll'), '')
 }
 
-exportTo(docsDir)
 exportTo(rootPublicDir)
 
-console.log(`Successfully exported both applications to docs/ and public/ with .nojekyll for GitHub Pages!`)
+console.log(`Successfully exported both applications to public/ with .nojekyll!`)
