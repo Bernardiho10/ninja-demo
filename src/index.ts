@@ -7,6 +7,7 @@ import Prism from 'prismjs'
 import 'prismjs/components/prism-go'
 import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-python'
+import 'prismjs/components/prism-rust'
 
 import { api } from './lib/api'
 import { loadState, saveState, type V2State, type TelemetryLog } from './lib/state'
@@ -29,6 +30,21 @@ function escapeHtml(str: string): string {
 }
 
 function init() {
+  // Ensure the API Call & Response Log section is ALWAYS completely empty on landing!
+  state.logs = []
+
+  // Ensure player name is never set before registration is completed!
+  if (!state.player || state.player.kycStatus !== 'verified') {
+    state.player.firstName = ''
+    state.player.lastName = ''
+    state.player.phoneNumber = ''
+    state.player.nin = ''
+    state.player.dateOfBirth = ''
+    state.player.kycStatus = 'unverified'
+    state.player.walletBalanceNaira = 0
+    state.player.withdrawableBalanceNaira = 0
+  }
+
   bindStepper()
   bindSimulationWallet()
   bindStep1()
@@ -43,20 +59,6 @@ function init() {
       goToStep(e.detail.step)
     }
   })
-
-  // Initialize with initial Sandbox Flow Setup in logs if empty
-  if (state.logs.length === 0) {
-    const flowCfg = getFlowCreationConfig()
-    addLog(
-      'Setup · Flow Created',
-      'POST',
-      '/api/flows',
-      200,
-      88,
-      flowCfg.requestPayload,
-      flowCfg.responsePayload
-    )
-  }
 
   goToStep(state.currentStep)
   syncFields()
@@ -100,6 +102,7 @@ function syncFields() {
   const nin = document.getElementById('input-nin') as HTMLInputElement | null
   const dob = document.getElementById('input-dob') as HTMLInputElement | null
   const wallet = document.getElementById('sim-wallet-input') as HTMLInputElement | null
+  const holderInput = document.getElementById('input-holder-name') as HTMLInputElement | null
 
   if (fn) fn.value = state.player.firstName
   if (ln) ln.value = state.player.lastName
@@ -108,18 +111,30 @@ function syncFields() {
   if (dob) dob.value = state.player.dateOfBirth
   if (wallet) wallet.value = String(state.player.walletBalanceNaira)
 
+  const isVerified = state.player && state.player.kycStatus === 'verified'
+  const fullName = isVerified ? `${state.player.firstName} ${state.player.lastName}`.trim() : ''
+
+  // Step 2 holder name
+  if (holderInput && isVerified && !holderInput.value) {
+    holderInput.value = fullName
+  }
+
   // Step 2 label
   const c2Label = document.getElementById('c2-player-label')
-  if (c2Label) c2Label.textContent = `${state.player.firstName} ${state.player.lastName}`
+  if (c2Label) {
+    c2Label.textContent = isVerified ? fullName : '— (Pending Step 1 Registration)'
+  }
 
   // Step 3 summary
   const c3Bank = document.getElementById('c3-bank-summary')
   const c3Amt = document.getElementById('c3-amount-summary')
   if (c3Bank) {
     if (state.bankAccount && state.bankAccount.isVerified) {
-      c3Bank.textContent = `${state.bankAccount.bankName} · ${state.bankAccount.accountNumber} (${state.player.firstName} ${state.player.lastName})`
+      c3Bank.textContent = `${state.bankAccount.bankName} · ${state.bankAccount.accountNumber} (${fullName})`
+    } else if (isVerified) {
+      c3Bank.textContent = `Access Bank · 0123456789 (${fullName})`
     } else {
-      c3Bank.textContent = 'Access Bank · 0123456789 (James Bond)'
+      c3Bank.textContent = 'Access Bank · 0123456789 (Pending Registration)'
     }
   }
   if (c3Amt) {
@@ -213,11 +228,16 @@ function bindStep1() {
   form?.addEventListener('submit', (e) => {
     e.preventDefault()
 
-    const firstName = fn?.value.trim() || 'James'
-    const lastName = ln?.value.trim() || 'Bond'
-    const phoneNum = phone?.value.trim() || '08012345678'
-    const ninNum = nin?.value.trim() || '77777777777'
-    const dobVal = dob?.value.trim() || '1975-01-01'
+    const firstName = fn?.value.trim() || ''
+    const lastName = ln?.value.trim() || ''
+    const phoneNum = phone?.value.trim() || ''
+    const ninNum = nin?.value.trim() || ''
+    const dobVal = dob?.value.trim() || ''
+
+    if (!firstName || !lastName || !ninNum || !dobVal) {
+      alert('Please fill out the registration fields or click one of the 1-Click Test Scenarios above!')
+      return
+    }
 
     const payload = {
       idType: 'nin',
@@ -264,6 +284,15 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
 	DateOfBirth: "${dobVal}",
 })`
 
+    const rust = `// Step 1: Verify NIN, Name, and Age
+let res = client
+    .post("https://api.ninja.ng/api/identity/identify")
+    .header(AUTHORIZATION, format!("Bearer {}", token))
+    .header(CONTENT_TYPE, "application/json")
+    .json(&json!(${JSON.stringify(payload, null, 4)}))
+    .send()
+    .await?;`
+
     showCodeFirstSlideOut({
       title: 'POST /api/identity/identify',
       endpoint: '/api/identity/identify',
@@ -273,6 +302,7 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
       ts,
       python,
       go,
+      rust,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
         await executeStep1({ firstName, lastName, phoneNum, ninNum, dobVal, payload })
@@ -364,7 +394,11 @@ async function executeStep1(p: {
     state.player.age = age
     state.player.kycStatus = 'verified'
     state.player.matchScore = score
+    state.player.walletBalanceNaira = state.player.walletBalanceNaira || 250000
+    state.player.withdrawableBalanceNaira = state.player.walletBalanceNaira || 250000
+    state.withdrawal.amountNaira = state.player.walletBalanceNaira || 250000
     saveState(state)
+    syncFields()
     window.dispatchEvent(new CustomEvent('ninjabet:statechange'))
 
     result.hidden = false
@@ -486,6 +520,15 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
 	LastName:  "${state.player.lastName}",
 })`
 
+    const rust = `// Step 2: Verify BVN Ownership
+let res = client
+    .post("https://api.ninja.ng/api/identity/identify")
+    .header(AUTHORIZATION, format!("Bearer {}", token))
+    .header(CONTENT_TYPE, "application/json")
+    .json(&json!(${JSON.stringify(payload, null, 4)}))
+    .send()
+    .await?;`
+
     showCodeFirstSlideOut({
       title: 'POST /api/identity/identify',
       endpoint: '/api/identity/identify',
@@ -495,6 +538,7 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
       ts,
       python,
       go,
+      rust,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
         await executeStep2({ bankName, accNum, bvnNum, holderName, payload })
@@ -627,14 +671,27 @@ function bindStep3() {
       ts: config.ts,
       python: config.python,
       go: config.go,
+      rust: config.rust,
       confirmLabel: 'Noted, Proceed →',
       onProceed: async () => {
+        // Log Flow setup configured for this scenario
+        addLog(
+          'Step 3 · Flow Setup',
+          'POST',
+          '/api/flows',
+          200,
+          74,
+          config.flowRequestPayload,
+          config.flowResponsePayload
+        )
+
         // Fixed sandbox session link per user instructions
         const url = 'https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO'
         const linkResponse = {
-          id: 'vs_QAIWePPP_sbx',
+          id: 'vs_' + Math.random().toString(36).substring(2, 9),
+          flow_id: config.flowId,
           url,
-          expires_at: new Date(Date.now() + 3600000).toISOString(),
+          expires_at: new Date(Date.now() + 3600000 * 72).toISOString(),
           status: 'pending',
           sandbox: true,
           scenario: selectedScenario,
@@ -653,6 +710,7 @@ function bindStep3() {
         if (openLink) {
           openLink.onclick = (e) => {
             e.preventDefault()
+            window.open(url, '_blank')
             showVerificationSimulatorModal(selectedScenario)
           }
         }
@@ -861,10 +919,17 @@ function executeFaceOutcome(outcome: 'passed' | 'failed') {
     saveState(state)
 
     const webhookPayload = {
-      event: 'verification.completed',
+      headers: {
+        'content-type': 'application/json',
+        'x-ninja-event': 'kyc.session.completed',
+        'x-ninja-signature': 't=1727435123,v1=5d41402abc4b2a76b9719d911017c592',
+      },
+      event: 'kyc.session.completed',
       flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
+      session_id: 'vs_' + Math.random().toString(36).substring(2, 9),
       customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
       status: 'passed',
+      signature_verified: true,
       biometrics: {
         liveness_score: 0.985,
         face_match_score: 0.992,
@@ -875,6 +940,7 @@ function executeFaceOutcome(outcome: 'passed' | 'failed') {
 
     const webhookAck = {
       received: true,
+      signature_valid: true,
       action: 'PAYOUT_AUTHORIZED',
       ledger_status: 'QUEUED_FOR_DISBURSEMENT',
     }
@@ -886,10 +952,17 @@ function executeFaceOutcome(outcome: 'passed' | 'failed') {
     saveState(state)
 
     const webhookPayload = {
-      event: 'verification.completed',
+      headers: {
+        'content-type': 'application/json',
+        'x-ninja-event': 'kyc.session.completed',
+        'x-ninja-signature': 't=1727435123,v1=8e2d402abc4b2a76b9719d911017c771',
+      },
+      event: 'kyc.session.completed',
       flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
+      session_id: 'vs_' + Math.random().toString(36).substring(2, 9),
       customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
       status: 'failed',
+      signature_verified: true,
       biometrics: {
         liveness_score: 0.35,
         face_match_score: 0.28,
@@ -900,6 +973,7 @@ function executeFaceOutcome(outcome: 'passed' | 'failed') {
 
     const webhookAck = {
       received: true,
+      signature_valid: true,
       action: 'PAYOUT_FROZEN_SECURITY_FLAG',
       incident_ticket: 'SEC_TAKEOVER_ALERT_4402',
     }
@@ -1173,13 +1247,108 @@ function addLog(
   renderLogs(log.id)
 }
 
+const logActiveLang: Record<string, string> = {}
+
+function generateCodeSnippets(
+  method: string,
+  endpoint: string,
+  payload: any
+): Record<string, { lang: string; code: string }> {
+  const url = `https://api.ninja.ng${endpoint}`
+  const jsonStr = JSON.stringify(payload || {}, null, 2)
+  const jsonStr4 = JSON.stringify(payload || {}, null, 4)
+
+  const curl = `curl -X ${method} "${url}" \\
+  -H "Authorization: Bearer $NINJA_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '${jsonStr}'`
+
+  const javascript = `const response = await fetch("${url}", {
+  method: "${method}",
+  headers: {
+    "Authorization": \`Bearer \${process.env.NINJA_TOKEN}\`,
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(${jsonStr}),
+});
+const data = await response.json();
+console.log(data);`
+
+  const python = `import os
+import requests
+
+response = requests.${method.toLowerCase()}(
+    "${url}",
+    headers={
+        "Authorization": f"Bearer {os.environ.get('NINJA_TOKEN')}",
+        "Content-Type": "application/json",
+    },
+    json=${jsonStr4}
+)
+data = response.json()
+print(data)`
+
+  const go = `package main
+
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func main() {
+	payloadBytes := []byte(\`${jsonStr}\`)
+	req, _ := http.NewRequest("${method}", "${url}", bytes.NewBuffer(payloadBytes))
+	req.Header.Set("Authorization", "Bearer "+os.Getenv("NINJA_TOKEN"))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		panic(err)
+	}
+	defer resp.Body.Close()
+	fmt.Println("Response Status:", resp.Status)
+}`
+
+  const rust = `use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
+use serde_json::json;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error.Error>> {
+    let client = reqwest::Client::new();
+    let token = std::env::var("NINJA_TOKEN").unwrap_or_default();
+
+    let res = client
+        .${method.toLowerCase()}("${url}")
+        .header(AUTHORIZATION, format!("Bearer {}", token))
+        .header(CONTENT_TYPE, "application/json")
+        .json(&json!(${jsonStr4}))
+        .send()
+        .await?;
+
+    let body = res.text().await?;
+    println!("Response: {}", body);
+    Ok(())
+}`
+
+  return {
+    curl: { lang: 'bash', code: curl },
+    javascript: { lang: 'javascript', code: javascript },
+    python: { lang: 'python', code: python },
+    go: { lang: 'go', code: go },
+    rust: { lang: 'rust', code: rust },
+  }
+}
+
 function renderLogs(openLogId?: string) {
   const list = document.getElementById('dev-call-log-list')
   if (!list) return
 
   if (state.logs.length === 0) {
     list.innerHTML = `
-      <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 20px;" id="empty-logs-label">
+      <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 24px;" id="empty-logs-label">
         No API calls made yet. Click any button on the left to trigger a live call.
       </div>
     `
@@ -1199,6 +1368,15 @@ function renderLogs(openLogId?: string) {
   list.innerHTML = state.logs
     .map((l, index) => {
       const isOpen = openLogId ? l.id === openLogId : index === 0
+      const activeLang = logActiveLang[l.id] || 'curl'
+      const snippets = generateCodeSnippets(l.method, l.endpoint, l.requestPayload)
+      const currentSnippet = snippets[activeLang] || snippets.curl
+      const highlightedCode = Prism.highlight(
+        currentSnippet.code,
+        Prism.languages[currentSnippet.lang] || Prism.languages.javascript,
+        currentSnippet.lang
+      )
+
       return `
         <div class="api-log-entry ${isOpen ? 'open' : ''}" data-log-id="${l.id}">
           <div class="api-log-header">
@@ -1214,19 +1392,39 @@ function renderLogs(openLogId?: string) {
             </div>
           </div>
           <div class="api-log-details" ${isOpen ? '' : 'hidden'}>
-            <div class="api-log-section">
-              <div class="api-log-section-label">
-                <span>Request Payload</span>
-                <span class="label-method">${l.method} ${escapeHtml(l.endpoint)}</span>
+            <!-- Multi-language code snippet box with tabs & copy button -->
+            <div class="api-log-code-box">
+              <div class="api-log-toolbar">
+                <div class="api-log-lang-tabs" data-log-id="${l.id}">
+                  <button type="button" class="api-log-lang-tab ${activeLang === 'curl' ? 'active' : ''}" data-lang="curl">cURL</button>
+                  <button type="button" class="api-log-lang-tab ${activeLang === 'javascript' ? 'active' : ''}" data-lang="javascript">JavaScript</button>
+                  <button type="button" class="api-log-lang-tab ${activeLang === 'python' ? 'active' : ''}" data-lang="python">Python</button>
+                  <button type="button" class="api-log-lang-tab ${activeLang === 'go' ? 'active' : ''}" data-lang="go">Go</button>
+                  <button type="button" class="api-log-lang-tab ${activeLang === 'rust' ? 'active' : ''}" data-lang="rust">Rust</button>
+                </div>
+                <button type="button" class="btn-copy-log-snippet" data-log-id="${l.id}" title="Copy snippet">
+                  <span class="copy-text">📋 Copy Code</span>
+                </button>
               </div>
-              <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.requestPayload, null, 2))}</code></pre>
+              <pre class="api-log-snippet-pre language-${currentSnippet.lang}"><code class="api-log-snippet-code language-${currentSnippet.lang}">${highlightedCode}</code></pre>
             </div>
-            <div class="api-log-section">
-              <div class="api-log-section-label">
-                <span>Response Body</span>
-                <span style="color: ${l.status === 200 ? '#34d399' : '#f87171'}; font-family: var(--font-mono); font-weight: 800;">${l.status} ${l.status === 200 ? 'OK' : 'FAIL'}</span>
+
+            <!-- Payloads Grid: Request and Response -->
+            <div class="api-log-payloads-grid">
+              <div class="api-log-section">
+                <div class="api-log-section-label">
+                  <span>Request Payload</span>
+                  <span class="label-method">${l.method} ${escapeHtml(l.endpoint)}</span>
+                </div>
+                <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.requestPayload, null, 2))}</code></pre>
               </div>
-              <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.responsePayload, null, 2))}</code></pre>
+              <div class="api-log-section">
+                <div class="api-log-section-label">
+                  <span>Server Response</span>
+                  <span style="color: ${l.status === 200 ? '#34d399' : '#f87171'}; font-family: var(--font-mono); font-weight: 800;">${l.status} ${l.status === 200 ? 'OK' : 'REJECT'}</span>
+                </div>
+                <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.responsePayload, null, 2))}</code></pre>
+              </div>
             </div>
           </div>
         </div>
@@ -1234,6 +1432,7 @@ function renderLogs(openLogId?: string) {
     })
     .join('')
 
+  // Accordion click
   list.querySelectorAll('.api-log-header').forEach((hdr) => {
     hdr.addEventListener('click', () => {
       const entry = hdr.closest('.api-log-entry') as HTMLElement | null
@@ -1248,6 +1447,80 @@ function renderLogs(openLogId?: string) {
         entry.classList.add('open')
         if (details) details.hidden = false
       }
+    })
+  })
+
+  // Language tab switching
+  list.querySelectorAll('.api-log-lang-tab').forEach((tabBtn) => {
+    tabBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const btn = e.currentTarget as HTMLElement
+      const newLang = btn.dataset.lang || 'curl'
+      const logId = btn.closest('.api-log-entry')?.getAttribute('data-log-id')
+      if (logId) {
+        logActiveLang[logId] = newLang
+        const entry = list.querySelector(`.api-log-entry[data-log-id="${logId}"]`)
+        if (entry) {
+          const logItem = state.logs.find((item) => item.id === logId)
+          if (logItem) {
+            const snippets = generateCodeSnippets(logItem.method, logItem.endpoint, logItem.requestPayload)
+            const currentSnippet = snippets[newLang] || snippets.curl
+            const preEl = entry.querySelector('.api-log-snippet-pre')
+            const codeEl = entry.querySelector('.api-log-snippet-code')
+            if (preEl && codeEl) {
+              preEl.className = `api-log-snippet-pre language-${currentSnippet.lang}`
+              codeEl.className = `api-log-snippet-code language-${currentSnippet.lang}`
+              codeEl.innerHTML = Prism.highlight(
+                currentSnippet.code,
+                Prism.languages[currentSnippet.lang] || Prism.languages.javascript,
+                currentSnippet.lang
+              )
+            }
+            entry.querySelectorAll('.api-log-lang-tab').forEach((b) => {
+              if ((b as HTMLElement).dataset.lang === newLang) {
+                b.classList.add('active')
+              } else {
+                b.classList.remove('active')
+              }
+            })
+          }
+        }
+      }
+    })
+  })
+
+  // Copy code snippet
+  list.querySelectorAll('.btn-copy-log-snippet').forEach((copyBtn) => {
+    copyBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      const btn = e.currentTarget as HTMLElement
+      const logId = btn.getAttribute('data-log-id')
+      if (!logId) return
+      const logItem = state.logs.find((item) => item.id === logId)
+      if (!logItem) return
+      const activeLang = logActiveLang[logId] || 'curl'
+      const snippets = generateCodeSnippets(logItem.method, logItem.endpoint, logItem.requestPayload)
+      const currentSnippet = snippets[activeLang] || snippets.curl
+      const copyTextEl = btn.querySelector('.copy-text')
+
+      navigator.clipboard
+        .writeText(currentSnippet.code)
+        .then(() => {
+          btn.classList.add('copied')
+          if (copyTextEl) copyTextEl.textContent = '✓ Copied!'
+          setTimeout(() => {
+            btn.classList.remove('copied')
+            if (copyTextEl) copyTextEl.textContent = '📋 Copy Code'
+          }, 1800)
+        })
+        .catch(() => {
+          btn.classList.add('copied')
+          if (copyTextEl) copyTextEl.textContent = '✓ Copied!'
+          setTimeout(() => {
+            btn.classList.remove('copied')
+            if (copyTextEl) copyTextEl.textContent = '📋 Copy Code'
+          }, 1800)
+        })
     })
   })
 }

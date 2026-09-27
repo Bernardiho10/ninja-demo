@@ -7,33 +7,39 @@ export function updateNavFromState(state?: V2State) {
   const statusEl = document.getElementById('nav-player-status')
   const balanceEl = document.getElementById('nav-player-balance')
 
+  const isVerified = current.player && current.player.kycStatus === 'verified' && Boolean(current.player.firstName)
+
   if (nameEl) {
-    nameEl.textContent = `${current.player.firstName} ${current.player.lastName}`
+    nameEl.textContent = isVerified ? `${current.player.firstName} ${current.player.lastName}` : 'Guest'
   }
 
   if (statusEl) {
-    if (current.currentStep === 1) {
-      statusEl.textContent = 'Step 1'
+    if (!isVerified) {
+      statusEl.textContent = 'Unregistered'
       statusEl.className = 'player-status-badge'
+    } else if (current.currentStep === 1) {
+      statusEl.textContent = 'Verified (Step 1)'
+      statusEl.className = 'player-status-badge badge-verified'
     } else if (current.currentStep === 2) {
-      statusEl.textContent = 'Step 2'
+      statusEl.textContent = 'Bank Linked (Step 2)'
       statusEl.className = 'player-status-badge badge-verified'
     } else {
-      statusEl.textContent = 'Step 3'
+      statusEl.textContent = 'Payout Ready (Step 3)'
       statusEl.className = 'player-status-badge badge-verified'
     }
   }
 
   if (balanceEl) {
+    const bal = isVerified ? current.player.walletBalanceNaira : 0
     balanceEl.textContent = new Intl.NumberFormat('en-NG', {
       style: 'currency',
       currency: 'NGN',
       maximumFractionDigits: 0,
-    }).format(current.player.walletBalanceNaira)
+    }).format(bal)
   }
 
   // Update Stepper buttons
-  [1, 2, 3].forEach((step) => {
+  ;[1, 2, 3].forEach((step) => {
     const btn = document.getElementById(`step-nav-${step}`)
     if (btn) {
       if (step === current.currentStep) {
@@ -48,7 +54,8 @@ export function updateNavFromState(state?: V2State) {
 }
 
 export async function refreshNavPlayer(): Promise<Player | null> {
-  updateNavFromState()
+  const current = loadState()
+  updateNavFromState(current)
 
   try {
     const player = await api.me()
@@ -56,15 +63,17 @@ export async function refreshNavPlayer(): Promise<Player | null> {
     const balanceEl = document.getElementById('nav-player-balance')
     const statusEl = document.getElementById('nav-player-status')
 
-    if (nameEl && player.first_name) {
-      nameEl.textContent = `${player.first_name} ${player.last_name}`
-    }
-    if (balanceEl && typeof player.balance_kobo === 'number') {
-      balanceEl.textContent = formatNaira(player.balance_kobo)
-    }
-    if (statusEl && player.kyc_status) {
-      statusEl.textContent = STATUS_LABEL[player.kyc_status] ?? player.kyc_status
-      statusEl.className = `player-status-badge badge-${player.kyc_status}`
+    if (current.player && current.player.kycStatus === 'verified' && player && player.kyc_status === 'verified') {
+      if (nameEl && player.first_name) {
+        nameEl.textContent = `${player.first_name} ${player.last_name}`
+      }
+      if (balanceEl && typeof player.balance_kobo === 'number') {
+        balanceEl.textContent = formatNaira(player.balance_kobo)
+      }
+      if (statusEl && player.kyc_status) {
+        statusEl.textContent = STATUS_LABEL[player.kyc_status] ?? player.kyc_status
+        statusEl.className = `player-status-badge badge-${player.kyc_status}`
+      }
     }
     return player
   } catch {

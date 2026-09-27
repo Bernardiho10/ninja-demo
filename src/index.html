@@ -24,13 +24,16 @@
         <div id="view-step-1" class="step-card-view">
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <div>
                 <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.05em;">Step 1 of 3 · Registration &amp; Compliance</span>
                 <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Player Sign Up &amp; NIN Verification</h2>
               </div>
               <span class="nav-env-badge">Ninja Verify</span>
             </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              Ninja can be used to check the player's name, NIN, and age to verify identity and date of birth in <strong>one simple API call</strong> &mdash; preventing underage registration, impersonation, and fake accounts in real time.
+            </p>
 
 
 
@@ -68,29 +71,29 @@
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div>
                   <label for="input-first-name">First Name</label>
-                  <input id="input-first-name" value="James" required />
+                  <input id="input-first-name" placeholder="e.g. James" value="" required />
                 </div>
                 <div>
                   <label for="input-last-name">Surname (Last Name)</label>
-                  <input id="input-last-name" value="Bond" required />
+                  <input id="input-last-name" placeholder="e.g. Bond" value="" required />
                 </div>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-phone">Phone Number</label>
-                  <input id="input-phone" value="08012345678" required />
+                  <input id="input-phone" placeholder="e.g. 08012345678" value="" required />
                 </div>
                 <div>
                   <label for="input-nin">NIN (11 Digits)</label>
-                  <input id="input-nin" value="77777777777" maxlength="11" required />
+                  <input id="input-nin" placeholder="e.g. 77777777777" maxlength="11" value="" required />
                 </div>
               </div>
 
               <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-dob">Date of Birth</label>
-                  <input id="input-dob" type="date" value="1975-01-01" required />
+                  <input id="input-dob" type="date" value="" required />
                 </div>
                 <div>
                   <label for="input-password">Account Password</label>
@@ -113,13 +116,16 @@
         <div id="view-step-2" class="step-card-view" hidden>
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <div>
                 <span style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em;">Step 2 of 3 · Payout Route Protection</span>
                 <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Add Payout Bank Account</h2>
               </div>
               <span class="nav-env-badge">BVN Match</span>
             </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              Ninja can be used to verify and match information provided during registration (the player's registered identity) directly with their bank BVN and account name to prevent fraud and mule account redirection in <strong>one simple API call</strong>.
+            </p>
 
 
 
@@ -162,7 +168,7 @@
                 </div>
                 <div>
                   <label for="input-holder-name">Account Holder Name</label>
-                  <input id="input-holder-name" value="James Bond" required />
+                  <input id="input-holder-name" placeholder="Registered Account Holder Name" value="" required />
                 </div>
               </div>
 
@@ -180,13 +186,16 @@
         <div id="view-step-3" class="step-card-view" hidden>
           <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
             
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
               <div>
                 <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Step 3 of 3 · Payout Authorization</span>
                 <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Withdraw Funds via Biometric Verification</h2>
               </div>
               <span class="nav-env-badge">Biometrics</span>
             </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              We know how easily user credentials can be compromised or leaked. This is how you can use Ninja as an impenetrable <strong>2FA security layer</strong> by adding a live biometric liveness check before releasing high-value payouts (e.g. above ₦50,000 or ₦500,000).
+            </p>
 
 
 
@@ -232,10 +241,60 @@
               </div>
             </div>
 
-            <!-- Button to generate link -->
-            <button type="button" id="btn-generate-flow-link" style="margin-top: 18px; padding: 14px; font-size: 15px; font-weight: 800;">
-              Create Verification Link →
-            </button>
+            <!-- Intentional Two-Stage KYC Flow & Link Generation Console -->
+            <div class="flow-execution-console" style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+              
+              <!-- STAGE 1: PROGRAMMATIC FLOW CREATION -->
+              <div class="flow-stage-card active" id="flow-stage-1-card">
+                <div class="flow-stage-header">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="flow-stage-badge">Stage 1</span>
+                    <div>
+                      <h4 class="flow-stage-title">1. Programmatically Create Flow</h4>
+                      <span class="flow-stage-sub" id="flow-target-name-label">POST /api/flows · Name: "Sportsbook Payout Face Verification (Pre-filled)"</span>
+                    </div>
+                  </div>
+                  <span class="flow-status-pill pill-ready" id="flow-stage-1-pill">Ready to Create</span>
+                </div>
+
+                <div class="teaching-context-box" style="margin: 12px 0 14px;">
+                  <div class="teaching-context-title"><span>💡 Flow Architecture &amp; Field Source</span></div>
+                  <p class="teaching-context-p" id="flow-stage-1-explanation">
+                    In Ninja, a <strong>Flow</strong> is a reusable configuration that defines your verification rules. For <strong>Pre-filled sessions</strong>, we set <code>source: "business"</code> so Ninja knows our backend provides the player's name &amp; DOB when generating links &mdash; skipping form entry directly into live biometric verification.
+                  </p>
+                </div>
+
+                <button type="button" id="btn-create-flow" class="btn-flow-action">
+                  <span>⚡ 1. Programmatically Create Flow (POST /api/flows) →</span>
+                </button>
+              </div>
+
+              <!-- STAGE 2: GENERATE LINK -->
+              <div class="flow-stage-card locked" id="flow-stage-2-card">
+                <div class="flow-stage-header">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="flow-stage-badge">Stage 2</span>
+                    <div>
+                      <h4 class="flow-stage-title">2. Generate Hosted Verification Link</h4>
+                      <span class="flow-stage-sub" id="flow-link-endpoint-label">POST /api/flows/:flow_id/links</span>
+                    </div>
+                  </div>
+                  <span class="flow-status-pill pill-pending" id="flow-stage-2-pill">Requires Flow Creation</span>
+                </div>
+
+                <div class="teaching-context-box" style="margin: 12px 0 14px;">
+                  <div class="teaching-context-title"><span>💡 Link Generation &amp; Pre-population</span></div>
+                  <p class="teaching-context-p" id="flow-stage-2-explanation">
+                    Once the flow template exists, mint a single-use verification link. For this case, we supply the player's verified identity in <code>values</code> (James Bond, 1975-01-01), binding the session specifically to this withdrawal transaction.
+                  </p>
+                </div>
+
+                <button type="button" id="btn-generate-flow-link" disabled class="btn-flow-action">
+                  <span>🔗 2. Generate Verification Link (POST /api/flows/:id/links) →</span>
+                </button>
+              </div>
+
+            </div>
 
             <!-- Active Link Box -->
             <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;" hidden>
@@ -301,13 +360,13 @@
           </div>
           <button type="button" class="btn-reset-ghost" id="btn-clear-logs" style="padding: 4px 10px; font-size: 11px;">Clear</button>
         </div>
-        <p style="font-size: 11px; color: #64748b; margin: 0 0 12px;">
-          Click any entry below to inspect both full <strong>Request</strong> and <strong>Response</strong> payloads.
+        <p style="font-size: 11.5px; color: #64748b; margin: 0 0 12px; line-height: 1.45;">
+          Click any entry below to inspect both full <strong>Request</strong> and <strong>Response</strong> payloads, copy code snippets in all major languages (cURL, JS, Python, Go, Rust), and inspect replies.
         </p>
 
-        <div id="dev-call-log-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;">
-          <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 20px;" id="empty-logs-label">
-            No API calls made yet. Click any button on the left.
+        <div id="dev-call-log-list" style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 24px;" id="empty-logs-label">
+            No API calls made yet. Click any button on the left to trigger a live call.
           </div>
         </div>
       </div>
