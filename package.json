@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npx serve public -l 5671",
     "serve": "npx serve public -l 5671",
-    "build": "rollup -c"
+    "build": "ham build && rollup -c"
   },
   "dependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",
