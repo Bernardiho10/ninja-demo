@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "node scripts/serve.js",
-    "serve": "node scripts/serve.js",
-    "build": "node scripts/build.js"
+    "dev": "npx serve public -l 5671",
+    "serve": "npx serve public -l 5671",
+    "build": "ham build && rollup -c"
   },
   "dependencies": {
     "@rollup/plugin-commonjs": "^26.0.1",

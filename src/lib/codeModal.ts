@@ -10,6 +10,7 @@ import Prism from 'prismjs'
 import 'prismjs/components/prism-go'
 import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-python'
+import 'prismjs/components/prism-rust'
 
 export interface CodeFirstOptions {
   title: string
@@ -21,6 +22,7 @@ export interface CodeFirstOptions {
   ts: string
   python: string
   go: string
+  rust?: string
   confirmLabel?: string
   onProceed: () => Promise<void> | void
 }
@@ -35,7 +37,7 @@ export function showCodeFirstSlideOut(options: CodeFirstOptions) {
   overlay.className = 'code-drawer-overlay'
   overlay.id = 'code-drawer-overlay'
 
-  let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
+  let activeTab: 'curl' | 'ts' | 'python' | 'go' | 'rust' = 'curl'
 
   const getActiveCode = () => {
     switch (activeTab) {
@@ -47,6 +49,8 @@ export function showCodeFirstSlideOut(options: CodeFirstOptions) {
         return { code: options.python, lang: 'python' }
       case 'go':
         return { code: options.go, lang: 'go' }
+      case 'rust':
+        return { code: options.rust || '// Rust client\n// https://api.ninja.ng' + options.endpoint, lang: 'rust' }
     }
   }
 
@@ -68,11 +72,18 @@ export function showCodeFirstSlideOut(options: CodeFirstOptions) {
           <h3 class="drawer-title">${escapeHtml(options.title)}</h3>
           <p class="drawer-desc">${escapeHtml(options.description)}</p>
 
-          <div class="code-drawer-tabs">
-            <button type="button" class="tab-btn ${activeTab === 'curl' ? 'active' : ''}" data-tab="curl">cURL</button>
-            <button type="button" class="tab-btn ${activeTab === 'ts' ? 'active' : ''}" data-tab="ts">TypeScript / JS</button>
-            <button type="button" class="tab-btn ${activeTab === 'python' ? 'active' : ''}" data-tab="python">Python</button>
-            <button type="button" class="tab-btn ${activeTab === 'go' ? 'active' : ''}" data-tab="go">Go</button>
+          <div class="code-drawer-tabs-bar">
+            <div class="code-drawer-tabs">
+              <button type="button" class="tab-btn ${activeTab === 'curl' ? 'active' : ''}" data-tab="curl">cURL</button>
+              <button type="button" class="tab-btn ${activeTab === 'ts' ? 'active' : ''}" data-tab="ts">JavaScript</button>
+              <button type="button" class="tab-btn ${activeTab === 'python' ? 'active' : ''}" data-tab="python">Python</button>
+              <button type="button" class="tab-btn ${activeTab === 'go' ? 'active' : ''}" data-tab="go">Go</button>
+              <button type="button" class="tab-btn ${activeTab === 'rust' ? 'active' : ''}" data-tab="rust">Rust</button>
+            </div>
+            <button type="button" class="btn-copy-drawer" id="btn-copy-drawer-code" title="Copy code snippet">
+              <span id="drawer-copy-icon">📋</span>
+              <span id="drawer-copy-label">Copy</span>
+            </button>
           </div>
 
           <div class="code-snippet-pre-wrap">
@@ -98,6 +109,26 @@ export function showCodeFirstSlideOut(options: CodeFirstOptions) {
         activeTab = (e.currentTarget as HTMLElement).dataset.tab as any
         renderContent()
       })
+    })
+
+    const copyBtn = overlay.querySelector('#btn-copy-drawer-code')
+    copyBtn?.addEventListener('click', async () => {
+      const { code } = getActiveCode()
+      try {
+        await navigator.clipboard.writeText(code)
+        const label = overlay.querySelector('#drawer-copy-label')
+        const icon = overlay.querySelector('#drawer-copy-icon')
+        if (label) label.textContent = 'Copied!'
+        if (icon) icon.textContent = '✓'
+        copyBtn.classList.add('copied')
+        setTimeout(() => {
+          if (label) label.textContent = 'Copy'
+          if (icon) icon.textContent = '📋'
+          copyBtn.classList.remove('copied')
+        }, 2000)
+      } catch (err) {
+        console.error('Clipboard copy failed:', err)
+      }
     })
 
     const proceedBtn = overlay.querySelector('#btn-drawer-proceed') as HTMLButtonElement | null

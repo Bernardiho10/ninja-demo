@@ -59,17 +59,17 @@ const STORAGE_KEY = 'ninjabet_v2_state'
 const DEFAULT_STATE: V2State = {
   currentStep: 1,
   player: {
-    id: 'player_007',
-    firstName: 'James',
-    lastName: 'Bond',
-    phoneNumber: '08012345678',
-    nin: '77777777777',
-    dateOfBirth: '1975-01-01',
-    age: 49,
-    walletBalanceNaira: 250000,
-    withdrawableBalanceNaira: 250000,
+    id: '',
+    firstName: '',
+    lastName: '',
+    phoneNumber: '',
+    nin: '',
+    dateOfBirth: '',
+    age: 0,
+    walletBalanceNaira: 0,
+    withdrawableBalanceNaira: 0,
     kycStatus: 'unverified',
-    matchScore: 1.0,
+    matchScore: 0,
   },
   bankAccount: null,
   withdrawal: {
@@ -83,36 +83,45 @@ const DEFAULT_STATE: V2State = {
 
 export function loadState(): V2State {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    // Purge any legacy localStorage state to avoid old session contamination
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {}
+
+    const raw = sessionStorage.getItem(STORAGE_KEY)
     if (raw) {
       const parsed = JSON.parse(raw)
       const merged: V2State = { ...DEFAULT_STATE, ...parsed }
-      if (Array.isArray(merged.logs)) {
-        merged.logs = merged.logs.map((log: any) => ({
-          ...log,
-          step: log.step || 'API Call',
-          requestPayload: log.requestPayload || {},
-          responsePayload: log.responsePayload || {},
-        }))
+      merged.logs = Array.isArray(parsed.logs) ? parsed.logs : []
+      // The player name should not be set until registration is finished
+      if (merged.player && merged.player.kycStatus !== 'verified') {
+        merged.player.firstName = ''
+        merged.player.lastName = ''
+        merged.player.phoneNumber = ''
+        merged.player.nin = ''
+        merged.player.dateOfBirth = ''
+        merged.player.walletBalanceNaira = 0
+        merged.player.withdrawableBalanceNaira = 0
       }
       return merged
     }
   } catch (e) {
-    console.warn('Failed to load state from localStorage:', e)
+    console.warn('Failed to load state from sessionStorage:', e)
   }
   return JSON.parse(JSON.stringify(DEFAULT_STATE))
 }
 
 export function saveState(state: V2State): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
   } catch (e) {
-    console.warn('Failed to save state to localStorage:', e)
+    console.warn('Failed to save state to sessionStorage:', e)
   }
 }
 
 export function resetDemoState(): V2State {
   try {
+    sessionStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(STORAGE_KEY)
   } catch {}
   const fresh = JSON.parse(JSON.stringify(DEFAULT_STATE))
