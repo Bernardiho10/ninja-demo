@@ -44,17 +44,19 @@ export function getLinkScenarioConfig(
         accept_score: 0.90,
         review_score: 0.60,
         min_age: 18,
-        require_liveness: true,
-        liveness_threshold: 85,
         fields: [
           { field: 'first_name', match: 'name', required: true, source: 'business' },
           { field: 'last_name', match: 'name', required: true, source: 'business' },
           { field: 'date_of_birth', match: 'date', required: true, source: 'business' },
         ],
       },
+      selfie_required: true,
+      selfie_threshold: 85,
+      liveness_required: true,
+      liveness_threshold: 85,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
       redirect_url: 'https://ninjabet.example/kyc-return',
-      webhook_url: 'https://ninjabet.example/webhooks/ninja',
+      webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
     }
 
     const flowResponsePayload = {
@@ -85,9 +87,11 @@ console.log('Flow created:', flow.id)`
     IDTypes: []string{"nin"},
     Rules: ninja.FlowRules{
         AllowTransposedNames: true,
-        RequireLiveness: true,
-        LivenessThreshold: 85,
     },
+    SelfieRequired:    true,
+    SelfieThreshold:   85,
+    LivenessRequired:  true,
+    LivenessThreshold: 85,
 })`
 
     const flowRust = `let res = client
@@ -199,17 +203,19 @@ let res = client
         accept_score: 0.90,
         review_score: 0.60,
         min_age: 18,
-        require_liveness: true,
-        liveness_threshold: 85,
         fields: [
           { field: 'first_name', match: 'name', required: true, source: 'customer' },
           { field: 'last_name', match: 'name', required: true, source: 'customer' },
           { field: 'date_of_birth', match: 'date', required: true, source: 'customer' },
         ],
       },
+      selfie_required: true,
+      selfie_threshold: 85,
+      liveness_required: true,
+      liveness_threshold: 85,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
       redirect_url: 'https://ninjabet.example/kyc-return',
-      webhook_url: 'https://ninjabet.example/webhooks/ninja',
+      webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
     }
 
     const flowResponsePayload = {
@@ -240,9 +246,11 @@ console.log('Flow created:', flow.id)`
     IDTypes: []string{"nin"},
     Rules: ninja.FlowRules{
         AllowTransposedNames: true,
-        RequireLiveness: true,
-        LivenessThreshold: 85,
     },
+    SelfieRequired:    true,
+    SelfieThreshold:   85,
+    LivenessRequired:  true,
+    LivenessThreshold: 85,
 })`
 
     const flowRust = `let res = client
@@ -333,17 +341,19 @@ let res = client
       accept_score: 0.90,
       review_score: 0.60,
       min_age: 18,
-      require_liveness: true,
-      liveness_threshold: 85,
       fields: [
         { field: 'first_name', match: 'name', required: true, source: 'business' },
         { field: 'last_name', match: 'name', required: true, source: 'business' },
         { field: 'date_of_birth', match: 'date', required: true, source: 'business' },
       ],
     },
+    selfie_required: true,
+    selfie_threshold: 90,
+    liveness_required: true,
+    liveness_threshold: 90,
     branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
     redirect_url: 'https://ninjabet.example/kyc-return',
-    webhook_url: 'https://ninjabet.example/webhooks/ninja',
+    webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
   }
 
   const flowResponsePayload = {
@@ -374,9 +384,11 @@ console.log('Flow created:', flow.id)`
     IDTypes: []string{"nin"},
     Rules: ninja.FlowRules{
         AllowTransposedNames: true,
-        RequireLiveness: true,
-        LivenessThreshold: 85,
     },
+    SelfieRequired:    true,
+    SelfieThreshold:   90,
+    LivenessRequired:  true,
+    LivenessThreshold: 90,
 })`
 
   const flowRust = `let res = client

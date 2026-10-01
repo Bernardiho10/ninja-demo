@@ -112,6 +112,36 @@ npm run dev
 ```
 Open [http://localhost:5671](http://localhost:5671) in your browser. The server serves the compiled application with clean URLs and instant response.
 
+**Note:** this serves static files only — there is no `/api/*` here, so anything that calls the real Ninja Flows API (Step 3: Create Flow / Generate Link) will 404. Use it for pure frontend/markup work.
+
+### Start Local Development Server With the Real API
+Step 3 (Create Flow / Generate Link / check verification status) calls a backend that holds `NINJA_SANDBOX_SECRET_KEY` server-side and talks to the real Ninja sandbox — a secret key can never go in the browser bundle. The frontend is backend-agnostic: it just calls `/api/flows`, `/api/flows/:id/links`, and `/api/verifications/:id` on its own origin and doesn't care what's answering.
+
+Two pieces, two terminals, using [`ham`](https://github.com/bougroup/ham) (package.json / ham.json are not involved):
+
+```bash
+npm run build
+node backends/node/server.mjs   # terminal 1 — any ONE backend from backends/, listens on :8080
+ham proxy                       # terminal 2 — serves public/, proxies /api/ → :8080, on :8082
+```
+Open [http://localhost:8082](http://localhost:8082). Requires repo-root `.env` with `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY`, and `NINJA_WEBHOOK_URL` set (not committed — copy `.env.example`).
+
+`ham proxy` strips its `API_PROXY_PREFIX` (`/api/`) before forwarding, so every backend's routes are `/flows`, `/flows/:flowId/links`, `/verifications/:id` — not `/api/...`.
+
+### Backend Reference Implementations (Same API, Every Language)
+The frontend never changes — only which process you run on `:8080` changes. Each one in [`backends/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/backends) implements the exact same 3 routes, reads the same `.env`, and does the same thing: attach `Authorization: Bearer $NINJA_SANDBOX_SECRET_KEY` and relay the real Ninja sandbox's response byte-for-byte. Pick whichever matches the stack you're integrating into, or compare them side by side.
+
+| Language | Path | Run | Dependencies | Verified against the real sandbox |
+|---|---|---|---|---|
+| Node.js | `backends/node/server.mjs` | `node backends/node/server.mjs` | none (stdlib `http`/`fetch`) | ✅ yes, this session |
+| Python | `backends/python/server.py` | `python backends/python/server.py` (or `py ...` on Windows) | none (stdlib `http.server`/`urllib`) | ✅ yes, this session |
+| Go | `backends/go/main.go` | `go run backends/go/main.go` | none (stdlib `net/http`) | ✅ yes, this session |
+| Rust | `backends/rust/src/main.rs` | `cargo run --manifest-path backends/rust/Cargo.toml` | `tiny_http`, `ureq` (both sync, no async runtime) | ✅ yes, this session |
+| PHP | `backends/php/server.php` | `php -S 0.0.0.0:8080 backends/php/server.php` | `curl` extension (standard, usually built in) | ⚠️ **not verified** — no PHP runtime or working Docker daemon was available in the environment that wrote this. Written against standard, well-documented PHP APIs, but unlike the other four, nobody has actually run it end-to-end yet. Test it before you trust it, and tell us if it needs a fix. |
+| curl | shown in the in-app code inspector | — | — | not a backend — curl has no server mode, so it's illustrative snippets only (already in the UI's "cURL" tab), not a `backends/` folder |
+
+All five share one contract, so switching languages is only ever step 1 of the two-terminal workflow above — `ham proxy` and the frontend don't change.
+
 ### Build for Production
 ```bash
 npm run build

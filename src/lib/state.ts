@@ -46,12 +46,18 @@ export interface TelemetryLog {
   summary: string
 }
 
+export interface CreatedFlowRef {
+  id: string
+  name: string
+}
+
 export interface V2State {
   currentStep: 1 | 2 | 3
   player: PlayerState
   bankAccount: BankAccountState | null
   withdrawal: WithdrawalState
   logs: TelemetryLog[]
+  createdFlows: Partial<Record<'prefilled' | 'unfilled' | 'custom', CreatedFlowRef>>
 }
 
 const STORAGE_KEY = 'ninjabet_v2_state'
@@ -79,6 +85,7 @@ const DEFAULT_STATE: V2State = {
     isDisbursed: false,
   },
   logs: [],
+  createdFlows: {},
 }
 
 export function loadState(): V2State {

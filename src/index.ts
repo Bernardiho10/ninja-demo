@@ -336,7 +336,7 @@ async function executeStep1(p: {
     addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 48, p.payload, errorResponse)
     result.hidden = false
     result.innerHTML = `
-      <div class="error" style="padding: 14px; border-radius: 8px;">
+      <div class="error" style="padding: 14px; border-radius: 0;">
         <strong>✗ Player Under 18 (Compliance Block)</strong><br/>
         Birth date indicates age <strong>${age}</strong>. Players under 18 cannot create an account per gaming regulations.
       </div>
@@ -403,12 +403,12 @@ async function executeStep1(p: {
 
     result.hidden = false
     result.innerHTML = `
-      <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 8px;">
+      <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 0;">
         <div>
           <strong>✓ NIN &amp; Age Verified (100% Match)</strong><br/>
           Government identity confirmed for <strong>${p.firstName} ${p.lastName}</strong> (${age} yrs).
         </div>
-        <button type="button" id="btn-next-step2" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; padding: 12px; margin-top: 4px;">
+        <button type="button" id="btn-next-step2" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 2: Add Bank Account →
         </button>
       </div>
@@ -429,7 +429,7 @@ async function executeStep1(p: {
     addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 52, p.payload, failResponse)
     result.hidden = false
     result.innerHTML = `
-      <div class="error" style="padding: 14px; border-radius: 8px;">
+      <div class="error" style="padding: 14px; border-radius: 0;">
         <strong>✗ Identity Name Mismatch</strong><br/>
         The name "${p.firstName} ${p.lastName}" does not match the national registry record for NIN ${p.ninNum}.
       </div>
@@ -590,12 +590,12 @@ async function executeStep2(p: {
 
     result.hidden = false
     result.innerHTML = `
-      <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 8px;">
+      <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 0;">
         <div>
           <strong>✓ Bank Account Verified &amp; Saved!</strong><br/>
           BVN legally matches registered player <strong>${state.player.firstName} ${state.player.lastName}</strong>.
         </div>
-        <button type="button" id="btn-next-step3" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-weight: 800; padding: 12px; margin-top: 4px;">
+        <button type="button" id="btn-next-step3" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 3: Withdraw Funds →
         </button>
       </div>
@@ -616,7 +616,7 @@ async function executeStep2(p: {
 
     result.hidden = false
     result.innerHTML = `
-      <div class="error" style="padding: 14px; border-radius: 8px;">
+      <div class="error" style="padding: 14px; border-radius: 0;">
         <strong>✗ Payout Redirection Blocked</strong><br/>
         This bank account belongs to "<strong>${p.holderName}</strong>", not the registered player (${state.player.firstName} ${state.player.lastName}). Payouts can only be sent to the verified account owner.
       </div>
@@ -629,14 +629,16 @@ async function executeStep2(p: {
 // -----------------------------------------------------------------------------
 function bindStep3() {
   const scenCards = document.querySelectorAll<HTMLElement>('.scenario-card-btn')
-  const genBtn = document.getElementById('btn-generate-flow-link')
+  const createFlowBtn = document.getElementById('btn-create-flow') as HTMLButtonElement | null
+  const genBtn = document.getElementById('btn-generate-flow-link') as HTMLButtonElement | null
   const linkBox = document.getElementById('step3-link-box')
   const openLink = document.getElementById('link-open-camera')
   const urlText = document.getElementById('text-flow-url')
-  const simPass = document.getElementById('btn-sim-pass')
-  const simFail = document.getElementById('btn-sim-fail')
+  const checkStatusBtn = document.getElementById('btn-check-verification')
   const releaseBtn = document.getElementById('btn-release-payout')
   const receipt = document.getElementById('step3-receipt')
+
+  resetFlowStages()
 
   // Scenario toggle
   scenCards.forEach((card) => {
@@ -646,12 +648,62 @@ function bindStep3() {
       selectedScenario = (card.dataset.scenario as any) || 'prefilled'
       state.withdrawal.scenario = selectedScenario
       saveState(state)
+      resetFlowStages()
       updateDevCode()
     })
   })
 
-  // Generate Link -> Code-First Slide-Out
+  // Stage 1: Create a real Flow against the Ninja sandbox — reuse one if this
+  // scenario already has one instead of creating a duplicate.
+  createFlowBtn?.addEventListener('click', () => {
+    const existing = state.createdFlows[selectedScenario]
+    if (existing) {
+      alert(`A flow for this scenario already exists (ID: ${existing.id}). Reusing it — not creating a duplicate.`)
+      markFlowCreated(existing.id, genBtn, createFlowBtn)
+      return
+    }
+
+    const config = getFlowCreationConfig(selectedScenario)
+
+    showCodeFirstSlideOut({
+      title: 'POST /api/flows',
+      endpoint: '/api/flows',
+      method: 'POST',
+      description: 'Registers a real verification Flow on your Ninja sandbox account — biometric rules, liveness thresholds, and the webhook.site URL that will receive the verification.completed event.',
+      curl: config.curl,
+      ts: config.ts,
+      python: config.python,
+      go: config.go,
+      rust: config.rust,
+      confirmLabel: 'Noted, Create Flow →',
+      onProceed: async () => {
+        const t0 = performance.now()
+        const res = await fetch('/api/flows', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config.requestPayload),
+        })
+        const durationMs = Math.round(performance.now() - t0)
+        const body = await readApiBody(res)
+
+        addLog('Step 3 · Flow Setup', 'POST', '/api/flows', res.status, durationMs, config.requestPayload, body)
+
+        if (!isOkStatus(res.status) || !body?.id) {
+          alert(`Flow creation failed (${res.status}): ${body?.message || body?.error || 'See the API log below for the full response.'}`)
+          throw new Error('flow creation failed')
+        }
+
+        state.createdFlows[selectedScenario] = { id: body.id, name: config.requestPayload.name }
+        saveState(state)
+        markFlowCreated(body.id, genBtn, createFlowBtn)
+      },
+    })
+  })
+
+  // Stage 2: Mint a real hosted verification link on the created Flow
   genBtn?.addEventListener('click', () => {
+    if (!createdFlow) return
+
     const config = getLinkScenarioConfig(
       selectedScenario,
       `${state.player.firstName} ${state.player.lastName}`,
@@ -662,70 +714,70 @@ function bindStep3() {
       state.player.dateOfBirth || '1975-01-01'
     )
 
+    const flowId = createdFlow.id
+
     showCodeFirstSlideOut({
-      title: `POST /api/flows/${config.flowId}/links`,
-      endpoint: `/api/flows/${config.flowId}/links`,
+      title: `POST /api/flows/${flowId}/links`,
+      endpoint: `/api/flows/${flowId}/links`,
       method: 'POST',
-      description: 'Creates a single-use hosted verification link for live biometric face validation before releasing payout funds.',
+      description: 'Creates a single-use hosted verification link on the real Flow for live biometric face validation before releasing payout funds.',
       curl: config.curl,
       ts: config.ts,
       python: config.python,
       go: config.go,
       rust: config.rust,
-      confirmLabel: 'Noted, Proceed →',
+      confirmLabel: 'Noted, Mint Link →',
       onProceed: async () => {
-        // Log Flow setup configured for this scenario
-        addLog(
-          'Step 3 · Flow Setup',
-          'POST',
-          '/api/flows',
-          200,
-          74,
-          config.flowRequestPayload,
-          config.flowResponsePayload
-        )
+        const t0 = performance.now()
+        const res = await fetch(`/api/flows/${encodeURIComponent(flowId)}/links`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(config.requestPayload),
+        })
+        const durationMs = Math.round(performance.now() - t0)
+        const body = await readApiBody(res)
 
-        // Fixed sandbox session link per user instructions
-        const url = 'https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO'
-        const linkResponse = {
-          id: 'vs_' + Math.random().toString(36).substring(2, 9),
-          flow_id: config.flowId,
-          url,
-          expires_at: new Date(Date.now() + 3600000 * 72).toISOString(),
-          status: 'pending',
-          sandbox: true,
-          scenario: selectedScenario,
+        addLog('Step 3 · Verification Link', 'POST', `/api/flows/${flowId}/links`, res.status, durationMs, config.requestPayload, body)
+
+        if (!isOkStatus(res.status) || !body?.url) {
+          alert(`Link creation failed (${res.status}): ${body?.message || body?.error || 'See the API log below for the full response.'}`)
+          throw new Error('link creation failed')
         }
 
-        addLog('Step 3 · Verification Link', 'POST', `/api/flows/${config.flowId}/links`, 200, 85, config.requestPayload, linkResponse)
-
-        state.withdrawal.verificationUrl = url
+        activeVerification = { id: body.id, url: body.url }
+        state.withdrawal.verificationUrl = body.url
         state.withdrawal.faceStatus = 'pending'
         saveState(state)
 
-        if (linkBox) linkBox.hidden = false
-        if (urlText) urlText.textContent = url
+        const stage2Card = document.getElementById('flow-stage-2-card')
+        const stage2Pill = document.getElementById('flow-stage-2-pill')
+        stage2Card?.classList.remove('active')
+        stage2Card?.classList.add('completed')
+        if (stage2Pill) {
+          stage2Pill.textContent = `✓ Link Minted: ${body.id}`
+          stage2Pill.className = 'flow-status-pill pill-created'
+        }
+        if (genBtn) genBtn.innerHTML = `<span>✓ Link Generated — View Link Request</span>`
 
-        // Wire Open Verification Link
+        if (linkBox) linkBox.hidden = false
+        if (urlText) urlText.textContent = body.url
+
         if (openLink) {
           openLink.onclick = (e) => {
             e.preventDefault()
-            window.open(url, '_blank')
-            showVerificationSimulatorModal(selectedScenario)
+            window.open(body.url, '_blank')
           }
         }
+
+        startVerificationPolling(activeVerification.id)
       },
     })
   })
 
-  // Outcome Simulator: Face Matched
-  simPass?.addEventListener('click', async () => {
-    executeFaceOutcome('passed')
-  })
-
-  // Outcome Simulator: Face Mismatch
-  simFail?.addEventListener('click', async () => {
-    executeFaceOutcome('failed')
+  // Manual refresh — in case the tester would rather not wait for the poll
+  checkStatusBtn?.addEventListener('click', async () => {
+    if (!activeVerification) return
+    await pollVerificationOnce(activeVerification.id)
   })
 
   // Release Money
@@ -762,7 +814,7 @@ function bindStep3() {
     if (receipt) {
       receipt.hidden = false
       receipt.innerHTML = `
-        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 16px; margin-top: 14px;">
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 0; padding: 16px; margin-top: 14px;">
           <h4 style="margin: 0 0 6px; color: #34d399; font-size: 15px;">🎉 Money Disbursed Successfully!</h4>
           <p style="margin: 0 0 12px; font-size: 13px; color: #cbd5e1;">
             <strong>${formatNaira(amt)}</strong> has been securely transferred to verified account holder <strong>${state.player.firstName} ${state.player.lastName}</strong> (${state.bankAccount?.bankName || 'Access Bank'} - ${state.bankAccount?.accountNumber || '0123456789'}).
@@ -781,206 +833,155 @@ function bindStep3() {
 }
 
 // -----------------------------------------------------------------------------
-// Interactive Verification Flow Simulator Modal (Takes User Through Each Case)
+// Real Verification Polling — the verification.completed webhook fires to
+// NINJA_WEBHOOK_URL (webhook.site) for external inspection, not back into
+// this static app, so we poll our own /api/verifications/:id proxy to find
+// out when the hosted session the tester is completing in another tab
+// finishes, and what the real outcome was.
 // -----------------------------------------------------------------------------
-function showVerificationSimulatorModal(scenario: 'prefilled' | 'unfilled' | 'custom') {
-  document.querySelector('.verification-sim-overlay')?.remove()
+let createdFlow: { id: string; scenario: 'prefilled' | 'unfilled' | 'custom' } | null = null
+let activeVerification: { id: string; url: string } | null = null
+let pollTimer: ReturnType<typeof setInterval> | null = null
 
-  const overlay = document.createElement('div')
-  overlay.className = 'verification-sim-overlay'
+// Marks Stage 1 as done and unlocks Stage 2, whether the flow was just
+// created or we're reusing one that already exists for this scenario.
+function markFlowCreated(flowId: string, genBtn: HTMLButtonElement | null, createFlowBtn: HTMLButtonElement | null) {
+  createdFlow = { id: flowId, scenario: selectedScenario }
 
-  let scenarioBadge = 'Case 1: Pre-filled Session'
-  let scenarioDesc = `Ninja has pre-populated <strong>${state.player.firstName} ${state.player.lastName}</strong> (${state.player.dateOfBirth}). The player skips all manual forms and goes straight to biometric face verification.`
+  const stage1Card = document.getElementById('flow-stage-1-card')
+  const stage1Pill = document.getElementById('flow-stage-1-pill')
+  const flowTargetLabel = document.getElementById('flow-target-name-label')
+  const stage2Card = document.getElementById('flow-stage-2-card')
+  const stage2Pill = document.getElementById('flow-stage-2-pill')
 
-  if (scenario === 'unfilled') {
-    scenarioBadge = 'Case 2: Blank Form (Cold KYC)'
-    scenarioDesc = `Unfilled session: The user manually types their personal details on Ninja’s hosted portal before live camera activation.`
-  } else if (scenario === 'custom') {
-    scenarioBadge = 'Case 3: Custom Reference Tracking'
-    scenarioDesc = `Attaches payout ledger transaction <code>wtd_sec_wtd_01:tier_strict</code> for automatic webhook correlation.`
+  stage1Card?.classList.remove('active')
+  stage1Card?.classList.add('completed')
+  if (stage1Pill) {
+    stage1Pill.textContent = `✓ Created: ${flowId}`
+    stage1Pill.className = 'flow-status-pill pill-created'
   }
+  if (flowTargetLabel) flowTargetLabel.textContent = `POST /api/flows · Real Flow ID: ${flowId}`
+  if (createFlowBtn) createFlowBtn.innerHTML = `<span>✓ Flow Created (${flowId})</span>`
 
-  overlay.innerHTML = `
-    <div class="verification-sim-modal" role="dialog" aria-modal="true">
-      <div class="verification-sim-header">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="font-size: 16px;">📱</span>
-          <span style="font-weight: 800; font-size: 13px; color: #fff;">Ninja Hosted Verification Experience</span>
-        </div>
-        <span class="api-log-step-tag tag-step-3">${scenarioBadge}</span>
-      </div>
-
-      <div class="verification-sim-body" id="modal-sim-body">
-        <div class="teaching-context-box" style="margin: 0;">
-          <div class="teaching-context-title"><span>Flow Simulation</span></div>
-          <p class="teaching-context-p">${scenarioDesc}</p>
-        </div>
-
-        ${
-          scenario === 'unfilled'
-            ? `
-          <div id="sim-unfilled-form" style="display: flex; flex-direction: column; gap: 10px; background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);">
-            <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">Step 1: Enter Customer Information</span>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-              <div>
-                <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">First Name</label>
-                <input id="sim-unfilled-fn" value="${state.player.firstName}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
-              </div>
-              <div>
-                <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">Surname</label>
-                <input id="sim-unfilled-ln" value="${state.player.lastName}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
-              </div>
-            </div>
-            <div>
-              <label style="font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px;">Date of Birth</label>
-              <input id="sim-unfilled-dob" type="date" value="${state.player.dateOfBirth}" style="padding: 6px 8px; font-size: 12px; margin: 0;" />
-            </div>
-            <button type="button" id="btn-sim-unfilled-proceed" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 10px; margin-top: 6px; font-size: 12px;">
-              Save Details &amp; Open Live Camera →
-            </button>
-          </div>
-          <div id="sim-camera-container" hidden></div>
-        `
-            : `
-          <div id="sim-camera-container"></div>
-        `
-        }
-      </div>
-
-      <div class="verification-sim-footer">
-        <button type="button" class="btn-reset-ghost" id="btn-close-sim-modal" style="font-size: 12px; padding: 6px 14px;">
-          Close
-        </button>
-      </div>
-    </div>
-  `
-
-  document.body.appendChild(overlay)
-
-  function renderCameraSection() {
-    const container = overlay.querySelector('#sim-camera-container') as HTMLElement | null
-    if (!container) return
-    container.hidden = false
-    container.innerHTML = `
-      <div style="text-align: center;">
-        <span style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em;">
-          Live Biometric Camera Check
-        </span>
-        <div class="verification-camera-frame">
-          <div class="verification-camera-scanline"></div>
-          <span style="font-size: 42px; opacity: 0.85;">👤</span>
-          <span style="font-size: 11px; color: #34d399; font-weight: 700; margin-top: 4px;">Hold Still · Scanning</span>
-        </div>
-        <p style="font-size: 12px; color: #94a3b8; margin: 8px 0 16px;">
-          Select the biometric match outcome to simulate what happens when Ninja evaluates liveness &amp; facial match:
-        </p>
-        <div style="display: flex; gap: 10px; justify-content: center;">
-          <button type="button" class="preset-chip preset-pass" id="btn-modal-pass" style="flex: 1; padding: 10px; font-size: 12px;">
-            ✓ Real Customer (98% Pass)
-          </button>
-          <button type="button" class="preset-chip preset-fail" id="btn-modal-fail" style="flex: 1; padding: 10px; font-size: 12px;">
-            ✗ Imposter (32% Mismatch)
-          </button>
-        </div>
-      </div>
-    `
-
-    container.querySelector('#btn-modal-pass')?.addEventListener('click', () => {
-      overlay.remove()
-      executeFaceOutcome('passed')
-    })
-
-    container.querySelector('#btn-modal-fail')?.addEventListener('click', () => {
-      overlay.remove()
-      executeFaceOutcome('failed')
-    })
+  stage2Card?.classList.remove('locked')
+  stage2Card?.classList.add('active')
+  if (stage2Pill) {
+    stage2Pill.textContent = 'Ready to Mint Link'
+    stage2Pill.className = 'flow-status-pill pill-ready'
   }
-
-  if (scenario === 'unfilled') {
-    overlay.querySelector('#btn-sim-unfilled-proceed')?.addEventListener('click', () => {
-      const form = overlay.querySelector('#sim-unfilled-form') as HTMLElement | null
-      if (form) form.hidden = true
-      renderCameraSection()
-    })
-  } else {
-    renderCameraSection()
-  }
-
-  overlay.querySelector('#btn-close-sim-modal')?.addEventListener('click', () => {
-    overlay.remove()
-  })
+  if (genBtn) genBtn.disabled = false
 }
 
-function executeFaceOutcome(outcome: 'passed' | 'failed') {
+function resetFlowStages() {
+  stopVerificationPolling()
+  createdFlow = null
+  activeVerification = null
+
+  const stage1Card = document.getElementById('flow-stage-1-card')
+  const stage1Pill = document.getElementById('flow-stage-1-pill')
+  const flowTargetLabel = document.getElementById('flow-target-name-label')
+  const createFlowBtn = document.getElementById('btn-create-flow') as HTMLButtonElement | null
+  const stage2Card = document.getElementById('flow-stage-2-card')
+  const stage2Pill = document.getElementById('flow-stage-2-pill')
+  const genBtn = document.getElementById('btn-generate-flow-link') as HTMLButtonElement | null
+  const linkBox = document.getElementById('step3-link-box')
   const releaseBox = document.getElementById('step3-release-box')
+  const receipt = document.getElementById('step3-receipt')
 
-  if (outcome === 'passed') {
-    state.withdrawal.faceStatus = 'passed'
-    saveState(state)
+  stage1Card?.classList.remove('completed')
+  stage1Card?.classList.add('active')
+  if (stage1Pill) {
+    stage1Pill.textContent = 'Ready to Create'
+    stage1Pill.className = 'flow-status-pill pill-ready'
+  }
+  if (flowTargetLabel) flowTargetLabel.textContent = `POST /api/flows · Name: "${getFlowCreationConfig(selectedScenario).requestPayload.name}"`
+  if (createFlowBtn) createFlowBtn.innerHTML = `<span>⚡ 1. Programmatically Create Flow (POST /api/flows) →</span>`
 
-    const webhookPayload = {
-      headers: {
-        'content-type': 'application/json',
-        'x-ninja-event': 'kyc.session.completed',
-        'x-ninja-signature': 't=1727435123,v1=5d41402abc4b2a76b9719d911017c592',
-      },
-      event: 'kyc.session.completed',
-      flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
-      session_id: 'vs_' + Math.random().toString(36).substring(2, 9),
-      customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
-      status: 'passed',
-      signature_verified: true,
-      biometrics: {
-        liveness_score: 0.985,
-        face_match_score: 0.992,
-        anti_spoofing: 'PASSED',
-        recommendation: 'ALLOW',
-      },
+  stage2Card?.classList.remove('active', 'completed')
+  stage2Card?.classList.add('locked')
+  if (stage2Pill) {
+    stage2Pill.textContent = 'Requires Flow Creation'
+    stage2Pill.className = 'flow-status-pill pill-pending'
+  }
+  if (genBtn) {
+    genBtn.disabled = true
+    genBtn.innerHTML = `<span>🔗 2. Generate Verification Link (POST /api/flows/:id/links) →</span>`
+  }
+
+  if (linkBox) linkBox.hidden = true
+  if (releaseBox) releaseBox.hidden = true
+  if (receipt) receipt.hidden = true
+  setPollStatusUI('idle')
+
+  // A flow already exists for this scenario — reflect that instead of
+  // leaving Stage 1 looking like nothing has happened yet.
+  const existing = state.createdFlows[selectedScenario]
+  if (existing) {
+    markFlowCreated(existing.id, genBtn, createFlowBtn)
+  }
+}
+
+function setPollStatusUI(mode: 'idle' | 'waiting' | 'done') {
+  const box = document.getElementById('step3-verify-status')
+  if (!box) return
+  box.dataset.mode = mode
+  box.hidden = mode === 'idle'
+
+  const text = box.querySelector('.verify-status-text')
+  const checkBtn = box.querySelector('#btn-check-verification') as HTMLButtonElement | null
+  if (mode === 'waiting') {
+    if (text) text.textContent = 'Waiting for you to complete the real biometric check at the link above — checking every few seconds…'
+    if (checkBtn) checkBtn.hidden = false
+  } else if (mode === 'done') {
+    if (text) text.textContent = '✓ Verification session resolved — see the outcome in the API log below.'
+    if (checkBtn) checkBtn.hidden = true
+  }
+}
+
+function startVerificationPolling(verificationId: string) {
+  stopVerificationPolling()
+  setPollStatusUI('waiting')
+  pollTimer = setInterval(() => pollVerificationOnce(verificationId), 4000)
+}
+
+function stopVerificationPolling() {
+  if (pollTimer !== null) {
+    clearInterval(pollTimer)
+    pollTimer = null
+  }
+}
+
+async function pollVerificationOnce(verificationId: string) {
+  try {
+    const res = await fetch(`/api/verifications/${encodeURIComponent(verificationId)}`)
+    const body = await readApiBody(res)
+    if (!isOkStatus(res.status)) return
+
+    if (body.status && body.status !== 'pending') {
+      addLog('Step 3 · Verification Status', 'GET', `/api/verifications/${verificationId}`, res.status, 0, {}, body)
+      stopVerificationPolling()
+      handleVerificationResolved(body)
     }
+  } catch {
+    // Network hiccup — the interval will retry.
+  }
+}
 
-    const webhookAck = {
-      received: true,
-      signature_valid: true,
-      action: 'PAYOUT_AUTHORIZED',
-      ledger_status: 'QUEUED_FOR_DISBURSEMENT',
-    }
+function handleVerificationResolved(body: { outcome?: string }) {
+  setPollStatusUI('done')
+  const releaseBox = document.getElementById('step3-release-box')
+  const isVerified = body.outcome === 'verified'
 
-    addLog('Webhook · Face Verified', 'POST', '/api/webhooks/ninja', 200, 36, webhookPayload, webhookAck)
+  state.withdrawal.faceStatus = isVerified ? 'passed' : 'failed'
+  saveState(state)
+
+  if (isVerified) {
     if (releaseBox) releaseBox.hidden = false
   } else {
-    state.withdrawal.faceStatus = 'failed'
-    saveState(state)
-
-    const webhookPayload = {
-      headers: {
-        'content-type': 'application/json',
-        'x-ninja-event': 'kyc.session.completed',
-        'x-ninja-signature': 't=1727435123,v1=8e2d402abc4b2a76b9719d911017c771',
-      },
-      event: 'kyc.session.completed',
-      flow_id: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
-      session_id: 'vs_' + Math.random().toString(36).substring(2, 9),
-      customer_ref: selectedScenario === 'custom' ? 'wtd_sec_wtd_01:tier_strict' : 'player_007:wtd_01',
-      status: 'failed',
-      signature_verified: true,
-      biometrics: {
-        liveness_score: 0.35,
-        face_match_score: 0.28,
-        anti_spoofing: 'FLAGGED',
-        recommendation: 'REJECT',
-      },
-    }
-
-    const webhookAck = {
-      received: true,
-      signature_valid: true,
-      action: 'PAYOUT_FROZEN_SECURITY_FLAG',
-      incident_ticket: 'SEC_TAKEOVER_ALERT_4402',
-    }
-
-    addLog('Webhook · Imposter Detected', 'POST', '/api/webhooks/ninja', 400, 38, webhookPayload, webhookAck)
     if (releaseBox) releaseBox.hidden = true
-    alert('Biometric Verification Failed: Live selfie does not match the registered government face record (Confidence 28%). Payout blocked!')
+    alert(
+      `Verification did not pass (outcome: ${body.outcome || 'unknown'}). Payout blocked. The real webhook delivery for this session is visible at your webhook.site inbox, and the full response is in the API log below.`
+    )
   }
 }
 
@@ -1220,6 +1221,29 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
   codeEl.innerHTML = Prism.highlight(snippet, Prism.languages[lang] || Prism.languages.javascript, lang)
 }
 
+function isOkStatus(status: number): boolean {
+  return status >= 200 && status < 300
+}
+
+// Parses an /api/* response. Every backend in backends/ answers with JSON, so a
+// non-JSON 404 means a static server (npm run dev) answered instead, and a
+// 502/504 means `ham proxy` is up but nothing is listening on :8080.
+async function readApiBody(res: Response): Promise<any> {
+  const isJson = (res.headers.get('content-type') || '').includes('application/json')
+  const body = isJson ? await res.json().catch(() => ({})) : {}
+  if (isJson) return body
+
+  if (res.status === 404 || res.status === 502 || res.status === 504) {
+    return {
+      error: 'backend_not_running',
+      message:
+        'No API backend answered /api/*. Run a backend (e.g. `node backends/node/server.mjs` on :8080) ' +
+        'and `ham proxy`, then open http://localhost:8082. `npm run dev` on :5671 serves static files only.',
+    }
+  }
+  return body
+}
+
 function addLog(
   step: string,
   method: 'POST' | 'GET',
@@ -1387,7 +1411,7 @@ function renderLogs(openLogId?: string) {
             </div>
             <div class="api-log-meta">
               <span class="api-log-time">${l.durationMs}ms</span>
-              <span class="api-log-status api-log-status-${l.status === 200 ? '200' : '400'}">${l.status}</span>
+              <span class="api-log-status ${isOkStatus(l.status) ? 'api-log-status-ok' : 'api-log-status-error'}">${l.status}</span>
               <span class="api-log-chevron">▼</span>
             </div>
           </div>
@@ -1421,7 +1445,7 @@ function renderLogs(openLogId?: string) {
               <div class="api-log-section">
                 <div class="api-log-section-label">
                   <span>Server Response</span>
-                  <span style="color: ${l.status === 200 ? '#34d399' : '#f87171'}; font-family: var(--font-mono); font-weight: 800;">${l.status} ${l.status === 200 ? 'OK' : 'REJECT'}</span>
+                  <span style="color: ${isOkStatus(l.status) ? '#34d399' : '#f87171'}; font-family: var(--font-mono); font-weight: 800;">${l.status} ${isOkStatus(l.status) ? 'OK' : 'REJECT'}</span>
                 </div>
                 <pre class="api-log-code"><code>${escapeHtml(JSON.stringify(l.responsePayload, null, 2))}</code></pre>
               </div>

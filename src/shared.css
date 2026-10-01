@@ -26,6 +26,13 @@
 
 * { box-sizing: border-box; }
 
+button, input, select, textarea {
+  appearance: none;
+  -webkit-appearance: none;
+  border-radius: 0;
+  font-family: inherit;
+}
+
 [hidden] { display: none !important; }
 
 body {
@@ -43,17 +50,40 @@ body {
    NAVIGATION BAR
    ========================================================================== */
 .navbar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 32px;
+  padding: 0 32px;
   background: rgba(10, 14, 23, 0.92);
   border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 1000;
   backdrop-filter: blur(16px);
+}
+
+/* Same max-width as .workbench-container so the header and body line up */
+.navbar-inner {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+}
+
+.brand-logo-plate {
+  display: inline-flex;
+  align-items: center;
+  background: #f5f5f0;
+  padding: 4px 10px;
+  line-height: 0;
+}
+
+.ninja-logo-img {
+  height: 26px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  display: block;
 }
 
 .nav-brand-group {
@@ -91,7 +121,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.05em;
   padding: 3px 9px;
-  border-radius: 999px;
+  border-radius: 0;
   text-transform: uppercase;
 }
 
@@ -122,7 +152,7 @@ body {
   font-size: 13.5px;
   font-weight: 700;
   padding: 7px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   transition: all 0.15s ease;
   border-bottom: 2px solid transparent;
 }
@@ -148,7 +178,7 @@ body {
   gap: 6px;
   background: rgba(15, 23, 42, 0.7);
   padding: 4px 8px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.09);
   backdrop-filter: blur(8px);
 }
@@ -161,7 +191,7 @@ body {
   border: 1px solid transparent;
   color: var(--muted);
   padding: 6px 14px;
-  border-radius: 999px;
+  border-radius: 0;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -182,7 +212,6 @@ body {
   background: rgba(16, 185, 129, 0.18);
   color: #34d399;
   border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
 }
 
 .checkpoint-step.completed {
@@ -240,19 +269,17 @@ body {
 .nav-login-btn:hover { color: #fff; }
 
 .nav-register-btn {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
+  background: var(--primary);
+  color: #021a0e;
   text-decoration: none;
   font-size: 13px;
   font-weight: 700;
   padding: 8px 16px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
-  transition: all 0.15s;
+  border-radius: 0;
+  transition: background 0.12s ease;
 }
 .nav-register-btn:hover {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+  background: var(--primary-hover);
 }
 
 .player-identity-card {
@@ -262,7 +289,7 @@ body {
   background: rgba(18, 26, 41, 0.85);
   border: 1px solid var(--border);
   padding: 6px 14px;
-  border-radius: 10px;
+  border-radius: 0;
 }
 
 .player-avatar-icon {
@@ -291,7 +318,7 @@ body {
   font-size: 9.5px;
   font-weight: 800;
   padding: 2px 7px;
-  border-radius: 999px;
+  border-radius: 0;
   text-transform: uppercase;
   letter-spacing: 0.02em;
 }
@@ -337,7 +364,7 @@ body {
   border: 1px solid rgba(16, 185, 129, 0.35);
   color: #34d399;
   padding: 7px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12.5px;
   font-weight: 800;
   cursor: pointer;
@@ -357,7 +384,7 @@ body {
   border: 1px solid var(--border);
   color: var(--muted);
   padding: 7px 13px;
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
@@ -422,7 +449,7 @@ h1 {
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 22px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
 }
@@ -473,7 +500,7 @@ input, select {
   padding: 11px 14px;
   background: var(--card-input);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
@@ -491,28 +518,23 @@ button {
   width: 100%;
   margin-top: 10px;
   padding: 12px 18px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  color: #ffffff;
+  background: var(--primary);
+  color: #021a0e;
   border: none;
-  border-radius: 8px;
+  border-radius: 0;
   font-weight: 700;
   font-size: 14px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+  transition: background 0.12s ease;
 }
 
 button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34d399 0%, #059669 100%);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.38);
-  transform: translateY(-1px);
+  background: var(--primary-hover);
 }
 
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
 }
 
 button.secondary {
@@ -567,7 +589,7 @@ button.danger-ghost:hover:not(:disabled) {
   line-height: 1.5;
   background: rgba(228, 0, 43, 0.12);
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   border-left: 3px solid var(--red);
   margin: 12px 0;
 }
@@ -579,7 +601,7 @@ button.danger-ghost:hover:not(:disabled) {
   line-height: 1.5;
   background: rgba(16, 185, 129, 0.12);
   padding: 10px 14px;
-  border-radius: 8px;
+  border-radius: 0;
   border-left: 3px solid var(--green);
   margin: 12px 0;
 }
@@ -643,7 +665,7 @@ button.danger-ghost:hover:not(:disabled) {
   color: var(--muted);
   font-weight: 700;
   font-size: 13px;
-  border-radius: 8px;
+  border-radius: 0;
   text-align: left;
   border: 1px solid transparent;
 }
@@ -674,14 +696,14 @@ button.danger-ghost:hover:not(:disabled) {
   align-items: center;
   background: var(--card-input);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 12px;
 }
 
 .lookup-photo {
   width: 54px;
   height: 64px;
-  border-radius: 6px;
+  border-radius: 0;
   object-fit: cover;
   border: 2px solid var(--border);
   flex-shrink: 0;
@@ -705,7 +727,7 @@ button.danger-ghost:hover:not(:disabled) {
 .code-drawer {
   background: var(--card-input);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   overflow: hidden;
   margin-bottom: 14px;
 }
@@ -806,7 +828,7 @@ button.danger-ghost:hover:not(:disabled) {
   font-size: 11px;
   font-weight: 700;
   background: rgba(255, 255, 255, 0.08);
-  border-radius: 5px;
+  border-radius: 0;
   cursor: pointer;
 }
 .snippet-copy:hover { background: rgba(255, 255, 255, 0.16); }
@@ -826,7 +848,7 @@ button.danger-ghost:hover:not(:disabled) {
   color: var(--muted);
   font-size: 12px;
   font-weight: 700;
-  border-radius: 6px 6px 0 0;
+  border-radius: 0;
   cursor: pointer;
 }
 .lang-tab:hover { color: #fff; background: rgba(255, 255, 255, 0.05); }
@@ -880,7 +902,7 @@ button.danger-ghost:hover:not(:disabled) {
   padding: 14px;
   background: var(--card-input);
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: 0;
   text-align: left;
   color: #ffffff;
   cursor: pointer;
@@ -916,7 +938,6 @@ button.danger-ghost:hover:not(:disabled) {
 .tier-option-selected:hover {
   border-color: var(--green);
   background: rgba(16, 185, 129, 0.12);
-  box-shadow: 0 0 12px var(--green-glow);
 }
 
 .tier-option-selected span {
@@ -1012,7 +1033,7 @@ table.fields td {
   gap: 6px;
   background: rgba(255, 255, 255, 0.04);
   padding: 4px 8px;
-  border-radius: 9999px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1021,7 +1042,7 @@ table.fields td {
   align-items: center;
   gap: 7px;
   padding: 5px 12px;
-  border-radius: 9999px;
+  border-radius: 0;
   background: transparent;
   border: 1px solid transparent;
   color: var(--muted);
@@ -1095,7 +1116,7 @@ table.fields td {
   max-width: 680px;
   background: #0f172a;
   border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 14px;
+  border-radius: 0;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.15);
   display: flex;
   flex-direction: column;
@@ -1122,7 +1143,7 @@ table.fields td {
   font-weight: 900;
   letter-spacing: 0.06em;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .tag-post { background: #10b981; color: #021a0e; }
@@ -1136,14 +1157,23 @@ table.fields td {
 }
 
 .btn-close-drawer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   color: var(--muted);
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 1;
   cursor: pointer;
-  padding: 4px 8px;
 }
-.btn-close-drawer:hover { color: #fff; }
+.btn-close-drawer:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--border);
+}
 
 .code-drawer-body {
   padding: 20px;
@@ -1171,7 +1201,7 @@ table.fields td {
   gap: 10px;
   background: rgba(16, 185, 129, 0.08);
   border: 1px solid rgba(16, 185, 129, 0.22);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 14px;
   font-size: 12px;
   line-height: 1.5;
@@ -1196,7 +1226,7 @@ table.fields td {
   border: 1px solid rgba(255, 255, 255, 0.12) !important;
   color: #94a3b8 !important;
   padding: 4px 10px !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   cursor: pointer !important;
@@ -1228,7 +1258,7 @@ table.fields td {
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: var(--muted);
   padding: 5px 12px;
-  border-radius: 6px;
+  border-radius: 0;
   font-size: 11.5px;
   font-weight: 700;
   cursor: pointer;
@@ -1242,7 +1272,7 @@ table.fields td {
 }
 
 .code-snippet-pre-wrap {
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: #020617;
@@ -1273,7 +1303,7 @@ table.fields td {
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: var(--muted);
   padding: 9px 18px;
-  border-radius: 7px;
+  border-radius: 0;
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -1285,7 +1315,7 @@ table.fields td {
   border: none;
   color: #021a0e;
   padding: 10px 22px;
-  border-radius: 7px;
+  border-radius: 0;
   font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
@@ -1302,7 +1332,7 @@ table.fields td {
 .simulation-parameters-card {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 14px 18px;
   margin: 16px 0;
 }
@@ -1327,7 +1357,7 @@ table.fields td {
   background: rgba(255, 255, 255, 0.08);
   color: #e2e8f0;
   padding: 2px 8px;
-  border-radius: 9999px;
+  border-radius: 0;
   font-weight: 700;
 }
 
@@ -1344,7 +1374,7 @@ table.fields td {
 .scenario-card-btn {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 12px;
   text-align: left;
   cursor: pointer;
@@ -1378,7 +1408,7 @@ table.fields td {
   font-size: 9.5px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.1);
   color: #94a3b8;
 }
@@ -1436,7 +1466,7 @@ table.fields td {
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 10px;
+  border-radius: 0;
   margin-bottom: 18px;
 }
 
@@ -1449,7 +1479,7 @@ table.fields td {
 .trust-cert-logo-container {
   background: #ffffff;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 0;
   display: inline-flex;
   align-items: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
@@ -1481,7 +1511,7 @@ table.fields td {
   margin-bottom: 16px;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.03);
-  border-radius: 8px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -1491,7 +1521,7 @@ table.fields td {
   padding: 6px 12px;
   font-size: 11.5px;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
   color: #cbd5e1;
@@ -1530,7 +1560,7 @@ table.fields td {
   padding: 6px 12px;
   font-size: 11.5px;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: 0;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #e2e8f0;
@@ -1553,7 +1583,7 @@ table.fields td {
   padding: 12px 16px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 0;
   margin-bottom: 16px;
 }
 
@@ -1580,7 +1610,7 @@ table.fields td {
 .code-inspector-card {
   background: #0d131f;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
 }
@@ -1613,7 +1643,7 @@ table.fields td {
 .telemetry-card {
   background: #0d131f;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 18px;
 }
 
@@ -1639,13 +1669,13 @@ table.fields td {
   color: var(--muted);
   font-size: 12.5px;
   border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 0;
 }
 
 .telemetry-item {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 8px;
+  border-radius: 0;
   padding: 10px 12px;
   font-size: 12px;
   transition: all 0.15s ease;
@@ -1673,7 +1703,7 @@ table.fields td {
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 0;
 }
 
 .telemetry-status-200 { background: rgba(16, 185, 129, 0.2); color: #34d399; }
@@ -1701,7 +1731,7 @@ table.fields td {
   margin-top: 8px;
   padding: 8px;
   background: #020617;
-  border-radius: 6px;
+  border-radius: 0;
   font-family: var(--font-mono);
   font-size: 10.5px;
   color: #94a3b8;
@@ -1714,7 +1744,7 @@ table.fields td {
 .compliance-guide-card {
   background: rgba(16, 185, 129, 0.05);
   border: 1px solid rgba(16, 185, 129, 0.2);
-  border-radius: 12px;
+  border-radius: 0;
   padding: 16px 18px;
 }
 
@@ -1763,7 +1793,7 @@ table.fields td {
   gap: 3px;
   background: rgba(15, 23, 42, 0.7);
   padding: 3px;
-  border-radius: 999px;
+  border-radius: 0;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -1774,7 +1804,7 @@ table.fields td {
   font-size: 11.5px;
   font-weight: 700;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.15s ease;
   width: auto;
@@ -1793,7 +1823,6 @@ table.fields td {
   color: #34d399;
   background: rgba(16, 185, 129, 0.18);
   border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
 }
 
 
@@ -1820,14 +1849,9 @@ table.fields td {
   align-self: start;
 }
 
-/* ── Body: richer multi-layer background ── */
 body {
-  background-color: #060b14 !important;
-  background-image:
-    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(16,185,129,0.09) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 50% at 100% 100%, rgba(56,189,248,0.04) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 50% at 0% 60%, rgba(139,92,246,0.03) 0%, transparent 70%) !important;
-  background-attachment: fixed !important;
+  background-color: #0a0e16 !important;
+  background-image: none !important;
 }
 
 /* ── Code inspector: wrap long lines, no horizontal overflow ── */
@@ -1842,10 +1866,8 @@ body {
   font-size: 11.5px;
 }
 
-/* ── Step card: glowing top border ── */
 .step-card-view .card {
   border-top: 2px solid rgba(16,185,129,0.45) !important;
-  box-shadow: 0 0 0 1px rgba(16,185,129,0.05), 0 20px 40px rgba(0,0,0,0.5) !important;
 }
 
 
@@ -1857,7 +1879,7 @@ body {
   padding: 4px 11px !important;
   background: transparent !important;
   border: 1px solid transparent !important;
-  border-radius: 6px !important;
+  border-radius: 0 !important;
   color: var(--muted) !important;
   font-size: 11.5px !important;
   font-weight: 700 !important;
@@ -1889,7 +1911,7 @@ body {
 .scenario-card-btn {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.09);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 12px 14px;
   cursor: pointer;
   transition: all 0.15s;
@@ -1907,7 +1929,6 @@ body {
 .scenario-card-btn.active {
   background: rgba(16,185,129,0.12);
   border-color: rgba(16,185,129,0.45);
-  box-shadow: 0 0 0 1px rgba(16,185,129,0.2), inset 0 0 12px rgba(16,185,129,0.05);
 }
 .scenario-btn-top {
   display: flex;
@@ -1924,7 +1945,7 @@ body {
   font-size: 10px;
   font-weight: 800;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 0;
   background: rgba(255,255,255,0.1);
   color: var(--muted);
   text-transform: uppercase;
@@ -1951,7 +1972,7 @@ body {
   font-size: 11.5px;
   font-weight: 700;
   padding: 5px 12px;
-  border-radius: 999px;
+  border-radius: 0;
   text-decoration: none;
   transition: all 0.15s ease;
 }
@@ -2002,7 +2023,7 @@ body {
   padding: 7px 11px;
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 8px;
+  border-radius: 0;
   font-size: 12px;
   gap: 10px;
 }
@@ -2011,7 +2032,7 @@ body {
   font-size: 10px;
   font-weight: 800;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: 0;
   background: rgba(16,185,129,0.2);
   color: #34d399;
   flex-shrink: 0;
@@ -2040,18 +2061,16 @@ body {
   font-size: 10px;
   font-weight: 800;
   padding: 1px 6px;
-  border-radius: 4px;
+  border-radius: 0;
 }
-.api-log-status-200 { background: rgba(16,185,129,0.2); color: #34d399; }
-.api-log-status-400,
-.api-log-status-403,
-.api-log-status-404 { background: rgba(239,68,68,0.2); color: #f87171; }
+.api-log-status-ok { background: rgba(16,185,129,0.2); color: #34d399; }
+.api-log-status-error { background: rgba(239,68,68,0.2); color: #f87171; }
 
 /* ── Withdrawal summary box ── */
 .withdrawal-summary-box {
   background: rgba(16,185,129,0.05);
   border: 1px solid rgba(16,185,129,0.2);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 14px 18px;
   display: flex;
   justify-content: space-between;
@@ -2141,7 +2160,7 @@ body {
 .api-log-entry {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
   transition: all 0.15s ease;
 }
@@ -2180,7 +2199,7 @@ body {
   font-weight: 800;
   text-transform: uppercase;
   padding: 2px 7px;
-  border-radius: 4px;
+  border-radius: 0;
   white-space: nowrap;
   flex-shrink: 0;
   letter-spacing: 0.03em;
@@ -2268,7 +2287,7 @@ body {
   flex-direction: column;
   background: #04070e;
   border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -2317,7 +2336,7 @@ body {
 .api-log-code-box {
   background: #04070e;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -2346,7 +2365,7 @@ body {
   padding: 3px 8px !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  border-radius: 4px !important;
+  border-radius: 0 !important;
   background: transparent !important;
   border: 1px solid transparent !important;
   color: #64748b !important;
@@ -2378,7 +2397,7 @@ body {
   padding: 3px 9px !important;
   font-size: 11px !important;
   font-weight: 700 !important;
-  border-radius: 4px !important;
+  border-radius: 0 !important;
   background: rgba(255, 255, 255, 0.04) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: #94a3b8 !important;
@@ -2436,7 +2455,7 @@ body {
   background: rgba(56, 189, 248, 0.04);
   border: 1px solid rgba(56, 189, 248, 0.2);
   border-left: 3px solid #38bdf8;
-  border-radius: 8px;
+  border-radius: 0;
   padding: 12px 15px;
   margin-bottom: 18px;
 }
@@ -2465,101 +2484,12 @@ body {
 }
 
 /* ==========================================================================
-   INTERACTIVE VERIFICATION FLOW SIMULATOR MODAL
-   ========================================================================== */
-.verification-sim-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(3, 7, 18, 0.88);
-  backdrop-filter: blur(8px);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: modalFadeIn 0.2s ease-out;
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.verification-sim-modal {
-  background: #0b1120;
-  border: 1px solid rgba(16, 185, 129, 0.4);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(16, 185, 129, 0.25);
-  border-radius: 14px;
-  width: 100%;
-  max-width: 520px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.verification-sim-header {
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.verification-sim-body {
-  padding: 22px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-height: 75vh;
-  overflow-y: auto;
-}
-
-.verification-sim-footer {
-  padding: 14px 20px;
-  background: rgba(255, 255, 255, 0.02);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.verification-camera-frame {
-  width: 200px;
-  height: 200px;
-  margin: 8px auto;
-  border-radius: 50%;
-  border: 3px dashed #10b981;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background: rgba(16, 185, 129, 0.05);
-  position: relative;
-  overflow: hidden;
-}
-
-.verification-camera-scanline {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: #34d399;
-  box-shadow: 0 0 10px #34d399;
-  animation: scanAnim 2s infinite ease-in-out alternate;
-}
-
-@keyframes scanAnim {
-  0% { top: 10%; }
-  100% { top: 90%; }
-}
-
-/* ==========================================================================
    STEP 3: 2-STAGE FLOW CREATION & LINK GENERATION CONSOLE
    ========================================================================== */
 .flow-stage-card {
   background: rgba(255, 255, 255, 0.025);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  border-radius: 0;
   padding: 16px 18px;
   transition: all 0.2s ease;
 }
@@ -2593,7 +2523,7 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.05em;
   padding: 3px 8px;
-  border-radius: 4px;
+  border-radius: 0;
   background: rgba(56, 189, 248, 0.15);
   color: #38bdf8;
   border: 1px solid rgba(56, 189, 248, 0.3);
@@ -2618,7 +2548,7 @@ body {
   font-size: 10.5px;
   font-weight: 800;
   padding: 3px 9px;
-  border-radius: 12px;
+  border-radius: 0;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   white-space: nowrap;
@@ -2651,9 +2581,61 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border-radius: 8px;
+  border-radius: 0;
   cursor: pointer;
   transition: all 0.15s ease;
   margin-top: 4px;
+}
+
+/* ── Real verification status (polling) ── */
+.verify-status-box {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 12px;
+  margin-top: 12px;
+}
+
+.verify-status-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.verify-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #38bdf8;
+  flex-shrink: 0;
+}
+
+.verify-status-box[data-mode='waiting'] .verify-status-dot {
+  animation: verifyPulse 1.4s ease-in-out infinite;
+}
+
+.verify-status-box[data-mode='done'] .verify-status-dot {
+  background: #34d399;
+}
+
+@keyframes verifyPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.7); }
+}
+
+.verify-status-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.verify-status-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 8px 0 10px;
+}
+
+.verify-status-hint code {
+  font-family: var(--font-mono);
+  color: #94a3b8;
 }
 
