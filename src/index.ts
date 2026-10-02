@@ -1226,7 +1226,7 @@ function isOkStatus(status: number): boolean {
 }
 
 // Parses an /api/* response. Every backend in backends/ answers with JSON, so a
-// non-JSON 404 means a static server (npm run dev) answered instead, and a
+// non-JSON 404 means a static server (npm run serve) answered instead, and a
 // 502/504 means `ham proxy` is up but nothing is listening on :8080.
 async function readApiBody(res: Response): Promise<any> {
   const isJson = (res.headers.get('content-type') || '').includes('application/json')
@@ -1237,8 +1237,8 @@ async function readApiBody(res: Response): Promise<any> {
     return {
       error: 'backend_not_running',
       message:
-        'No API backend answered /api/*. Run a backend (e.g. `node backends/node/server.mjs` on :8080) ' +
-        'and `ham proxy`, then open http://localhost:8082. `npm run dev` on :5671 serves static files only.',
+        'No API backend answered /api/*. Run `npm run dev` (starts a backend and `ham proxy`), ' +
+        'then open http://localhost:8082. `npm run serve` on :5671 serves static files only.',
     }
   }
   return body

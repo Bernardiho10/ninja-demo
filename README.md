@@ -28,6 +28,7 @@ ninja-demo/
 │   ├── nav.ts                           # Dynamic state-synchronized navbar controller
 │   └── shared.css                       # Comprehensive design system, dark theme, and telemetry styles
 ├── backends/                            # Same 3 /api routes in Node, Python, Go, Rust, PHP
+├── scripts/dev.mjs                      # Starts one backend + ham proxy together (npm run dev)
 ├── public/                              # Git-ignored production build output (Vercel target)
 ├── .gitignore                           # Excludes node_modules, public/, and temporary files
 ├── ham.json                             # HAM project config
@@ -45,7 +46,7 @@ ninja-demo/
 | File | Purpose | Key Settings |
 | :--- | :--- | :--- |
 | [`ham.json`](ham.json) | [HAM](https://github.com/bougroup/ham) project config | Compiles `src/*.html` + `.lhtml` layouts + `.phtml` partials into `public/`; `ham proxy` serves `public/` and forwards `/api/*` to a backend |
-| [`package.json`](package.json) | Package manifest & scripts | `"build": "ham build && rollup -c"`, `"dev": "npx serve public -l 5671"` (static only) |
+| [`package.json`](package.json) | Package manifest & scripts | `"dev"`: build + backend + `ham proxy` (via `scripts/dev.mjs`), `"serve"`: static preview on :5671, `"build"`: `ham build && rollup -c` |
 | [`rollup.config.js`](rollup.config.js) | Asset bundler config | Compiles `src/*.ts` to ESM modules in `public/assets/js/`, copies CSS & images |
 | [`tsconfig.json`](tsconfig.json) | TypeScript compiler config | Strict type-checking, ES2022 target, NodeNext module resolution |
 | [`vercel.json`](vercel.json) | Vercel platform config | `buildCommand: "npm run build"`, `outputDirectory: "public"`, `cleanUrls: true` |
@@ -104,27 +105,30 @@ The right sidebar features an interactive Developer Telemetry Center:
 npm install
 ```
 
-### Start Local Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:5671](http://localhost:5671) in your browser. The server serves the compiled application with clean URLs and instant response.
-
-**Note:** this serves static files only — there is no `/api/*` here, so anything that calls the real Ninja Flows API (Step 3: Create Flow / Generate Link) will 404. Use it for pure frontend/markup work.
-
-### Start Local Development Server With the Real API
-Step 3 (Create Flow / Generate Link / check verification status) calls a backend that holds `NINJA_SANDBOX_SECRET_KEY` server-side and talks to the real Ninja sandbox — a secret key can never go in the browser bundle. The frontend is backend-agnostic: it just calls `/api/flows`, `/api/flows/:id/links`, and `/api/verifications/:id` on its own origin and doesn't care what's answering.
-
-Two pieces, two terminals, using [`ham`](https://github.com/bougroup/ham) (package.json / ham.json are not involved):
+### Run It Locally (frontend + real API)
+Copy `.env.example` to `.env` and fill in `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL`, then:
 
 ```bash
-npm run build
-node backends/node/server.mjs   # terminal 1 — any ONE backend from backends/, listens on :8080
-ham proxy                       # terminal 2 — serves public/, proxies /api/ → :8080, on :8082
+npm run dev            # builds, starts the Node backend on :8080 and `ham proxy` on :8082
+npm run dev -- php     # same, but with another backend: python | go | rust | php
 ```
-Open [http://localhost:8082](http://localhost:8082). Requires repo-root `.env` with `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY`, and `NINJA_WEBHOOK_URL` set (not committed — copy `.env.example`).
+Open [http://localhost:8082](http://localhost:8082). Ctrl+C stops everything.
 
-`ham proxy` strips its `API_PROXY_PREFIX` (`/api/`) before forwarding, so every backend's routes are `/flows`, `/flows/:flowId/links`, `/verifications/:id` — not `/api/...`.
+If port 8080 is already taken by something else, choose another backend port:
+```bash
+API_PORT=8090 npm run dev           # bash / macOS / Linux
+$env:API_PORT=8090; npm run dev     # PowerShell
+```
+
+How it fits together: [`scripts/dev.mjs`](scripts/dev.mjs) starts one backend from `backends/` and [`ham proxy`](https://github.com/bougroup/ham). HAM serves the built site from `public/` and forwards every `/api/*` request to the backend, removing the `/api/` prefix on the way. That's why each backend's routes are `/flows`, `/flows/:flowId/links` and `/verifications/:id`. The backend adds `Authorization: Bearer $NINJA_SANDBOX_SECRET_KEY` and calls the Ninja sandbox. The secret key never reaches the browser.
+
+To run the two pieces by hand instead, use two terminals: `node backends/node/server.mjs`, then `ham proxy`.
+
+### Static Preview Only (no API)
+```bash
+npm run serve          # http://localhost:5671
+```
+This only serves files. Steps 1–2 still work because they run in simulation mode, but Step 3 (Create Flow / Generate Link) will fail with a 404 because nothing answers `/api/*`.
 
 ### Backend Reference Implementations (Same API, Every Language)
 The frontend never changes — only which process you run on `:8080` changes. Each one in [`backends/`](backends) implements the exact same 3 routes, reads the same `.env`, and does the same thing: attach `Authorization: Bearer $NINJA_SANDBOX_SECRET_KEY` and relay the real Ninja sandbox's response byte-for-byte. Pick whichever matches the stack you're integrating into, or compare them side by side.
@@ -135,10 +139,10 @@ The frontend never changes — only which process you run on `:8080` changes. Ea
 | Python | `backends/python/server.py` | `python backends/python/server.py` (or `py ...` on Windows) | none (stdlib `http.server`/`urllib`) | ✅ yes |
 | Go | `backends/go/main.go` | `go run backends/go/main.go` | none (stdlib `net/http`) | ✅ yes |
 | Rust | `backends/rust/src/main.rs` | `cargo run --manifest-path backends/rust/Cargo.toml` | `tiny_http`, `ureq` (both sync, no async runtime) | ✅ yes |
-| PHP | `backends/php/server.php` | `php -S 0.0.0.0:8080 backends/php/server.php` | `curl` extension (standard, usually built in) | ⚠️ **not yet verified** — not run end-to-end against the sandbox yet. Test it before relying on it. |
+| PHP | `backends/php/server.php` | `npm run dev -- php`, or `php -S 0.0.0.0:8080 backends/php/server.php` | `curl` + `openssl` extensions. A fresh Windows PHP has these switched off, so add `-d extension_dir=ext -d extension=curl -d extension=openssl` (`npm run dev -- php` does this for you) | ✅ yes (PHP 8.5) |
 | curl | shown in the in-app code inspector | — | — | not a backend — curl has no server mode, so it's illustrative snippets only (already in the UI's "cURL" tab), not a `backends/` folder |
 
-All five share one contract, so switching languages is only ever step 1 of the two-terminal workflow above — `ham proxy` and the frontend don't change.
+All five share one contract, so switching languages only changes the word after `npm run dev --`. `ham proxy` and the frontend stay the same.
 
 ### Build for Production
 ```bash
