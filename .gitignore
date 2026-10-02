@@ -4,3 +4,9 @@ public/
 *.log
 .playwright-mcp/
 scratch/
+backends/rust/target/
+backends/go/*.exe
+__pycache__/
+
+# Local learning notes (not committed)
+tutor.md

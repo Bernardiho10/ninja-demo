@@ -1,119 +1,184 @@
-# Ninja Identity API &mdash; Interactive Integration Guide
+# Ninja Demo
 
-Interactive, client-side developer demonstration and integration guide for [Ninja](https://ninja.ng/)'s identity verification, BVN account matching, and biometric payout authorization APIs.
+An interactive demo of [Ninja](https://ninja.ng/)'s identity APIs, built around a fictional betting app called **ninja-bet**.
 
-Runs 100% statically in the browser or deploys instantly to any static hosting provider (Vercel, GitHub Pages, Cloudflare Pages, Netlify). No backend servers, external databases, or API keys required.
+You walk through what a real player does: sign up, add a bank account, withdraw winnings. At each step you see the exact Ninja API call behind it, in cURL, JavaScript, Python, Go and Rust. The point is simple: show a developer how Ninja fits into their product, using real requests and real responses.
 
 ---
 
-## 🗺️ Codebase Map & Directory Structure
+## What it does
 
-All source code resides strictly inside [`src/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/src) with zero scattered root folders. The build pipeline bundles source files into the standalone [`public/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/public) deployment directory.
+| Step | Player action | Ninja feature | Real or simulated |
+|---|---|---|---|
+| 1 · Sign up | Enters name, NIN, date of birth | NIN lookup + legal-age check | Simulated in the browser |
+| 2 · Bank account | Adds a bank account + BVN | BVN ownership match | Simulated in the browser |
+| 3 · Withdraw | Must pass a face check before payout | **Flows**: create a flow, mint a hosted verification link, get the result | **Real**, against the Ninja sandbox |
+
+In Step 3 you get a real link you can open on your phone. Do the face check, and the page shows:
+
+- **Passed** or **Failed**, with match, face and liveness scores and a per-field match table
+- **Why it failed**, in plain language, when it fails
+- **The webhook Ninja sent** (`verification.completed`): delivery ID, signature, and the full JSON payload
+
+Payout only unlocks on a pass.
+
+Every call is recorded in the API log on the right, with request, response, status and timing.
+
+---
+
+## Built with HAM
+
+The frontend is built with **[HAM (HTML As Modules)](https://github.com/bougroup/ham)**, our small HTML compiler and dev proxy. Check it out there.
+
+HAM does two jobs here:
+
+- **`ham build`** compiles `src/*.html` with its layout (`.lhtml`) and partials (`.phtml`) into plain HTML in `public/`.
+- **`ham proxy`** serves `public/` on `:8082` and forwards every `/api/*` request to a backend, stripping the `/api/` prefix on the way.
+
+You need `ham` on your `PATH` to build or run the project.
+
+---
+
+## Quick start
+
+```bash
+npm install
+cp .env.example .env     # add your Ninja sandbox key + a webhook.site URL
+npm run dev              # build + backend + ham proxy
+```
+
+Open **http://localhost:8082**. Ctrl+C stops everything.
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Builds, starts the Node backend on `:8080` and `ham proxy` on `:8082` |
+| `npm run dev -- python` | Same, with another backend: `python`, `go`, `rust` or `php` |
+| `npm run build` | `ham build && rollup -c`, outputs the site to `public/` |
+| `npm run serve` | Static preview on `:5671`. No backend, so Step 3 won't work |
+
+Port 8080 taken by something else? Use another one:
+
+```bash
+API_PORT=8090 npm run dev            # macOS / Linux / Git Bash
+$env:API_PORT=8090; npm run dev      # PowerShell
+```
+
+### Environment (`.env`)
+
+| Variable | What it's for |
+|---|---|
+| `NINJA_API_BASE` | Ninja API base URL (defaults to the sandbox) |
+| `NINJA_SANDBOX_SECRET_KEY` | Your `sk_sandbox_…` key. Server-side only, never sent to the browser |
+| `NINJA_WEBHOOK_URL` | Your [webhook.site](https://webhook.site) inbox URL. Set on every flow the backend creates |
+
+`.env` is git-ignored. Never commit it.
+
+---
+
+## How it works
+
+Steps 1–2 are static, but Step 3 needs a server, for two reasons:
+
+1. **The secret key.** Creating a flow needs `NINJA_SANDBOX_SECRET_KEY`. Anything shipped to a browser is public, so the key has to live on a server.
+2. **The webhook.** When a verification finishes, Ninja POSTs `verification.completed` to a public URL. A browser can't receive that, and neither can a backend on `localhost`.
+
+```
+Browser ──/api/*──▶ ham proxy :8082 ──▶ backend :8080 ──(Bearer sk_…)──▶ Ninja sandbox
+                         │                    │                              │
+                         └─ serves public/    │                              │ verification.completed
+                                              │                              ▼
+                                              └──── reads it back ────── webhook.site inbox
+```
+
+The page polls two routes every few seconds. Whichever answers first decides pass or fail:
+
+- `GET /api/verifications/:id` gets the session status from Ninja
+- `GET /api/webhook-events?verification_id=…` gets the webhook delivery, read back from webhook.site
+
+In production you'd point `NINJA_WEBHOOK_URL` at your own public server, verify the `X-Ninja-Signature` HMAC, and store the event. webhook.site stands in for that so the demo runs on a laptop.
+
+---
+
+## Backends
+
+Every backend implements the same 4 routes, reads the same `.env`, and needs no framework. Pick the one that matches your stack, or read them side by side.
+
+| Route | What it does |
+|---|---|
+| `POST /flows` | Creates a flow. Sets `webhook_url` from `NINJA_WEBHOOK_URL` |
+| `POST /flows/:flowId/links` | Mints a single-use hosted verification link |
+| `GET /verifications/:id` | Returns the session status and outcome |
+| `GET /webhook-events?verification_id=…` | Returns the webhook deliveries for that verification |
+
+| Language | File | Dependencies |
+|---|---|---|
+| Node.js | `backends/node/server.mjs` | none |
+| Python | `backends/python/server.py` | none |
+| Go | `backends/go/main.go` | none |
+| Rust | `backends/rust/src/main.rs` | `tiny_http`, `ureq`, `serde_json` |
+| PHP | `backends/php/server.php` | `curl` + `openssl` extensions |
+
+**PHP on Windows:** a fresh install has these extensions turned off. `npm run dev -- php` turns them on for you. To run it by hand:
+
+```bash
+php -d extension_dir=ext -d extension=curl -d extension=openssl -S 0.0.0.0:8080 backends/php/server.php
+```
+
+---
+
+## Deploying
+
+The site deploys to Vercel (`vercel.json`). `public/` is served as static files, and the same 4 routes run as Vercel functions from `api/`. Set the three `.env` variables in the Vercel project settings.
+
+---
+
+## Project structure
 
 ```text
 ninja-demo/
-├── src/                                  # All source application files
-│   ├── assets/images/                   # Brand logos and demo visual assets
-│   ├── lib/                             # Core shared logic & simulation engines
-│   │   ├── api.ts                       # Typed client SDK & offline simulation fallback
-│   │   ├── apiExamples.ts               # Multi-language code generators (cURL, JS, Python, Go)
-│   │   ├── codeModal.ts                 # Code-first slide-out drawer before API execution
-│   │   ├── codeSnippet.ts               # Prism highlighting and snippet formatters
-│   │   ├── linkScenarios.ts             # 3 verification link scenarios (Pre-filled, Blank, Custom)
-│   │   ├── modal.ts                     # Accessible alert & feedback modals
-│   │   ├── state.ts                     # Reactive browser state machine & localStorage persistence
-│   │   └── tour.ts                      # Guided onboarding tour helpers
-│   ├── default.lhtml                    # HTML layout shell with Google Fonts & global partials
-│   ├── index.css                        # Page-level styling
-│   ├── index.html                       # Main interactive 3-step developer workbench
-│   ├── index.ts                         # Workbench event bindings, telemetry, and verification flow
-│   ├── logo.phtml                       # Brand logo partial
-│   ├── nav.phtml                        # Top navigation bar with live progress stepper
-│   ├── nav.ts                           # Dynamic state-synchronized navbar controller
-│   └── shared.css                       # Comprehensive design system, dark theme, and telemetry styles
-├── scripts/
-│   ├── build.js                         # Pure Node.js in-process HAM compiler & Rollup bundler
-│   └── serve.js                         # Lightweight standalone HTTP server for local testing
-├── public/                              # Git-ignored production build output (Vercel target)
-├── .gitignore                           # Excludes node_modules, public/, and temporary files
-├── CNAME                                # Custom domain configuration
-├── package.json                         # Project metadata, dependencies, and NPM scripts
-├── rollup.config.js                     # Rollup configuration for TypeScript & CSS bundling
-├── tsconfig.json                        # TypeScript compiler options
-└── vercel.json                          # Zero-config static deployment settings for Vercel
+├── src/                        # Frontend source (compiled by HAM + Rollup)
+│   ├── index.html              # The 3-step walkthrough page
+│   ├── index.ts                # Step logic, live API calls, verification result, API log
+│   ├── index.css               # Page styles
+│   ├── shared.css              # Design system: colours, components, dark theme
+│   ├── default.lhtml           # HAM layout: page shell, fonts, shared partials
+│   ├── nav.phtml               # HAM partial: top bar with progress stepper
+│   ├── nav.ts                  # Keeps the nav in sync with the current step
+│   ├── logo.phtml              # HAM partial: brand logo
+│   ├── assets/images/          # Logos
+│   └── lib/
+│       ├── api.ts              # Steps 1–2 client, with in-browser simulation fallback
+│       ├── linkScenarios.ts    # Step 3 flow + link payloads and code snippets
+│       ├── codeModal.ts        # "See the request first" drawer (cURL/JS/Python/Go/Rust)
+│       └── state.ts            # Demo state, saved in sessionStorage
+│
+├── backends/                   # Local API servers, same 4 routes, pick one
+│   ├── node/server.mjs
+│   ├── python/server.py
+│   ├── go/main.go
+│   ├── rust/src/main.rs
+│   └── php/server.php
+│
+├── api/                        # The same routes as Vercel functions (production)
+│   ├── flows.ts
+│   ├── flows/[flowId]/links.ts
+│   ├── verifications/[id].ts
+│   └── webhook-events.ts
+│
+├── scripts/dev.mjs             # `npm run dev`: starts one backend + ham proxy
+├── public/                     # Build output (git-ignored)
+├── ham.json                    # HAM config
+├── rollup.config.js            # Bundles src/*.ts into public/assets/js/
+├── tsconfig.json
+├── vercel.json                 # Vercel build + output settings
+├── .env.example                # Copy to .env
+└── CNAME                       # Custom domain (demo.ninja.ng)
 ```
 
 ---
 
-## ⚙️ Configuration Files Map
+## Notes
 
-| File | Purpose | Key Settings |
-| :--- | :--- | :--- |
-| [`package.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/package.json) | Package manifest & scripts | `"dev": "node scripts/serve.js"`, `"build": "node scripts/build.js"` |
-| [`rollup.config.js`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/rollup.config.js) | Asset bundler config | Compiles `src/*.ts` to ESM modules in `public/assets/js/`, copies CSS & images |
-| [`tsconfig.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/tsconfig.json) | TypeScript compiler config | Strict type-checking, ES2022 target, NodeNext module resolution |
-| [`vercel.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/vercel.json) | Vercel platform config | `buildCommand: "npm run build"`, `outputDirectory: "public"`, `cleanUrls: true` |
-
----
-
-## 🎮 The Main Betting App Identity Journey
-
-The application teaches developers and gaming operators how Ninja solves the three most critical identity challenges in sports betting and iGaming:
-
-### 1. Registration: Fast Onboarding & 18+ NIN Verification
-* **Endpoint**: `POST /api/identity/identify`
-* **Why it matters**: Over 40% of prospective players drop off during slow, manual KYC. Ninja verifies government National Identity (NIN), legal age (18+), and exact name matching in under 1 second.
-* **1-Click Test Scenarios**:
-  * `✓ Valid Adult (James Bond · 49 yrs)` &mdash; 100% verification match and immediate approval.
-  * `✗ Wrong Name (Chinedu Okafor)` &mdash; Identifies mismatched identity claims.
-  * `✗ Under 18 (Tobi · 16 yrs)` &mdash; Blocks underage users to satisfy regulatory compliance (NLRC).
-
-### 2. Bank Verification: Payout Route Protection (BVN Match)
-* **Endpoint**: `POST /api/identity/identify`
-* **Why it matters**: Fraudsters frequently win bets and attempt to cash out into a mule bank account. Ninja cross-checks the Bank Verification Number (BVN) directly with NIBSS to ensure the bank account belongs to the registered player.
-* **1-Click Test Scenarios**:
-  * `✓ Owner's Account (James Bond)` &mdash; Matching BVN, account safely bound to player.
-  * `✗ Mule Account (Emeka Ugo)` &mdash; Third-party account rejected immediately, stopping payout redirection.
-
-### 3. Payout Authorization: Biometric Verification Link
-* **Endpoint**: `POST /api/flows/{flowId}/links`
-* **Why it matters**: Passwords and SMS OTPs can be intercepted. Before releasing significant winnings, Ninja creates a single-use hosted verification link. The player completes a rapid live face check on any smartphone (no app installation needed), matched against their authoritative government photo.
-* **3 Integration Cases Tested**:
-  1. **Case 1: Pre-filled (Recommended for Best UX)** &mdash; First Name, Surname, and DOB are pre-populated. The customer skips manual typing and jumps straight to facial verification.
-  2. **Case 2: Blank Form (Cold KYC)** &mdash; Unfilled link session where the user manually types their details on Ninja's portal before facial check.
-  3. **Case 3: Custom Reference Tracking** &mdash; Binds internal ledger transaction IDs (`wtd_sec_wtd_01:tier_strict`) into `customer_ref` for instant webhook reconciliation.
-
----
-
-## 📡 Live Telemetry & API Call Log
-
-The right sidebar features an interactive Developer Telemetry Center:
-* **Multi-Language Code Inspector**: Live code snippets generated in **cURL**, **JavaScript**, **Python**, and **Go**.
-* **Collapsible API Call & Response Log**:
-  * Every API call is tied to its originating step (`[Step 1 · Signup]`, `[Step 2 · Bank Match]`, `[Step 3 · Verification Link]`, `[Webhook · Face Verified]`, `[Payout · Disburse]`).
-  * **Click to drop down**: Click any log entry to expand and inspect both the full **Request Payload** and the full **Response Body** with duration and status code.
-
----
-
-## 🚀 Quickstart & Development
-
-### Prerequisites
-* Node.js v18 or higher
-* npm v9 or higher
-
-### Install Dependencies
-```bash
-npm install
-```
-
-### Start Local Development Server
-```bash
-npm run dev
-```
-Open [http://localhost:5671](http://localhost:5671) in your browser. The server serves the compiled application with clean URLs and instant response.
-
-### Build for Production
-```bash
-npm run build
-```
-Compiles HTML templates, bundles TypeScript, copies CSS/images, and outputs the deployable bundle into [`public/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/public).
+- **Steps 1–2 are simulated.** `src/lib/api.ts` tries an old local API and, when it isn't there, generates realistic responses in the browser. They don't call Ninja yet.
+- **Webhook not showing up?** Check that `NINJA_WEBHOOK_URL` in `.env` is the inbox you're watching. Flows created before the backend set `webhook_url` still deliver to their old URL, so hit **Reset** to create a fresh one.
+- **`npx run dev` doesn't work.** It's `npm run dev`.

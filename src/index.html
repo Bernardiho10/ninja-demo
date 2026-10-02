@@ -54,7 +54,7 @@
             </div>
 
             <!-- Simulation Parameters (Wallet Balance) -->
-            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 12px 14px; margin-bottom: 20px;">
+            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 0; padding: 12px 14px; margin-bottom: 20px;">
               <span style="font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">
                 Initial Simulated Wallet Balance
               </span>
@@ -297,7 +297,7 @@
             </div>
 
             <!-- Active Link Box -->
-            <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;" hidden>
+            <div id="step3-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 0;" hidden>
               <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <span style="font-size: 12px; font-weight: 800; color: #fff;">Single-Use Verification Link Ready:</span>
                 <button type="button" id="link-open-camera" class="btn-reset-ghost" style="color: #34d399; font-weight: 800; text-decoration: underline; padding: 4px 8px; font-size: 12px;">
@@ -305,32 +305,32 @@
                 </button>
               </div>
 
-              <div style="background: #060a12; padding: 9px 12px; border-radius: 6px; font-family: var(--font-mono); font-size: 11px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 14px;" id="text-flow-url">
-                https://www.ninja.ng/kyc/?t=cylCDuxTXE5VnfIag1R6KrodUqfjqem9oyWAIplO
-              </div>
+              <div style="background: #060a12; padding: 9px 12px; border-radius: 0; font-family: var(--font-mono); font-size: 11px; color: #94a3b8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 14px;" id="text-flow-url"></div>
 
-              <!-- Quick Outcome Simulator -->
-              <div style="border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 12px;">
-                <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 8px;">
-                  Simulate Verification Outcome:
-                </span>
-                <div style="display: flex; gap: 8px;">
-                  <button type="button" class="preset-chip preset-pass" id="btn-sim-pass" style="flex: 1;">
-                    ✓ Test: Face Matched (98% Confidence)
-                  </button>
-                  <button type="button" class="preset-chip preset-fail" id="btn-sim-fail" style="flex: 1;">
-                    ✗ Test: Face Mismatch (Imposter)
-                  </button>
+              <!-- Real-time verification status -->
+              <div class="verify-status-box" id="step3-verify-status" data-mode="idle" hidden>
+                <div class="verify-status-row">
+                  <span class="verify-status-dot"></span>
+                  <span class="verify-status-text">Waiting for you to complete the real biometric check at the link above — checking every few seconds…</span>
                 </div>
+                <p class="verify-status-hint">
+                  Ninja sends the <code>verification.completed</code> webhook to your webhook.site inbox. The backend reads it back from there (<code>GET /api/webhook-events</code>) and also checks <code>GET /api/verifications/:id</code>, so the result and the webhook payload both appear here.
+                </p>
+                <button type="button" class="btn-reset-ghost" id="btn-check-verification" style="font-size: 11px; padding: 6px 12px;">
+                  ↻ Check Status Now
+                </button>
               </div>
             </div>
 
+            <!-- Verification result + webhook payload -->
+            <div id="step3-result" class="verify-result" data-outcome="pending" hidden></div>
+
             <!-- Release Payment CTA -->
             <div id="step3-release-box" style="margin-top: 18px;" hidden>
-              <div class="success" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
-                ✓ Face matched with 98% confidence! Identity confirmed against government record. You can now safely disburse funds.
+              <div class="success" id="step3-release-msg" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
+                ✓ Identity confirmed against the government record. You can now safely disburse funds.
               </div>
-              <button type="button" id="btn-release-payout" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #fff; font-size: 15px; font-weight: 800; padding: 14px;">
+              <button type="button" id="btn-release-payout" style="background: #10b981; color: #021a0e; font-size: 15px; font-weight: 800; padding: 14px;">
                 💸 Send Money to Verified Bank Account →
               </button>
             </div>
