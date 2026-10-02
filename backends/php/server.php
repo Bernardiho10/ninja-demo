@@ -18,6 +18,11 @@
  *   ham proxy
  * Open http://localhost:8082
  *
+ * Needs the curl and openssl extensions. A fresh Windows PHP install has no
+ * php.ini, so they're off; enable them per run without touching php.ini:
+ *   php -d extension_dir=ext -d extension=curl -d extension=openssl -S 0.0.0.0:8080 backends/php/server.php
+ * (`npm run dev -- php` does this for you.)
+ *
  * Config (reads repo-root .env, or real environment variables):
  *   NINJA_API_BASE              default https://api.sandbox.ninja.boucloud.io
  *   NINJA_SANDBOX_SECRET_KEY    required -- your sk_sandbox_... key
@@ -35,6 +40,16 @@ function load_env(): void {
             }
         }
     }
+}
+
+// Warnings/deprecations must never be printed into a JSON response body.
+ini_set('display_errors', 'stderr');
+
+if (!extension_loaded('curl')) {
+    http_response_code(500);
+    header('Content-Type: application/json');
+    echo json_encode(['error' => 'PHP curl extension is not loaded. Run with: php -d extension_dir=ext -d extension=curl -d extension=openssl -S ...']);
+    return;
 }
 
 load_env();
@@ -60,6 +75,9 @@ function proxy_to_ninja(string $method, string $upstreamPath, ?string $body = nu
     curl_setopt_array($ch, [
         CURLOPT_CUSTOMREQUEST => $method,
         CURLOPT_RETURNTRANSFER => true,
+        // Trust the OS certificate store. Windows PHP ships without a CA bundle,
+        // so without this every HTTPS call fails with "unable to get local issuer certificate".
+        CURLOPT_SSL_OPTIONS => CURLSSLOPT_NATIVE_CA,
         CURLOPT_HTTPHEADER => [
             'Authorization: Bearer ' . $secretKey,
             'Content-Type: application/json',
@@ -74,16 +92,21 @@ function proxy_to_ninja(string $method, string $upstreamPath, ?string $body = nu
         http_response_code(502);
         header('Content-Type: application/json');
         echo json_encode(['error' => 'upstream request to Ninja sandbox failed', 'detail' => curl_error($ch)]);
-        curl_close($ch);
         return;
     }
 
+    // No curl_close(): it has been a no-op since PHP 8.0 and is deprecated in 8.5.
     $status = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-    curl_close($ch);
 
     http_response_code($status);
     header('Content-Type: application/json');
     echo $responseBody;
+}
+
+// Same as the Node/Python backends: a missing or malformed JSON body becomes {}.
+function read_json_body(): string {
+    $decoded = json_decode(file_get_contents('php://input'), true);
+    return is_array($decoded) ? json_encode($decoded, JSON_UNESCAPED_SLASHES) : '{}';
 }
 
 function not_found(string $method, string $path): void {
@@ -96,10 +119,10 @@ $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if ($method === 'POST' && $path === '/flows') {
-    proxy_to_ninja('POST', '/api/flows', file_get_contents('php://input'));
+    proxy_to_ninja('POST', '/api/flows', read_json_body());
 } elseif ($method === 'POST' && preg_match('#^/flows/([^/]+)/links$#', $path, $m)) {
     $flowId = rawurldecode($m[1]);
-    proxy_to_ninja('POST', '/api/flows/' . rawurlencode($flowId) . '/links', file_get_contents('php://input'));
+    proxy_to_ninja('POST', '/api/flows/' . rawurlencode($flowId) . '/links', read_json_body());
 } elseif ($method === 'GET' && preg_match('#^/verifications/([^/]+)$#', $path, $m)) {
     $verificationId = rawurldecode($m[1]);
     proxy_to_ninja('GET', '/api/verifications/' . rawurlencode($verificationId));
