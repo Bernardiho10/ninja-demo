@@ -56,7 +56,7 @@ export function getLinkScenarioConfig(
       liveness_threshold: 85,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
       redirect_url: 'https://ninjabet.example/kyc-return',
-      webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
+      webhook_url: 'https://webhook.site/6282e26f-3dca-4d4c-af23-c3603963c1ef',
     }
 
     const flowResponsePayload = {
