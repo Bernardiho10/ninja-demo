@@ -2,27 +2,23 @@
 
 Interactive, client-side developer demonstration and integration guide for [Ninja](https://ninja.ng/)'s identity verification, BVN account matching, and biometric payout authorization APIs.
 
-Runs 100% statically in the browser or deploys instantly to any static hosting provider (Vercel, GitHub Pages, Cloudflare Pages, Netlify). No backend servers, external databases, or API keys required.
+Built with [HAM](https://github.com/bougroup/ham). Steps 1–2 run statically in the browser. Step 3 (real Ninja Flows: create flow, mint link, poll status) needs a small backend from [`backends/`](backends/) that keeps your sandbox secret key off the browser. `ham proxy` serves the frontend and forwards `/api/*` to that backend.
 
 ---
 
 ## 🗺️ Codebase Map & Directory Structure
 
-All source code resides strictly inside [`src/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/src) with zero scattered root folders. The build pipeline bundles source files into the standalone [`public/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/public) deployment directory.
+All source code resides strictly inside [`src/`](src) with zero scattered root folders. The build pipeline bundles source files into the standalone [`public/`](public) deployment directory.
 
 ```text
 ninja-demo/
 ├── src/                                  # All source application files
 │   ├── assets/images/                   # Brand logos and demo visual assets
-│   ├── lib/                             # Core shared logic & simulation engines
-│   │   ├── api.ts                       # Typed client SDK & offline simulation fallback
-│   │   ├── apiExamples.ts               # Multi-language code generators (cURL, JS, Python, Go)
-│   │   ├── codeModal.ts                 # Code-first slide-out drawer before API execution
-│   │   ├── codeSnippet.ts               # Prism highlighting and snippet formatters
-│   │   ├── linkScenarios.ts             # 3 verification link scenarios (Pre-filled, Blank, Custom)
-│   │   ├── modal.ts                     # Accessible alert & feedback modals
-│   │   ├── state.ts                     # Reactive browser state machine & localStorage persistence
-│   │   └── tour.ts                      # Guided onboarding tour helpers
+│   ├── lib/                             # Core shared logic
+│   │   ├── api.ts                       # Typed client for Steps 1–2 with in-browser simulation fallback
+│   │   ├── codeModal.ts                 # Code-first slide-out (cURL, JS, Python, Go, Rust) before each live call
+│   │   ├── linkScenarios.ts             # Flow + link payloads/snippets for the 3 scenarios (Pre-filled, Blank, Custom)
+│   │   └── state.ts                     # Browser state machine & localStorage persistence
 │   ├── default.lhtml                    # HTML layout shell with Google Fonts & global partials
 │   ├── index.css                        # Page-level styling
 │   ├── index.html                       # Main interactive 3-step developer workbench
@@ -31,11 +27,10 @@ ninja-demo/
 │   ├── nav.phtml                        # Top navigation bar with live progress stepper
 │   ├── nav.ts                           # Dynamic state-synchronized navbar controller
 │   └── shared.css                       # Comprehensive design system, dark theme, and telemetry styles
-├── scripts/
-│   ├── build.js                         # Pure Node.js in-process HAM compiler & Rollup bundler
-│   └── serve.js                         # Lightweight standalone HTTP server for local testing
+├── backends/                            # Same 3 /api routes in Node, Python, Go, Rust, PHP
 ├── public/                              # Git-ignored production build output (Vercel target)
 ├── .gitignore                           # Excludes node_modules, public/, and temporary files
+├── ham.json                             # HAM project config
 ├── CNAME                                # Custom domain configuration
 ├── package.json                         # Project metadata, dependencies, and NPM scripts
 ├── rollup.config.js                     # Rollup configuration for TypeScript & CSS bundling
@@ -49,10 +44,12 @@ ninja-demo/
 
 | File | Purpose | Key Settings |
 | :--- | :--- | :--- |
-| [`package.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/package.json) | Package manifest & scripts | `"dev": "node scripts/serve.js"`, `"build": "node scripts/build.js"` |
-| [`rollup.config.js`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/rollup.config.js) | Asset bundler config | Compiles `src/*.ts` to ESM modules in `public/assets/js/`, copies CSS & images |
-| [`tsconfig.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/tsconfig.json) | TypeScript compiler config | Strict type-checking, ES2022 target, NodeNext module resolution |
-| [`vercel.json`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/vercel.json) | Vercel platform config | `buildCommand: "npm run build"`, `outputDirectory: "public"`, `cleanUrls: true` |
+| [`ham.json`](ham.json) | [HAM](https://github.com/bougroup/ham) project config | Compiles `src/*.html` + `.lhtml` layouts + `.phtml` partials into `public/`; `ham proxy` serves `public/` and forwards `/api/*` to a backend |
+| [`package.json`](package.json) | Package manifest & scripts | `"build": "ham build && rollup -c"`, `"dev": "npx serve public -l 5671"` (static only) |
+| [`rollup.config.js`](rollup.config.js) | Asset bundler config | Compiles `src/*.ts` to ESM modules in `public/assets/js/`, copies CSS & images |
+| [`tsconfig.json`](tsconfig.json) | TypeScript compiler config | Strict type-checking, ES2022 target, NodeNext module resolution |
+| [`vercel.json`](vercel.json) | Vercel platform config | `buildCommand: "npm run build"`, `outputDirectory: "public"`, `cleanUrls: true` |
+| [`.env.example`](.env.example) | Backend config template | `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY`, `NINJA_WEBHOOK_URL` — copy to `.env` (git-ignored) |
 
 ---
 
@@ -88,7 +85,7 @@ The application teaches developers and gaming operators how Ninja solves the thr
 ## 📡 Live Telemetry & API Call Log
 
 The right sidebar features an interactive Developer Telemetry Center:
-* **Multi-Language Code Inspector**: Live code snippets generated in **cURL**, **JavaScript**, **Python**, and **Go**.
+* **Multi-Language Code Inspector**: Live code snippets generated in **cURL**, **JavaScript**, **Python**, **Go**, and **Rust**.
 * **Collapsible API Call & Response Log**:
   * Every API call is tied to its originating step (`[Step 1 · Signup]`, `[Step 2 · Bank Match]`, `[Step 3 · Verification Link]`, `[Webhook · Face Verified]`, `[Payout · Disburse]`).
   * **Click to drop down**: Click any log entry to expand and inspect both the full **Request Payload** and the full **Response Body** with duration and status code.
@@ -98,6 +95,7 @@ The right sidebar features an interactive Developer Telemetry Center:
 ## 🚀 Quickstart & Development
 
 ### Prerequisites
+* [HAM](https://github.com/bougroup/ham) on your `PATH` (`ham build`, `ham proxy`)
 * Node.js v18 or higher
 * npm v9 or higher
 
@@ -129,15 +127,15 @@ Open [http://localhost:8082](http://localhost:8082). Requires repo-root `.env` w
 `ham proxy` strips its `API_PROXY_PREFIX` (`/api/`) before forwarding, so every backend's routes are `/flows`, `/flows/:flowId/links`, `/verifications/:id` — not `/api/...`.
 
 ### Backend Reference Implementations (Same API, Every Language)
-The frontend never changes — only which process you run on `:8080` changes. Each one in [`backends/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/backends) implements the exact same 3 routes, reads the same `.env`, and does the same thing: attach `Authorization: Bearer $NINJA_SANDBOX_SECRET_KEY` and relay the real Ninja sandbox's response byte-for-byte. Pick whichever matches the stack you're integrating into, or compare them side by side.
+The frontend never changes — only which process you run on `:8080` changes. Each one in [`backends/`](backends) implements the exact same 3 routes, reads the same `.env`, and does the same thing: attach `Authorization: Bearer $NINJA_SANDBOX_SECRET_KEY` and relay the real Ninja sandbox's response byte-for-byte. Pick whichever matches the stack you're integrating into, or compare them side by side.
 
 | Language | Path | Run | Dependencies | Verified against the real sandbox |
 |---|---|---|---|---|
-| Node.js | `backends/node/server.mjs` | `node backends/node/server.mjs` | none (stdlib `http`/`fetch`) | ✅ yes, this session |
-| Python | `backends/python/server.py` | `python backends/python/server.py` (or `py ...` on Windows) | none (stdlib `http.server`/`urllib`) | ✅ yes, this session |
-| Go | `backends/go/main.go` | `go run backends/go/main.go` | none (stdlib `net/http`) | ✅ yes, this session |
-| Rust | `backends/rust/src/main.rs` | `cargo run --manifest-path backends/rust/Cargo.toml` | `tiny_http`, `ureq` (both sync, no async runtime) | ✅ yes, this session |
-| PHP | `backends/php/server.php` | `php -S 0.0.0.0:8080 backends/php/server.php` | `curl` extension (standard, usually built in) | ⚠️ **not verified** — no PHP runtime or working Docker daemon was available in the environment that wrote this. Written against standard, well-documented PHP APIs, but unlike the other four, nobody has actually run it end-to-end yet. Test it before you trust it, and tell us if it needs a fix. |
+| Node.js | `backends/node/server.mjs` | `node backends/node/server.mjs` | none (stdlib `http`/`fetch`) | ✅ yes |
+| Python | `backends/python/server.py` | `python backends/python/server.py` (or `py ...` on Windows) | none (stdlib `http.server`/`urllib`) | ✅ yes |
+| Go | `backends/go/main.go` | `go run backends/go/main.go` | none (stdlib `net/http`) | ✅ yes |
+| Rust | `backends/rust/src/main.rs` | `cargo run --manifest-path backends/rust/Cargo.toml` | `tiny_http`, `ureq` (both sync, no async runtime) | ✅ yes |
+| PHP | `backends/php/server.php` | `php -S 0.0.0.0:8080 backends/php/server.php` | `curl` extension (standard, usually built in) | ⚠️ **not yet verified** — not run end-to-end against the sandbox yet. Test it before relying on it. |
 | curl | shown in the in-app code inspector | — | — | not a backend — curl has no server mode, so it's illustrative snippets only (already in the UI's "cURL" tab), not a `backends/` folder |
 
 All five share one contract, so switching languages is only ever step 1 of the two-terminal workflow above — `ham proxy` and the frontend don't change.
@@ -146,4 +144,4 @@ All five share one contract, so switching languages is only ever step 1 of the t
 ```bash
 npm run build
 ```
-Compiles HTML templates, bundles TypeScript, copies CSS/images, and outputs the deployable bundle into [`public/`](file:///C:/Users/Bernardiho/Desktop/projects/bougroup/ninja-demo/public).
+Compiles HTML templates, bundles TypeScript, copies CSS/images, and outputs the deployable bundle into [`public/`](public).

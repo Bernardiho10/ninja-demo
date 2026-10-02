@@ -1340,7 +1340,7 @@ func main() {
 use serde_json::json;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error.Error>> {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::new();
     let token = std::env::var("NINJA_TOKEN").unwrap_or_default();
 
