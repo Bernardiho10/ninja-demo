@@ -1,8 +1,6 @@
 // Server-side proxy for GET /api/verifications/:id — used to poll a hosted
-// verification session for completion. The real verification.completed
-// webhook fires to NINJA_WEBHOOK_URL (webhook.site) for external inspection,
-// not back into this app, so the frontend polls this endpoint to find out
-// when a session finishes and what the outcome was.
+// verification session for completion. The webhook itself is read back by
+// api/webhook-events.ts; this is the status check that runs alongside it.
 
 const NINJA_API_BASE = process.env.NINJA_API_BASE || 'https://api.sandbox.ninja.boucloud.io'
 

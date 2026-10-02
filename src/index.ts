@@ -833,11 +833,13 @@ function bindStep3() {
 }
 
 // -----------------------------------------------------------------------------
-// Real Verification Polling — the verification.completed webhook fires to
-// NINJA_WEBHOOK_URL (webhook.site) for external inspection, not back into
-// this static app, so we poll our own /api/verifications/:id proxy to find
-// out when the hosted session the tester is completing in another tab
-// finishes, and what the real outcome was.
+// Real Verification Tracking — two sources, whichever answers first:
+//   1. GET /api/verifications/:id — the session's status straight from Ninja.
+//   2. GET /api/webhook-events?verification_id=… — the verification.completed
+//      webhook Ninja delivered to NINJA_WEBHOOK_URL (webhook.site), read back
+//      by the backend. A browser page can't receive a webhook itself.
+// Once resolved we show pass/fail with the reasons, and keep checking for the
+// webhook for a short while so its payload can be shown too.
 // -----------------------------------------------------------------------------
 let createdFlow: { id: string; scenario: 'prefilled' | 'unfilled' | 'custom' } | null = null
 let activeVerification: { id: string; url: string } | null = null
@@ -874,6 +876,7 @@ function markFlowCreated(flowId: string, genBtn: HTMLButtonElement | null, creat
 
 function resetFlowStages() {
   stopVerificationPolling()
+  tracker = null
   createdFlow = null
   activeVerification = null
 
@@ -933,14 +936,60 @@ function setPollStatusUI(mode: 'idle' | 'waiting' | 'done') {
     if (text) text.textContent = 'Waiting for you to complete the real biometric check at the link above — checking every few seconds…'
     if (checkBtn) checkBtn.hidden = false
   } else if (mode === 'done') {
-    if (text) text.textContent = '✓ Verification session resolved — see the outcome in the API log below.'
+    if (text) text.textContent = '✓ Verification session finished — result below.'
     if (checkBtn) checkBtn.hidden = true
   }
+  if (mode === 'idle') renderVerificationResult(null)
 }
+
+interface VerificationField {
+  field: string
+  score?: number
+  match?: string
+  provided?: string
+}
+
+interface VerificationData {
+  verification_id?: string
+  id?: string
+  status?: string
+  outcome?: string
+  score?: number
+  face_score?: number
+  liveness_score?: number
+  completed_at?: string
+  fields?: VerificationField[]
+  [key: string]: unknown
+}
+
+interface WebhookEvent {
+  delivery_id: string | null
+  event: string | null
+  signature: string | null
+  received_at: string
+  payload: { event?: string; event_id?: string; created_at?: string; data?: VerificationData }
+}
+
+interface VerificationTracker {
+  id: string
+  result: VerificationData | null
+  webhook: WebhookEvent | null
+  inboxUrl: string | null
+  webhookSource: string | null
+  resolvedAt: number | null
+}
+
+// After the result is known, keep looking for the webhook this long before
+// saying it didn't arrive (webhook.site usually has it within a few seconds).
+const WEBHOOK_GRACE_MS = 60_000
+
+let tracker: VerificationTracker | null = null
 
 function startVerificationPolling(verificationId: string) {
   stopVerificationPolling()
+  tracker = { id: verificationId, result: null, webhook: null, inboxUrl: null, webhookSource: null, resolvedAt: null }
   setPollStatusUI('waiting')
+  renderVerificationResult(tracker)
   pollTimer = setInterval(() => pollVerificationOnce(verificationId), 4000)
 }
 
@@ -952,37 +1001,203 @@ function stopVerificationPolling() {
 }
 
 async function pollVerificationOnce(verificationId: string) {
+  const t = tracker
+  if (!t || t.id !== verificationId) return
+
+  if (!t.result) await checkVerificationStatus(t)
+  if (!t.webhook && t.webhookSource !== 'unsupported') await checkWebhookEvents(t)
+
+  if (t !== tracker) return
+  if (t.result) {
+    const webhookDone = !!t.webhook || t.webhookSource === 'unsupported'
+    const gaveUp = t.resolvedAt !== null && Date.now() - t.resolvedAt > WEBHOOK_GRACE_MS
+    if (webhookDone || gaveUp) stopVerificationPolling()
+  }
+  renderVerificationResult(t)
+}
+
+async function checkVerificationStatus(t: VerificationTracker) {
   try {
-    const res = await fetch(`/api/verifications/${encodeURIComponent(verificationId)}`)
+    const path = `/api/verifications/${encodeURIComponent(t.id)}`
+    const t0 = performance.now()
+    const res = await fetch(path)
     const body = await readApiBody(res)
     if (!isOkStatus(res.status)) return
-
-    if (body.status && body.status !== 'pending') {
-      addLog('Step 3 · Verification Status', 'GET', `/api/verifications/${verificationId}`, res.status, 0, {}, body)
-      stopVerificationPolling()
-      handleVerificationResolved(body)
+    if (body.status && body.status !== 'pending' && body.status !== 'opened') {
+      addLog('Step 3 · Verification Status', 'GET', path, res.status, Math.round(performance.now() - t0), {}, body)
+      resolveVerification(t, body)
     }
   } catch {
     // Network hiccup — the interval will retry.
   }
 }
 
-function handleVerificationResolved(body: { outcome?: string }) {
-  setPollStatusUI('done')
-  const releaseBox = document.getElementById('step3-release-box')
-  const isVerified = body.outcome === 'verified'
+async function checkWebhookEvents(t: VerificationTracker) {
+  try {
+    const path = `/api/webhook-events?verification_id=${encodeURIComponent(t.id)}`
+    const t0 = performance.now()
+    const res = await fetch(path)
+    const body = await readApiBody(res)
+    if (!isOkStatus(res.status)) return
+    t.inboxUrl = body.inbox_url ?? null
+    t.webhookSource = body.source ?? null
 
-  state.withdrawal.faceStatus = isVerified ? 'passed' : 'failed'
+    const event: WebhookEvent | undefined = (body.events || []).find((e: WebhookEvent) => e.payload?.data)
+    if (!event) return
+    t.webhook = event
+    const passed = event.payload.data?.outcome === 'verified'
+    addLog(passed ? 'Webhook · Face Verified' : 'Webhook · Face Failed', 'GET', path, res.status, Math.round(performance.now() - t0), {}, event)
+    // The webhook can arrive before the status poll sees the change.
+    if (!t.result && event.payload.data) resolveVerification(t, event.payload.data)
+  } catch {
+    // Network hiccup — the interval will retry.
+  }
+}
+
+function resolveVerification(t: VerificationTracker, data: VerificationData) {
+  t.result = data
+  t.resolvedAt = Date.now()
+  setPollStatusUI('done')
+
+  const passed = data.outcome === 'verified'
+  state.withdrawal.faceStatus = passed ? 'passed' : 'failed'
   saveState(state)
 
-  if (isVerified) {
-    if (releaseBox) releaseBox.hidden = false
-  } else {
-    if (releaseBox) releaseBox.hidden = true
-    alert(
-      `Verification did not pass (outcome: ${body.outcome || 'unknown'}). Payout blocked. The real webhook delivery for this session is visible at your webhook.site inbox, and the full response is in the API log below.`
-    )
+  const releaseBox = document.getElementById('step3-release-box')
+  if (releaseBox) releaseBox.hidden = !passed
+  const releaseMsg = document.getElementById('step3-release-msg')
+  if (releaseMsg && passed) {
+    const face = typeof data.face_score === 'number' ? ` Face matched with ${data.face_score}% confidence.` : ''
+    releaseMsg.textContent = `✓ Identity confirmed against the government record.${face} You can now safely disburse funds.`
   }
+}
+
+// Turns a failed verification into plain-language reasons.
+function failureReasons(v: VerificationData): string[] {
+  const reasons: string[] = []
+  const flow = getFlowCreationConfig(selectedScenario).requestPayload
+  const faceMin = Number(flow.selfie_threshold) || 0
+  const livenessMin = Number(flow.liveness_threshold) || 0
+
+  if (v.status && v.status !== 'completed') {
+    reasons.push(`The session ended as "${v.status}" before a decision was made.`)
+  }
+  if (v.outcome && v.outcome !== 'verified') {
+    reasons.push(`Ninja's decision: ${v.outcome.replace(/_/g, ' ')}.`)
+  }
+  for (const key of ['reason', 'failure_reason', 'decline_reason', 'error', 'message']) {
+    const val = v[key]
+    if (typeof val === 'string' && val) reasons.push(val)
+  }
+  if (typeof v.face_score === 'number' && faceMin && v.face_score < faceMin) {
+    reasons.push(`Face match ${v.face_score}% is below the ${faceMin}% required by this flow.`)
+  }
+  if (typeof v.liveness_score === 'number' && livenessMin && v.liveness_score < livenessMin) {
+    reasons.push(`Liveness ${v.liveness_score}% is below the ${livenessMin}% required by this flow.`)
+  }
+  for (const f of v.fields || []) {
+    if (!fieldMatched(f)) {
+      const label = f.field.replace(/_/g, ' ')
+      const provided = f.provided ? ` ("${f.provided}")` : ''
+      reasons.push(`${label}${provided} didn't fully match the ID record (${f.match || 'no match'}, score ${f.score ?? 0}).`)
+    }
+  }
+  if (reasons.length === 0) reasons.push('Ninja did not return a specific reason. See the full payload below.')
+  return reasons
+}
+
+function fieldMatched(f: VerificationField): boolean {
+  return f.match === 'exact' || (typeof f.score === 'number' && f.score >= 1)
+}
+
+function renderVerificationResult(t: VerificationTracker | null) {
+  const box = document.getElementById('step3-result')
+  if (!box) return
+  if (!t) {
+    box.hidden = true
+    box.innerHTML = ''
+    return
+  }
+  box.hidden = false
+
+  const v = t.result
+  const outcome = !v ? 'pending' : v.outcome === 'verified' ? 'passed' : 'failed'
+  box.dataset.outcome = outcome
+
+  const pct = (n?: number) => (typeof n === 'number' ? `${n}%` : '—')
+  const score = (n?: number) => (typeof n === 'number' ? n.toFixed(2) : '—')
+
+  const headline =
+    outcome === 'pending'
+      ? `<span class="verify-result-badge">● Waiting</span><span class="verify-result-title">No result yet</span>`
+      : outcome === 'passed'
+        ? `<span class="verify-result-badge">✓ Passed</span><span class="verify-result-title">Identity verified — payout can be released</span>`
+        : `<span class="verify-result-badge">✕ Failed</span><span class="verify-result-title">Verification failed — payout blocked</span>`
+
+  const metrics = v
+    ? `<div class="verify-result-metrics">
+        <div><span>Status</span><strong>${escapeHtml(String(v.status || '—'))}</strong></div>
+        <div><span>Outcome</span><strong>${escapeHtml(String(v.outcome || '—'))}</strong></div>
+        <div><span>Match score</span><strong>${score(v.score)}</strong></div>
+        <div><span>Face</span><strong>${pct(v.face_score)}</strong></div>
+        <div><span>Liveness</span><strong>${pct(v.liveness_score)}</strong></div>
+      </div>`
+    : ''
+
+  const fields =
+    v && v.fields?.length
+      ? `<table class="verify-result-fields">
+          <thead><tr><th>Field</th><th>Provided</th><th>Match</th><th>Score</th></tr></thead>
+          <tbody>${v.fields
+            .map((f) => {
+              const ok = fieldMatched(f)
+              return `<tr class="${ok ? 'ok' : 'bad'}">
+                <td>${ok ? '✓' : '✕'} ${escapeHtml(f.field.replace(/_/g, ' '))}</td>
+                <td>${escapeHtml(f.provided ?? '—')}</td>
+                <td>${escapeHtml(f.match ?? '—')}</td>
+                <td>${score(f.score)}</td>
+              </tr>`
+            })
+            .join('')}</tbody>
+        </table>`
+      : ''
+
+  const errors =
+    outcome === 'failed' && v
+      ? `<div class="error verify-result-errors"><strong>Why it failed</strong><ul>${failureReasons(v)
+          .map((r) => `<li>${escapeHtml(r)}</li>`)
+          .join('')}</ul></div>`
+      : ''
+
+  const inbox = t.inboxUrl ? ` <a href="${escapeHtml(t.inboxUrl)}" target="_blank" rel="noopener">Open inbox ↗</a>` : ''
+  let webhook: string
+  if (t.webhook) {
+    const w = t.webhook
+    webhook = `<div class="verify-webhook-meta">
+        <span><b>Event</b> ${escapeHtml(w.event || '—')}</span>
+        <span><b>Delivery</b> ${escapeHtml(w.delivery_id || '—')}</span>
+        <span><b>Received</b> ${escapeHtml(w.received_at || '—')}</span>
+        <span title="${escapeHtml(w.signature || '')}"><b>Signature</b> ${escapeHtml(w.signature ? w.signature.slice(0, 28) + '…' : '—')}</span>
+      </div>
+      <pre class="verify-webhook-payload">${escapeHtml(JSON.stringify(w.payload, null, 2))}</pre>`
+  } else if (t.webhookSource === 'unsupported') {
+    webhook = `<p class="verify-webhook-note">NINJA_WEBHOOK_URL isn't a webhook.site inbox, so the backend can't read deliveries back. Check your webhook endpoint directly.</p>`
+  } else if (v && t.resolvedAt !== null && Date.now() - t.resolvedAt > WEBHOOK_GRACE_MS) {
+    webhook = `<p class="verify-webhook-note">No webhook for this verification showed up in the inbox.${inbox} Flows created before the backend started setting <code>webhook_url</code> from <code>.env</code> still deliver to their old URL. Reset the demo to create a fresh flow.</p>`
+  } else {
+    webhook = `<p class="verify-webhook-note"><span class="verify-status-dot"></span> Waiting for the <code>verification.completed</code> webhook…${inbox}</p>`
+  }
+
+  box.innerHTML = `
+    <div class="verify-result-head">${headline}</div>
+    ${errors}
+    ${metrics}
+    ${fields}
+    <div class="verify-webhook">
+      <div class="verify-webhook-title">Webhook from Ninja</div>
+      ${webhook}
+    </div>
+  `
 }
 
 // -----------------------------------------------------------------------------

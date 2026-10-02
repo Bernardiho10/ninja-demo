@@ -5,6 +5,7 @@
 // from a static frontend.
 
 const NINJA_API_BASE = process.env.NINJA_API_BASE || 'https://api.sandbox.ninja.boucloud.io'
+const WEBHOOK_URL = process.env.NINJA_WEBHOOK_URL || ''
 
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
@@ -25,7 +26,8 @@ export default async function handler(req: any, res: any) {
         Authorization: `Bearer ${secretKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(req.body || {}),
+      // Where Ninja delivers results is server config, not something the browser decides.
+      body: JSON.stringify({ ...(req.body || {}), ...(WEBHOOK_URL ? { webhook_url: WEBHOOK_URL } : {}) }),
     })
 
     const text = await upstream.text()

@@ -25,6 +25,7 @@ use std::env;
 use std::fs;
 use std::path::PathBuf;
 
+use serde_json::{json, Value};
 use tiny_http::{Header, Method, Response, Server};
 
 fn load_env() {
@@ -100,6 +101,88 @@ fn proxy_to_ninja(method: &str, upstream_path: &str, body: Option<String>) -> (u
     }
 }
 
+/// Sets webhook_url to NINJA_WEBHOOK_URL on a flow-creation body. A missing or
+/// malformed body becomes {} like the other reference backends.
+fn with_webhook_url(body: &str) -> String {
+    let mut v: Value = serde_json::from_str(body).unwrap_or_else(|_| json!({}));
+    if !v.is_object() {
+        v = json!({});
+    }
+    if let Ok(url) = env::var("NINJA_WEBHOOK_URL") {
+        if !url.is_empty() {
+            v["webhook_url"] = Value::String(url);
+        }
+    }
+    v.to_string()
+}
+
+/// Returns the webhook.site token if NINJA_WEBHOOK_URL is a webhook.site inbox.
+fn webhook_site_token(url: &str) -> Option<String> {
+    let token = url.strip_prefix("https://webhook.site/")?.get(..36)?;
+    token
+        .chars()
+        .all(|c| c.is_ascii_hexdigit() || c == '-')
+        .then(|| token.to_string())
+}
+
+/// Ninja delivers webhooks to a public URL, which a localhost backend can't be.
+/// For the demo that URL is a webhook.site inbox, and webhook.site has a read
+/// API, so we fetch the deliveries from there and hand them to the browser.
+fn webhook_events(verification_id: &str) -> (u16, String) {
+    let webhook_url = env::var("NINJA_WEBHOOK_URL").unwrap_or_default();
+    let token = match webhook_site_token(&webhook_url) {
+        Some(t) => t,
+        None => {
+            let inbox = if webhook_url.is_empty() { Value::Null } else { Value::String(webhook_url) };
+            return (200, json!({"source": "unsupported", "inbox_url": inbox, "events": []}).to_string());
+        }
+    };
+
+    let url = format!("https://webhook.site/token/{}/requests?sorting=newest&per_page=50", token);
+    let inbox: Value = match ureq::get(&url).set("Accept", "application/json").call() {
+        Ok(resp) => match resp.into_string().ok().and_then(|t| serde_json::from_str(&t).ok()) {
+            Some(v) => v,
+            None => return (502, json!({"error": "could not read webhook.site inbox", "detail": "invalid JSON"}).to_string()),
+        },
+        Err(e) => return (502, json!({"error": "could not read webhook.site inbox", "detail": e.to_string()}).to_string()),
+    };
+
+    let header = |r: &Value, name: &str| r["headers"][name].get(0).cloned().unwrap_or(Value::Null);
+    let mut events = Vec::new();
+    for r in inbox["data"].as_array().into_iter().flatten() {
+        if r["method"] != "POST" {
+            continue;
+        }
+        let payload: Value = match r["content"].as_str().and_then(|c| serde_json::from_str(c).ok()) {
+            Some(p) => p,
+            None => continue,
+        };
+        if !verification_id.is_empty() && payload["data"]["verification_id"] != verification_id {
+            continue;
+        }
+        let mut event = header(r, "x-ninja-event");
+        if event.is_null() {
+            event = payload["event"].clone();
+        }
+        events.push(json!({
+            "delivery_id": header(r, "x-ninja-delivery"),
+            "event": event,
+            "signature": header(r, "x-ninja-signature"),
+            "received_at": r["created_at"],
+            "payload": payload,
+        }));
+    }
+    (
+        200,
+        json!({
+            "source": "webhook.site",
+            "inbox_url": format!("https://webhook.site/#!/view/{}", token),
+            "events": events,
+        })
+        .to_string(),
+    )
+}
+
 fn main() {
     load_env();
 
@@ -118,8 +201,20 @@ fn main() {
         let mut body = String::new();
         let _ = request.as_reader().read_to_string(&mut body);
 
-        let (status, resp_body) = match (&method, url.as_str()) {
-            (Method::Post, "/flows") => proxy_to_ninja("POST", "/api/flows", Some(body)),
+        let (path_only, query) = url.split_once('?').unwrap_or((url.as_str(), ""));
+
+        let (status, resp_body) = match (&method, path_only) {
+            (Method::Post, "/flows") => {
+                proxy_to_ninja("POST", "/api/flows", Some(with_webhook_url(&body)))
+            }
+
+            (Method::Get, "/webhook-events") => {
+                let vid = query
+                    .split('&')
+                    .find_map(|kv| kv.strip_prefix("verification_id="))
+                    .unwrap_or("");
+                webhook_events(vid)
+            }
 
             (Method::Post, path) if path.starts_with("/flows/") && path.ends_with("/links") => {
                 let flow_id = &path["/flows/".len()..path.len() - "/links".len()];

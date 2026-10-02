@@ -8,6 +8,9 @@
 //   POST /flows                    -> POST   {NINJA_API_BASE}/api/flows
 //   POST /flows/:flowId/links      -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
 //   GET  /verifications/:id        -> GET    {NINJA_API_BASE}/api/verifications/:id
+//   GET  /webhook-events?verification_id=vs_...
+//                                  -> reads the webhook.site inbox (NINJA_WEBHOOK_URL) and returns
+//                                     the verification.completed deliveries for that verification
 //
 // Run:
 //   node backends/node/server.mjs
@@ -18,6 +21,7 @@
 // Config (reads repo-root .env, or real environment variables):
 //   NINJA_API_BASE              default https://api.sandbox.ninja.boucloud.io
 //   NINJA_SANDBOX_SECRET_KEY    required — your sk_sandbox_... key
+//   NINJA_WEBHOOK_URL           where Ninja delivers webhooks; set on every flow this backend creates
 //   API_PORT                    default 8080 (ham proxy's default API_ENDPOINT)
 
 import http from 'node:http'
@@ -37,6 +41,7 @@ if (fs.existsSync(envPath)) {
 
 const NINJA_API_BASE = process.env.NINJA_API_BASE || 'https://api.sandbox.ninja.boucloud.io'
 const SECRET_KEY = process.env.NINJA_SANDBOX_SECRET_KEY
+const WEBHOOK_URL = process.env.NINJA_WEBHOOK_URL || ''
 const PORT = Number(process.env.API_PORT) || 8080
 
 async function readBody(req) {
@@ -77,11 +82,56 @@ async function proxyToNinja(res, method, upstreamPath, body) {
   }
 }
 
+// Ninja delivers webhooks to a public URL, which a localhost backend can't be.
+// For the demo that URL is a webhook.site inbox, and webhook.site has a read
+// API, so we fetch the deliveries from there and hand them to the browser.
+async function webhookEvents(res, verificationId) {
+  const m = WEBHOOK_URL.match(/^https:\/\/webhook\.site\/([0-9a-f-]{36})/i)
+  if (!m) {
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ source: 'unsupported', inbox_url: WEBHOOK_URL || null, events: [] }))
+    return
+  }
+  const token = m[1]
+  try {
+    const upstream = await fetch(`https://webhook.site/token/${token}/requests?sorting=newest&per_page=50`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!upstream.ok) throw new Error(`webhook.site responded ${upstream.status}`)
+    const inbox = await upstream.json()
+    const header = (r, name) => [].concat(r.headers?.[name] ?? [])[0] ?? null
+    const events = []
+    for (const r of inbox.data || []) {
+      if (r.method !== 'POST') continue
+      let payload
+      try {
+        payload = JSON.parse(r.content)
+      } catch {
+        continue
+      }
+      if (verificationId && payload?.data?.verification_id !== verificationId) continue
+      events.push({
+        delivery_id: header(r, 'x-ninja-delivery'),
+        event: header(r, 'x-ninja-event') || payload.event || null,
+        signature: header(r, 'x-ninja-signature'),
+        received_at: r.created_at,
+        payload,
+      })
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ source: 'webhook.site', inbox_url: `https://webhook.site/#!/view/${token}`, events }))
+  } catch (err) {
+    res.writeHead(502, { 'Content-Type': 'application/json' })
+    res.end(JSON.stringify({ error: 'could not read webhook.site inbox', detail: String(err?.message || err) }))
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost')
 
   if (req.method === 'POST' && url.pathname === '/flows') {
     const body = await readBody(req)
+    if (WEBHOOK_URL) body.webhook_url = WEBHOOK_URL
     return proxyToNinja(res, 'POST', '/api/flows', body)
   }
 
@@ -94,6 +144,10 @@ const server = http.createServer(async (req, res) => {
   m = url.pathname.match(/^\/verifications\/([^/]+)$/)
   if (req.method === 'GET' && m) {
     return proxyToNinja(res, 'GET', `/api/verifications/${encodeURIComponent(m[1])}`)
+  }
+
+  if (req.method === 'GET' && url.pathname === '/webhook-events') {
+    return webhookEvents(res, url.searchParams.get('verification_id') || '')
   }
 
   res.writeHead(404, { 'Content-Type': 'application/json' })

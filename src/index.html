@@ -314,7 +314,7 @@
                   <span class="verify-status-text">Waiting for you to complete the real biometric check at the link above — checking every few seconds…</span>
                 </div>
                 <p class="verify-status-hint">
-                  The real <code>verification.completed</code> webhook fires to your webhook.site inbox for inspection. This app finds out the outcome by polling <code>GET /api/verifications/:id</code> since a Flow only delivers its webhook to one URL.
+                  Ninja sends the <code>verification.completed</code> webhook to your webhook.site inbox. The backend reads it back from there (<code>GET /api/webhook-events</code>) and also checks <code>GET /api/verifications/:id</code>, so the result and the webhook payload both appear here.
                 </p>
                 <button type="button" class="btn-reset-ghost" id="btn-check-verification" style="font-size: 11px; padding: 6px 12px;">
                   ↻ Check Status Now
@@ -322,10 +322,13 @@
               </div>
             </div>
 
+            <!-- Verification result + webhook payload -->
+            <div id="step3-result" class="verify-result" data-outcome="pending" hidden></div>
+
             <!-- Release Payment CTA -->
             <div id="step3-release-box" style="margin-top: 18px;" hidden>
-              <div class="success" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
-                ✓ Face matched with 98% confidence! Identity confirmed against government record. You can now safely disburse funds.
+              <div class="success" id="step3-release-msg" style="margin-bottom: 12px; padding: 12px 14px; font-size: 13px;">
+                ✓ Identity confirmed against the government record. You can now safely disburse funds.
               </div>
               <button type="button" id="btn-release-payout" style="background: #10b981; color: #021a0e; font-size: 15px; font-weight: 800; padding: 14px;">
                 💸 Send Money to Verified Bank Account →

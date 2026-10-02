@@ -28,6 +28,9 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -42,8 +45,11 @@ import (
 var (
 	ninjaAPIBase string
 	secretKey    string
+	webhookURL   string
 	port         string
 )
+
+var webhookSiteRe = regexp.MustCompile(`^https://webhook\.site/([0-9a-fA-F-]{36})`)
 
 var flowsLinksRe = regexp.MustCompile(`^/flows/([^/]+)/links$`)
 var verificationsRe = regexp.MustCompile(`^/verifications/([^/]+)$`)
@@ -75,6 +81,7 @@ func loadEnv() {
 		ninjaAPIBase = "https://api.sandbox.ninja.boucloud.io"
 	}
 	secretKey = os.Getenv("NINJA_SANDBOX_SECRET_KEY")
+	webhookURL = os.Getenv("NINJA_WEBHOOK_URL")
 	port = os.Getenv("API_PORT")
 	if port == "" {
 		port = "8080"
@@ -119,6 +126,116 @@ func proxyToNinja(w http.ResponseWriter, method, upstreamPath string, body io.Re
 	io.Copy(w, resp.Body)
 }
 
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(v)
+}
+
+// withWebhookURL sets webhook_url to NINJA_WEBHOOK_URL on a flow-creation body.
+// A missing or malformed body becomes {} like the other reference backends.
+func withWebhookURL(r io.Reader) io.Reader {
+	body := map[string]any{}
+	json.NewDecoder(r).Decode(&body)
+	if body == nil {
+		body = map[string]any{}
+	}
+	if webhookURL != "" {
+		body["webhook_url"] = webhookURL
+	}
+	b, _ := json.Marshal(body)
+	return bytes.NewReader(b)
+}
+
+type webhookEvent struct {
+	DeliveryID *string         `json:"delivery_id"`
+	Event      *string         `json:"event"`
+	Signature  *string         `json:"signature"`
+	ReceivedAt string          `json:"received_at"`
+	Payload    json.RawMessage `json:"payload"`
+}
+
+// webhookEvents: Ninja delivers webhooks to a public URL, which a localhost
+// backend can't be. For the demo that URL is a webhook.site inbox, and
+// webhook.site has a read API, so we fetch the deliveries from there and hand
+// them to the browser.
+func webhookEvents(w http.ResponseWriter, verificationID string) {
+	m := webhookSiteRe.FindStringSubmatch(webhookURL)
+	if m == nil {
+		var inbox any
+		if webhookURL != "" {
+			inbox = webhookURL
+		}
+		writeJSON(w, 200, map[string]any{"source": "unsupported", "inbox_url": inbox, "events": []webhookEvent{}})
+		return
+	}
+	token := m[1]
+
+	req, _ := http.NewRequest("GET", "https://webhook.site/token/"+token+"/requests?sorting=newest&per_page=50", nil)
+	req.Header.Set("Accept", "application/json")
+	resp, err := http.DefaultClient.Do(req)
+	if err == nil && resp.StatusCode != http.StatusOK {
+		resp.Body.Close()
+		err = fmt.Errorf("webhook.site responded %d", resp.StatusCode)
+	}
+	if err != nil {
+		writeJSON(w, 502, map[string]string{"error": "could not read webhook.site inbox", "detail": err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	var inbox struct {
+		Data []struct {
+			Method    string              `json:"method"`
+			Content   string              `json:"content"`
+			CreatedAt string              `json:"created_at"`
+			Headers   map[string][]string `json:"headers"`
+		} `json:"data"`
+	}
+	if err := json.NewDecoder(resp.Body).Decode(&inbox); err != nil {
+		writeJSON(w, 502, map[string]string{"error": "could not read webhook.site inbox", "detail": err.Error()})
+		return
+	}
+
+	header := func(h map[string][]string, name string) *string {
+		if v := h[name]; len(v) > 0 {
+			return &v[0]
+		}
+		return nil
+	}
+
+	events := []webhookEvent{}
+	for _, r := range inbox.Data {
+		if r.Method != "POST" {
+			continue
+		}
+		var payload struct {
+			Event string `json:"event"`
+			Data  struct {
+				VerificationID string `json:"verification_id"`
+			} `json:"data"`
+		}
+		if json.Unmarshal([]byte(r.Content), &payload) != nil {
+			continue
+		}
+		if verificationID != "" && payload.Data.VerificationID != verificationID {
+			continue
+		}
+		event := header(r.Headers, "x-ninja-event")
+		if event == nil && payload.Event != "" {
+			event = &payload.Event
+		}
+		events = append(events, webhookEvent{
+			DeliveryID: header(r.Headers, "x-ninja-delivery"),
+			Event:      event,
+			Signature:  header(r.Headers, "x-ninja-signature"),
+			ReceivedAt: r.CreatedAt,
+			Payload:    json.RawMessage(r.Content),
+		})
+	}
+	writeJSON(w, 200, map[string]any{"source": "webhook.site", "inbox_url": "https://webhook.site/#!/view/" + token, "events": events})
+}
+
 func notFound(w http.ResponseWriter, method, path string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusNotFound)
@@ -128,7 +245,7 @@ func notFound(w http.ResponseWriter, method, path string) {
 func handler(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case r.Method == http.MethodPost && r.URL.Path == "/flows":
-		proxyToNinja(w, "POST", "/api/flows", r.Body)
+		proxyToNinja(w, "POST", "/api/flows", withWebhookURL(r.Body))
 
 	case r.Method == http.MethodPost && flowsLinksRe.MatchString(r.URL.Path):
 		m := flowsLinksRe.FindStringSubmatch(r.URL.Path)
@@ -139,6 +256,9 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		m := verificationsRe.FindStringSubmatch(r.URL.Path)
 		verID, _ := url.PathUnescape(m[1])
 		proxyToNinja(w, "GET", "/api/verifications/"+url.PathEscape(verID), nil)
+
+	case r.Method == http.MethodGet && r.URL.Path == "/webhook-events":
+		webhookEvents(w, r.URL.Query().Get("verification_id"))
 
 	default:
 		notFound(w, r.Method, r.URL.Path)
