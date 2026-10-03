@@ -5,10 +5,14 @@
 // https://ninja-demo-pink.vercel.app/?vs_id=vs_...&status=failed
 // It's this page's own address, so it's right on Vercel and on localhost.
 // index.ts reads vs_id on load and shows that verification's result.
+const FLOW_ID_PLACEHOLDER = '{flow_id}';
 const REDIRECT_URL = typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://ninja-demo-pink.vercel.app/';
-function getLinkScenarioConfig(scenario, playerName, playerId, withdrawalRef, firstName, lastName, dateOfBirth = '1975-01-01') {
+function getLinkScenarioConfig(scenario, playerName, playerId, withdrawalRef, firstName, lastName, dateOfBirth = '1975-01-01', 
+// The id Ninja returned from POST /api/flows. Until a flow exists, snippets
+// show {flow_id} — there is no preset flow.
+createdFlowId) {
     if (scenario === 'prefilled') {
-        const flowId = 'vf_sportsbook_prefilled';
+        const flowId = createdFlowId || FLOW_ID_PLACEHOLDER;
         const flowName = 'Sportsbook Payout Face Verification (Pre-filled)';
         const flowPayload = {
             name: flowName,
@@ -152,7 +156,7 @@ let res = client
         };
     }
     if (scenario === 'unfilled') {
-        const flowId = 'vf_sportsbook_blank_form';
+        const flowId = createdFlowId || FLOW_ID_PLACEHOLDER;
         const flowName = 'Sportsbook Payout Face Verification (Blank Form)';
         const flowPayload = {
             name: flowName,
@@ -275,7 +279,7 @@ let res = client
         };
     }
     // scenario === 'custom'
-    const flowId = 'vf_sportsbook_custom_ref';
+    const flowId = createdFlowId || FLOW_ID_PLACEHOLDER;
     const flowName = 'Sportsbook Payout Face Verification (Audited)';
     const flowPayload = {
         name: flowName,

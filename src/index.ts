@@ -728,6 +728,7 @@ function bindStep3() {
   genBtn?.addEventListener('click', () => {
     if (!createdFlow) return
 
+    const flowId = createdFlow.id
     const config = getLinkScenarioConfig(
       selectedScenario,
       `${state.player.firstName} ${state.player.lastName}`,
@@ -735,10 +736,9 @@ function bindStep3() {
       'wtd_01',
       state.player.firstName,
       state.player.lastName,
-      state.player.dateOfBirth || '1975-01-01'
+      state.player.dateOfBirth || '1975-01-01',
+      flowId
     )
-
-    const flowId = createdFlow.id
 
     showCodeFirstSlideOut({
       title: `POST /api/flows/${flowId}/links`,
@@ -821,8 +821,10 @@ function bindStep3() {
       beneficiary: `${state.player.firstName} ${state.player.lastName}`,
       bank: state.bankAccount?.bankName || 'Access Bank',
       account_number: state.bankAccount?.accountNumber || '0123456789',
-      verification_flow: 'vf_QAIWePPP4cLtGCaIkDeJillxxwYiV',
-      liveness_score: 0.98,
+      verification_flow: createdFlow?.id ?? null,
+      verification_id: tracker?.id ?? activeVerification?.id ?? null,
+      face_score: tracker?.result?.face_score ?? null,
+      liveness_score: tracker?.result?.liveness_score ?? null,
     }
 
     const payoutResponse = {
@@ -1480,7 +1482,8 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
         'wtd_01',
         state.player.firstName,
         state.player.lastName,
-        state.player.dateOfBirth || '1975-01-01'
+        state.player.dateOfBirth || '1975-01-01',
+        state.createdFlows[selectedScenario]?.id
       )
       endpoint = `POST /api/flows/${cfg.flowId}/links`
 
