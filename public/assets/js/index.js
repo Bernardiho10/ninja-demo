@@ -834,7 +834,35 @@ function markFlowCreated(flowId, genBtn, createFlowBtn) {
     if (genBtn)
         genBtn.disabled = false;
 }
+// Stage 1 + 2 explanations, written from the selected scenario's real payloads
+// so they always match what will be sent.
+function updateStageExplanations() {
+    const flow = getFlowCreationConfig(selectedScenario).requestPayload;
+    const link = getLinkScenarioConfig(selectedScenario, `${state.player.firstName} ${state.player.lastName}`.trim() || 'James Bond', state.player.id, 'wtd_01', state.player.firstName || 'James', state.player.lastName || 'Bond', state.player.dateOfBirth || '1975-01-01').requestPayload;
+    const fields = flow.rules?.fields || [];
+    const fromBusiness = fields.length > 0 && fields.every((f) => f.source === 'business');
+    const names = fields.map((f) => f.field.replace(/_/g, ' ')).join(', ');
+    const thresholds = `Face match must reach <strong>${flow.selfie_threshold}%</strong> and liveness <strong>${flow.liveness_threshold}%</strong>.`;
+    const stage1 = document.getElementById('flow-stage-1-explanation');
+    if (stage1) {
+        stage1.innerHTML = fromBusiness
+            ? `In Ninja, a <strong>Flow</strong> is a reusable configuration that defines your verification rules. This flow sets <code>source: "business"</code> on ${escapeHtml(names)}, so <strong>our backend supplies them</strong> when it creates each link. The player skips the form and goes straight to the live face check. ${thresholds}`
+            : `In Ninja, a <strong>Flow</strong> is a reusable configuration that defines your verification rules. This flow sets <code>source: "customer"</code> on ${escapeHtml(names)}, so <strong>the player types them</strong> on Ninja's hosted page before the face check. Ninja then matches what they typed against the ID record. ${thresholds}`;
+    }
+    const stage2Title = document.getElementById('flow-stage-2-title');
+    if (stage2Title)
+        stage2Title.textContent = link.values ? '💡 Link Generation & Pre-population' : '💡 Link Generation (Player Fills the Form)';
+    const stage2 = document.getElementById('flow-stage-2-explanation');
+    if (stage2) {
+        const v = link.values;
+        const ref = `<code>customer_ref: "${escapeHtml(String(link.customer_ref))}"</code>`;
+        stage2.innerHTML = v
+            ? `Once the flow exists, mint a single-use verification link. We send the player's details in <code>values</code> (${escapeHtml(`${v.first_name} ${v.last_name}, ${v.date_of_birth}`)}) and ${ref}, which ties this session to the withdrawal${selectedScenario === 'custom' ? ' and comes back in the webhook, so the result can be matched to your payout queue automatically' : ''}.`
+            : `Once the flow exists, mint a single-use verification link. We send <strong>no <code>values</code></strong>, only the player's name and ${ref}. The player fills in their details on Ninja's page, and the reference ties the session to this withdrawal.`;
+    }
+}
 function resetFlowStages() {
+    updateStageExplanations();
     stopVerificationPolling();
     tracker = null;
     createdFlow = null;
