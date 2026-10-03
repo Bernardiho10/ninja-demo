@@ -26,7 +26,7 @@ export default async function handler(req: any, res: any) {
       headers: { Accept: 'application/json' },
     })
     if (!upstream.ok) throw new Error(`webhook.site responded ${upstream.status}`)
-    const inbox = await upstream.json()
+    const inbox = (await upstream.json()) as { data?: any[] }
 
     const header = (r: any, name: string) => [].concat(r.headers?.[name] ?? [])[0] ?? null
     const events = []
