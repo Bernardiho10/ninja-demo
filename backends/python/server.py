@@ -7,6 +7,7 @@ integration. Holds NINJA_SANDBOX_SECRET_KEY server-side -- it is never sent
 to the browser. Routes have no /api/ prefix because `ham proxy` strips
 API_PROXY_PREFIX ("/api/") before forwarding to this backend.
 
+  POST /identity/identify      -> POST   {NINJA_API_BASE}/api/identity/identify  (Steps 1-2: NIN / BVN)
   POST /flows                  -> POST   {NINJA_API_BASE}/api/flows
   POST /flows/:flowId/links    -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
   GET  /verifications/:id      -> GET    {NINJA_API_BASE}/api/verifications/:id
@@ -146,6 +147,9 @@ class Handler(BaseHTTPRequestHandler):
             return {}
 
     def do_POST(self):
+        if self.path == "/identity/identify":
+            return proxy_to_ninja(self, "POST", "/api/identity/identify", self._read_json_body())
+
         if self.path == "/flows":
             body = self._read_json_body()
             if WEBHOOK_URL and isinstance(body, dict):

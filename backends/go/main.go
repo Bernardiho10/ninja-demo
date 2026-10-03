@@ -5,6 +5,7 @@
 // sent to the browser. Routes have no /api/ prefix because `ham proxy`
 // strips API_PROXY_PREFIX ("/api/") before forwarding to this backend.
 //
+//	POST /identity/identify      -> POST   {NINJA_API_BASE}/api/identity/identify  (Steps 1-2: NIN / BVN)
 //	POST /flows                  -> POST   {NINJA_API_BASE}/api/flows
 //	POST /flows/:flowId/links    -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
 //	GET  /verifications/:id      -> GET    {NINJA_API_BASE}/api/verifications/:id
@@ -244,6 +245,9 @@ func notFound(w http.ResponseWriter, method, path string) {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	switch {
+	case r.Method == http.MethodPost && r.URL.Path == "/identity/identify":
+		proxyToNinja(w, "POST", "/api/identity/identify", r.Body)
+
 	case r.Method == http.MethodPost && r.URL.Path == "/flows":
 		proxyToNinja(w, "POST", "/api/flows", withWebhookURL(r.Body))
 

@@ -1,4 +1,3 @@
-import { api, formatNaira, STATUS_LABEL, type Player } from './lib/api'
 import { loadState, resetDemoState, type V2State } from './lib/state'
 
 export function updateNavFromState(state?: V2State) {
@@ -53,37 +52,8 @@ export function updateNavFromState(state?: V2State) {
   })
 }
 
-export async function refreshNavPlayer(): Promise<Player | null> {
-  const current = loadState()
-  updateNavFromState(current)
-
-  try {
-    const player = await api.me()
-    const nameEl = document.getElementById('nav-player-name')
-    const balanceEl = document.getElementById('nav-player-balance')
-    const statusEl = document.getElementById('nav-player-status')
-
-    if (current.player && current.player.kycStatus === 'verified' && player && player.kyc_status === 'verified') {
-      if (nameEl && player.first_name) {
-        nameEl.textContent = `${player.first_name} ${player.last_name}`
-      }
-      if (balanceEl && typeof player.balance_kobo === 'number') {
-        balanceEl.textContent = formatNaira(player.balance_kobo)
-      }
-      if (statusEl && player.kyc_status) {
-        statusEl.textContent = STATUS_LABEL[player.kyc_status] ?? player.kyc_status
-        statusEl.className = `player-status-badge badge-${player.kyc_status}`
-      }
-    }
-    return player
-  } catch {
-    return null
-  }
-}
-
 function initNav() {
   updateNavFromState()
-  refreshNavPlayer()
 
   // Stepper clicks
   ;[1, 2, 3].forEach((step) => {
@@ -100,9 +70,6 @@ function initNav() {
       resetBtn.disabled = true
       resetBtn.textContent = 'Resetting...'
       try {
-        try {
-          await api.resetDemo()
-        } catch {}
         resetDemoState()
         updateNavFromState()
         window.dispatchEvent(new CustomEvent('ninjabet:navigate-mode', { detail: { mode: 'sportsbook' } }))

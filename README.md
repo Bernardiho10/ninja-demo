@@ -8,11 +8,15 @@ You walk through what a real player does: sign up, add a bank account, withdraw 
 
 ## What it does
 
-| Step | Player action | Ninja feature | Real or simulated |
+| Step | Player action | Ninja feature | API call |
 |---|---|---|---|
-| 1 · Sign up | Enters name, NIN, date of birth | NIN lookup + legal-age check | Simulated in the browser |
-| 2 · Bank account | Adds a bank account + BVN | BVN ownership match | Simulated in the browser |
-| 3 · Withdraw | Must pass a face check before payout | **Flows**: create a flow, mint a hosted verification link, get the result | **Real**, against the Ninja sandbox |
+| 1 · Sign up | Enters name, NIN, date of birth | NIN verify against the government record | `POST /api/identity/identify` |
+| 2 · Bank account | Adds a bank account + BVN | BVN ownership check against the Step 1 player | `POST /api/identity/identify` |
+| 3 · Withdraw | Must pass a face check before payout | **Flows**: create a flow, mint a hosted verification link, get the result | `POST /api/flows`, `POST /api/flows/:id/links`, `GET /api/verifications/:id` |
+
+Every step hits the **real Ninja sandbox**. Nothing is mocked. Mismatches, unknown IDs and failed face checks come straight from Ninja, and the page explains each one in plain language. The only local rule is the 18+ age check, which is the betting app's own policy, so it runs before calling Ninja.
+
+Sandbox test data: NIN / BVN `77777777777` belongs to **James Bond, 1975-01-01**. The one-click presets on each step use it, plus mismatches.
 
 In Step 3 you get a real link you can open on your phone. Do the face check, and the page shows:
 
@@ -77,9 +81,9 @@ $env:API_PORT=8090; npm run dev      # PowerShell
 
 ## How it works
 
-Steps 1–2 are static, but Step 3 needs a server, for two reasons:
+The page is static, but every Ninja call goes through a small backend, for two reasons:
 
-1. **The secret key.** Creating a flow needs `NINJA_SANDBOX_SECRET_KEY`. Anything shipped to a browser is public, so the key has to live on a server.
+1. **The secret key.** Every Ninja call needs `NINJA_SANDBOX_SECRET_KEY`. Anything shipped to a browser is public, so the key has to live on a server.
 2. **The webhook.** When a verification finishes, Ninja POSTs `verification.completed` to a public URL. A browser can't receive that, and neither can a backend on `localhost`.
 
 ```
@@ -101,10 +105,11 @@ In production you'd point `NINJA_WEBHOOK_URL` at your own public server, verify 
 
 ## Backends
 
-Every backend implements the same 4 routes, reads the same `.env`, and needs no framework. Pick the one that matches your stack, or read them side by side.
+Every backend implements the same 5 routes, reads the same `.env`, and needs no framework. Pick the one that matches your stack, or read them side by side.
 
 | Route | What it does |
 |---|---|
+| `POST /identity/identify` | Steps 1–2: verifies a NIN or BVN against the player's details |
 | `POST /flows` | Creates a flow. Sets `webhook_url` from `NINJA_WEBHOOK_URL` |
 | `POST /flows/:flowId/links` | Mints a single-use hosted verification link |
 | `GET /verifications/:id` | Returns the session status and outcome |
@@ -132,7 +137,7 @@ The site deploys to Vercel. Vercel can't run `ham` (it's a Go binary), so the bu
 
 1. `npm run build` locally
 2. Commit `public/` together with your source changes
-3. Push. Vercel serves `public/` and runs the same 4 routes as functions from `api/`
+3. Push. Vercel serves `public/` and runs the same 5 routes as functions from `api/`
 
 Set `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL` in the Vercel project settings.
 
@@ -144,7 +149,7 @@ Set `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL` in the 
 ninja-demo/
 ├── src/                        # Frontend source (compiled by HAM + Rollup)
 │   ├── index.html              # The 3-step walkthrough page
-│   ├── index.ts                # Step logic, live API calls, verification result, API log
+│   ├── index.ts                # Step logic, real Ninja calls, verification result, API log
 │   ├── index.css               # Page styles
 │   ├── shared.css              # Design system: colours, components, dark theme
 │   ├── default.lhtml           # HAM layout: page shell, fonts, shared partials
@@ -153,12 +158,11 @@ ninja-demo/
 │   ├── logo.phtml              # HAM partial: brand logo
 │   ├── assets/images/          # Logos
 │   └── lib/
-│       ├── api.ts              # Steps 1–2 client, with in-browser simulation fallback
 │       ├── linkScenarios.ts    # Step 3 flow + link payloads and code snippets
 │       ├── codeModal.ts        # "See the request first" drawer (cURL/JS/Python/Go/Rust)
 │       └── state.ts            # Demo state, saved in sessionStorage
 │
-├── backends/                   # Local API servers, same 4 routes, pick one
+├── backends/                   # Local API servers, same 5 routes, pick one
 │   ├── node/server.mjs
 │   ├── python/server.py
 │   ├── go/main.go
@@ -166,10 +170,12 @@ ninja-demo/
 │   └── php/server.php
 │
 ├── api/                        # The same routes as Vercel functions (production)
+│   ├── identity/identify.ts
 │   ├── flows.ts
 │   ├── flows/[flowId]/links.ts
 │   ├── verifications/[id].ts
-│   └── webhook-events.ts
+│   ├── webhook-events.ts
+│   └── tsconfig.json           # Adds Node's types for the functions only
 │
 ├── scripts/dev.mjs             # `npm run dev`: starts one backend + ham proxy
 ├── public/                     # Build output, committed so Vercel can serve it
@@ -185,6 +191,5 @@ ninja-demo/
 
 ## Notes
 
-- **Steps 1–2 are simulated.** `src/lib/api.ts` tries an old local API and, when it isn't there, generates realistic responses in the browser. They don't call Ninja yet.
 - **Webhook not showing up?** Check that `NINJA_WEBHOOK_URL` in `.env` is the inbox you're watching. Flows created before the backend set `webhook_url` still deliver to their old URL, so hit **Reset** to create a fresh one.
 - **`npx run dev` doesn't work.** It's `npm run dev`.

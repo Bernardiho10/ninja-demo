@@ -4,7 +4,6 @@ import './vendor/prismjs/components/prism-go.js';
 import './vendor/prismjs/components/prism-bash.js';
 import './vendor/prismjs/components/prism-python.js';
 import './vendor/prismjs/components/prism-rust.js';
-import { api } from './lib/api.js';
 import { loadState, saveState } from './lib/state.js';
 import { showCodeFirstSlideOut } from './lib/codeModal.js';
 import { getFlowCreationConfig, getLinkScenarioConfig } from './lib/linkScenarios.js';
@@ -284,8 +283,11 @@ const result = await ninja.identity.identify({
   dateOfBirth: '${dobVal}',
 })
 
-if (result.verified && result.data.age >= 18) {
-  console.log('Player verified and compliant!')
+// The 18+ rule is ours: check the date of birth before calling Ninja.
+if (result.verified && result.recommendation === 'accept') {
+  console.log('Player verified!', result.score)
+} else {
+  console.log('Rejected:', result.mismatches ?? 'no record found')
 }`;
         const python = `# Step 1: Verify NIN, Name, and Age
 response = requests.post(
@@ -332,66 +334,20 @@ async function executeStep1(p) {
     if (!result)
         return;
     const age = calculateAge(p.dobVal);
-    // Check age
+    // The 18+ rule is the betting app's own policy, checked before calling Ninja.
     if (age < 18) {
-        const errorResponse = {
-            status: 'rejected',
-            verified: false,
-            score: 0.0,
-            recommendation: 'REJECT',
-            error: `Underage: Player is ${age} years old. Gaming regulations require players to be 18+.`,
-        };
-        addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 48, p.payload, errorResponse);
         result.hidden = false;
         result.innerHTML = `
       <div class="error" style="padding: 14px; border-radius: 0;">
         <strong>✗ Player Under 18 (Compliance Block)</strong><br/>
         Birth date indicates age <strong>${age}</strong>. Players under 18 cannot create an account per gaming regulations.
+        Blocked by our own rule before calling Ninja, so no identity check was spent.
       </div>
     `;
         return;
     }
-    // Attempt backend or simulation
-    let isMatch = false;
-    let score = 0.15;
-    try {
-        const res = await api.register({
-            first_name: p.firstName,
-            last_name: p.lastName,
-            phone_number: p.phoneNum,
-            nin: p.ninNum,
-            password: 'password123',
-        });
-        isMatch = res.player.kyc_status === 'verified';
-        score = res.verify_result?.score ?? (isMatch ? 1.0 : 0.2);
-    }
-    catch {
-        // Sandbox fixture check
-        if (p.ninNum === '77777777777' && p.firstName.toLowerCase() === 'james') {
-            isMatch = true;
-            score = 1.0;
-        }
-        else {
-            isMatch = false;
-            score = 0.12;
-        }
-    }
-    if (isMatch) {
-        const successResponse = {
-            status: 'found',
-            verified: true,
-            score: 1.0,
-            recommendation: 'ALLOW',
-            data: {
-                first_name: p.firstName,
-                last_name: p.lastName,
-                id_number: p.ninNum,
-                date_of_birth: p.dobVal,
-                age,
-                compliance: '18+ Verified',
-            },
-        };
-        addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 200, 64, p.payload, successResponse);
+    const { status, body } = await identify('Step 1 · Signup', p.payload);
+    if (isOkStatus(status) && body.verified === true) {
         state.player.firstName = p.firstName;
         state.player.lastName = p.lastName;
         state.player.phoneNumber = p.phoneNum;
@@ -399,7 +355,7 @@ async function executeStep1(p) {
         state.player.dateOfBirth = p.dobVal;
         state.player.age = age;
         state.player.kycStatus = 'verified';
-        state.player.matchScore = score;
+        state.player.matchScore = typeof body.score === 'number' ? body.score : 1;
         state.player.walletBalanceNaira = state.player.walletBalanceNaira || 250000;
         state.player.withdrawableBalanceNaira = state.player.walletBalanceNaira || 250000;
         state.withdrawal.amountNaira = state.player.walletBalanceNaira || 250000;
@@ -410,8 +366,8 @@ async function executeStep1(p) {
         result.innerHTML = `
       <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 0;">
         <div>
-          <strong>✓ NIN &amp; Age Verified (100% Match)</strong><br/>
-          Government identity confirmed for <strong>${p.firstName} ${p.lastName}</strong> (${age} yrs).
+          <strong>✓ NIN Verified by Ninja (score ${formatScore(body.score)}, ${escapeHtml(String(body.recommendation || 'accept'))})</strong><br/>
+          Government record matches <strong>${escapeHtml(p.firstName)} ${escapeHtml(p.lastName)}</strong> (${age} yrs).
         </div>
         <button type="button" id="btn-next-step2" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 2: Add Bank Account →
@@ -424,21 +380,8 @@ async function executeStep1(p) {
         });
     }
     else {
-        const failResponse = {
-            status: 'mismatch',
-            verified: false,
-            score,
-            recommendation: 'REJECT',
-            error: `Name mismatch: '${p.firstName} ${p.lastName}' does not match authoritative government record for NIN ${p.ninNum}.`,
-        };
-        addLog('Step 1 · Signup', 'POST', '/api/identity/identify', 400, 52, p.payload, failResponse);
         result.hidden = false;
-        result.innerHTML = `
-      <div class="error" style="padding: 14px; border-radius: 0;">
-        <strong>✗ Identity Name Mismatch</strong><br/>
-        The name "${p.firstName} ${p.lastName}" does not match the national registry record for NIN ${p.ninNum}.
-      </div>
-    `;
+        result.innerHTML = identifyFailureHtml('✗ Identity Check Failed', 'NIN', p.ninNum, status, body);
     }
 }
 // -----------------------------------------------------------------------------
@@ -491,8 +434,6 @@ function bindStep2() {
             idNumber: bvnNum,
             firstName: state.player.firstName,
             lastName: state.player.lastName,
-            bank: bankName,
-            accountNumber: accNum,
         };
         const curl = `curl -X POST https://api.ninja.ng/api/identity/identify \\
   -H "Authorization: Bearer $NINJA_TOKEN" \\
@@ -553,26 +494,9 @@ async function executeStep2(p) {
     const result = document.getElementById('step2-result');
     if (!result)
         return;
-    const isMatch = p.holderName.toLowerCase().includes(state.player.firstName.toLowerCase()) &&
-        p.bvnNum === '77777777777';
-    if (isMatch) {
-        const successResponse = {
-            status: 'found',
-            verified: true,
-            score: 1.0,
-            recommendation: 'ALLOW',
-            match: {
-                bvn: p.bvnNum,
-                account_holder: p.holderName,
-                registered_player: `${state.player.firstName} ${state.player.lastName}`,
-                status: 'OWNER_MATCHED',
-            },
-        };
-        addLog('Step 2 · Bank Match', 'POST', '/api/identity/identify', 200, 78, p.payload, successResponse);
-        try {
-            await api.saveBankDetails({ bank_name: p.bankName, account_number: p.accNum });
-        }
-        catch { }
+    // Ninja checks that the BVN belongs to the player verified in Step 1.
+    const { status, body } = await identify('Step 2 · Bank Match', p.payload);
+    if (isOkStatus(status) && body.verified === true) {
         state.bankAccount = {
             bankName: p.bankName,
             accountNumber: p.accNum,
@@ -584,8 +508,8 @@ async function executeStep2(p) {
         result.innerHTML = `
       <div class="success" style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 0;">
         <div>
-          <strong>✓ Bank Account Verified &amp; Saved!</strong><br/>
-          BVN legally matches registered player <strong>${state.player.firstName} ${state.player.lastName}</strong>.
+          <strong>✓ BVN Verified by Ninja (score ${formatScore(body.score)}, ${escapeHtml(String(body.recommendation || 'accept'))})</strong><br/>
+          BVN ${escapeHtml(p.bvnNum)} belongs to registered player <strong>${escapeHtml(state.player.firstName)} ${escapeHtml(state.player.lastName)}</strong>. Bank account saved.
         </div>
         <button type="button" id="btn-next-step3" style="background: #10b981; color: #021a0e; font-weight: 800; padding: 12px; margin-top: 4px;">
           Continue to Step 3: Withdraw Funds →
@@ -598,22 +522,58 @@ async function executeStep2(p) {
         });
     }
     else {
-        const failResponse = {
-            status: 'mismatch',
-            verified: false,
-            score: 0.15,
-            recommendation: 'REJECT',
-            error: `Mule account blocked: Account holder '${p.holderName}' does not match registered player '${state.player.firstName} ${state.player.lastName}'.`,
-        };
-        addLog('Step 2 · Bank Match', 'POST', '/api/identity/identify', 400, 68, p.payload, failResponse);
         result.hidden = false;
-        result.innerHTML = `
-      <div class="error" style="padding: 14px; border-radius: 0;">
-        <strong>✗ Payout Redirection Blocked</strong><br/>
-        This bank account belongs to "<strong>${p.holderName}</strong>", not the registered player (${state.player.firstName} ${state.player.lastName}). Payouts can only be sent to the verified account owner.
-      </div>
-    `;
+        result.innerHTML = identifyFailureHtml('✗ Payout Account Blocked', 'BVN', p.bvnNum, status, body);
     }
+}
+// Calls the real Ninja identify endpoint through our backend and logs the
+// real status, timing, request and response.
+async function identify(step, payload) {
+    const t0 = performance.now();
+    try {
+        const res = await fetch('/api/identity/identify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const body = await readApiBody(res);
+        addLog(step, 'POST', '/api/identity/identify', res.status, Math.round(performance.now() - t0), payload, body);
+        return { status: res.status, body };
+    }
+    catch (err) {
+        const body = { error: 'network_error', message: String(err?.message || err) };
+        addLog(step, 'POST', '/api/identity/identify', 0, Math.round(performance.now() - t0), payload, body);
+        return { status: 0, body };
+    }
+}
+function formatScore(score) {
+    return typeof score === 'number' ? score.toFixed(2) : '—';
+}
+// Plain-language explanation of a failed identify call, from Ninja's response.
+function identifyFailureHtml(title, idLabel, idNumber, status, body) {
+    const reasons = [];
+    if (!isOkStatus(status)) {
+        reasons.push(body?.message || body?.error || `The request failed (HTTP ${status}).`);
+    }
+    else if (body.found === false) {
+        reasons.push(`No government record was found for ${idLabel} ${idNumber}.`);
+    }
+    else {
+        for (const f of body.fields || []) {
+            if (f.match !== 'exact') {
+                const label = String(f.field).replace(/_/g, ' ');
+                reasons.push(`${label} "${f.provided ?? ''}" ${f.detail || `is a ${f.match}`} (score ${formatScore(f.score)}).`);
+            }
+        }
+        if (reasons.length === 0)
+            reasons.push(`Ninja's recommendation: ${body.recommendation || 'reject'}.`);
+    }
+    return `
+    <div class="error" style="padding: 14px; border-radius: 0;">
+      <strong>${escapeHtml(title)}</strong>${body?.recommendation ? ` <span style="opacity:.8">· Ninja: ${escapeHtml(String(body.recommendation))}, score ${formatScore(body.score)}</span>` : ''}
+      <ul style="margin: 8px 0 0; padding-left: 18px;">${reasons.map((r) => `<li>${escapeHtml(r)}</li>`).join('')}</ul>
+    </div>
+  `;
 }
 // -----------------------------------------------------------------------------
 // Step 3: Withdraw Funds (Biometric Verification Link)

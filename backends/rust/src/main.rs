@@ -6,6 +6,7 @@
 //! sent to the browser. Routes have no /api/ prefix because `ham proxy`
 //! strips API_PROXY_PREFIX ("/api/") before forwarding to this backend.
 //!
+//!   POST /identity/identify      -> POST   {NINJA_API_BASE}/api/identity/identify  (Steps 1-2: NIN / BVN)
 //!   POST /flows                  -> POST   {NINJA_API_BASE}/api/flows
 //!   POST /flows/:flowId/links    -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
 //!   GET  /verifications/:id      -> GET    {NINJA_API_BASE}/api/verifications/:id
@@ -204,6 +205,10 @@ fn main() {
         let (path_only, query) = url.split_once('?').unwrap_or((url.as_str(), ""));
 
         let (status, resp_body) = match (&method, path_only) {
+            (Method::Post, "/identity/identify") => {
+                proxy_to_ninja("POST", "/api/identity/identify", Some(body))
+            }
+
             (Method::Post, "/flows") => {
                 proxy_to_ninja("POST", "/api/flows", Some(with_webhook_url(&body)))
             }

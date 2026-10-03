@@ -8,6 +8,7 @@
  * sent to the browser. Routes have no /api/ prefix because `ham proxy`
  * strips API_PROXY_PREFIX ("/api/") before forwarding to this backend.
  *
+ *   POST /identity/identify      -> POST   {NINJA_API_BASE}/api/identity/identify  (Steps 1-2: NIN / BVN)
  *   POST /flows                  -> POST   {NINJA_API_BASE}/api/flows
  *   POST /flows/:flowId/links    -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
  *   GET  /verifications/:id      -> GET    {NINJA_API_BASE}/api/verifications/:id
@@ -187,7 +188,9 @@ function not_found(string $method, string $path): void {
 $method = $_SERVER['REQUEST_METHOD'];
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-if ($method === 'POST' && $path === '/flows') {
+if ($method === 'POST' && $path === '/identity/identify') {
+    proxy_to_ninja('POST', '/api/identity/identify', read_json_body());
+} elseif ($method === 'POST' && $path === '/flows') {
     proxy_to_ninja('POST', '/api/flows', read_json_body(true));
 } elseif ($method === 'POST' && preg_match('#^/flows/([^/]+)/links$#', $path, $m)) {
     $flowId = rawurldecode($m[1]);

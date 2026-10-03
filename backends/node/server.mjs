@@ -5,6 +5,7 @@
 // to the browser. Routes have no /api/ prefix because `ham proxy` strips
 // API_PROXY_PREFIX ("/api/") before forwarding to this backend.
 //
+//   POST /identity/identify        -> POST   {NINJA_API_BASE}/api/identity/identify  (Steps 1-2: NIN / BVN)
 //   POST /flows                    -> POST   {NINJA_API_BASE}/api/flows
 //   POST /flows/:flowId/links      -> POST   {NINJA_API_BASE}/api/flows/:flowId/links
 //   GET  /verifications/:id        -> GET    {NINJA_API_BASE}/api/verifications/:id
@@ -128,6 +129,10 @@ async function webhookEvents(res, verificationId) {
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost')
+
+  if (req.method === 'POST' && url.pathname === '/identity/identify') {
+    return proxyToNinja(res, 'POST', '/api/identity/identify', await readBody(req))
+  }
 
   if (req.method === 'POST' && url.pathname === '/flows') {
     const body = await readBody(req)
