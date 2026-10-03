@@ -2797,3 +2797,13 @@ body {
   .verify-result-fields th:nth-child(3),
   .verify-result-fields td:nth-child(3) { display: none; }
 }
+
+.verify-return-note {
+  margin: 18px 0 0;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #7dd3fc;
+  background: rgba(56, 189, 248, 0.08);
+  border-left: 3px solid #38bdf8;
+}

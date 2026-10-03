@@ -60,10 +60,34 @@ function init() {
     }
   })
 
+  // Back from Ninja's hosted check (?vs_id=...&status=...): open Step 3 and show that result.
+  const returned = new URLSearchParams(window.location.search)
+  const returnedId = returned.get('vs_id')
+  if (returnedId) state.currentStep = 3
+
   goToStep(state.currentStep)
   syncFields()
   renderLogs()
   updateDevCode()
+
+  if (returnedId) showReturnedVerification(returnedId, returned.get('status'))
+}
+
+// Ninja redirects to redirect_url?vs_id=...&status=... after the hosted check.
+// The status in the URL is only a hint; the real result comes from the same
+// status + webhook checks used while waiting.
+function showReturnedVerification(verificationId: string, status: string | null) {
+  history.replaceState(null, '', window.location.pathname)
+  activeVerification = { id: verificationId, url: '' }
+  startVerificationPolling(verificationId)
+  pollVerificationOnce(verificationId)
+
+  const note = document.getElementById('step3-return-note')
+  if (note) {
+    note.hidden = false
+    note.textContent = `You're back from the hosted check${status ? ` (Ninja reported: ${status})` : ''}. Result for ${verificationId} below.`
+  }
+  document.getElementById('step3-result')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 // -----------------------------------------------------------------------------
@@ -913,6 +937,8 @@ function resetFlowStages() {
 
   if (linkBox) linkBox.hidden = true
   if (releaseBox) releaseBox.hidden = true
+  const returnNote = document.getElementById('step3-return-note')
+  if (returnNote) returnNote.hidden = true
   if (receipt) receipt.hidden = true
   setPollStatusUI('idle')
 
@@ -1079,10 +1105,13 @@ function failureReasons(v: VerificationData): string[] {
   const faceMin = Number(flow.selfie_threshold) || 0
   const livenessMin = Number(flow.liveness_threshold) || 0
 
-  if (v.status && v.status !== 'completed') {
+  if (v.status && !['completed', 'failed'].includes(v.status)) {
     reasons.push(`The session ended as "${v.status}" before a decision was made.`)
   }
-  if (v.outcome && v.outcome !== 'verified') {
+  if (v.outcome === 'not_found') {
+    const id = typeof v.id_number === 'string' ? ` ${String(v.id_type || 'ID').toUpperCase()} ${v.id_number}` : ' this ID number'
+    reasons.push(`No government record was found for${id}. Check the number and try again.`)
+  } else if (v.outcome && v.outcome !== 'verified') {
     reasons.push(`Ninja's decision: ${v.outcome.replace(/_/g, ' ')}.`)
   }
   for (const key of ['reason', 'failure_reason', 'decline_reason', 'error', 'message']) {

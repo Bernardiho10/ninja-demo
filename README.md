@@ -20,7 +20,7 @@ In Step 3 you get a real link you can open on your phone. Do the face check, and
 - **Why it failed**, in plain language, when it fails
 - **The webhook Ninja sent** (`verification.completed`): delivery ID, signature, and the full JSON payload
 
-Payout only unlocks on a pass.
+Payout only unlocks on a pass. When the player finishes on Ninja's hosted page, Ninja sends them back to this site (`redirect_url` is the page's own address) with `?vs_id=…&status=…`, and the app opens Step 3 with that result.
 
 Every call is recorded in the API log on the right, with request, response, status and timing.
 

@@ -2,6 +2,12 @@
 // ninja-bet: Hosted Verification Link Scenarios (KYC Flows & Link Generation)
 // =============================================================================
 
+// Where Ninja sends the player after the hosted check, e.g.
+// https://ninja-demo-pink.vercel.app/?vs_id=vs_...&status=failed
+// It's this page's own address, so it's right on Vercel and on localhost.
+// index.ts reads vs_id on load and shows that verification's result.
+const REDIRECT_URL = typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://ninja-demo-pink.vercel.app/'
+
 export interface LinkScenarioConfig {
   id: 'prefilled' | 'unfilled' | 'custom'
   name: string
@@ -55,7 +61,7 @@ export function getLinkScenarioConfig(
       liveness_required: true,
       liveness_threshold: 85,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
-      redirect_url: 'https://ninjabet.example/kyc-return',
+      redirect_url: REDIRECT_URL,
       webhook_url: 'https://webhook.site/6282e26f-3dca-4d4c-af23-c3603963c1ef',
     }
 
@@ -214,7 +220,7 @@ let res = client
       liveness_required: true,
       liveness_threshold: 85,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
-      redirect_url: 'https://ninjabet.example/kyc-return',
+      redirect_url: REDIRECT_URL,
       webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
     }
 
@@ -352,7 +358,7 @@ let res = client
     liveness_required: true,
     liveness_threshold: 90,
     branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
-    redirect_url: 'https://ninjabet.example/kyc-return',
+    redirect_url: REDIRECT_URL,
     webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
   }
 
