@@ -128,7 +128,13 @@ php -d extension_dir=ext -d extension=curl -d extension=openssl -S 0.0.0.0:8080 
 
 ## Deploying
 
-The site deploys to Vercel (`vercel.json`). `public/` is served as static files, and the same 4 routes run as Vercel functions from `api/`. Set the three `.env` variables in the Vercel project settings.
+The site deploys to Vercel. Vercel can't run `ham` (it's a Go binary), so the built site is committed and Vercel just serves it:
+
+1. `npm run build` locally
+2. Commit `public/` together with your source changes
+3. Push. Vercel serves `public/` and runs the same 4 routes as functions from `api/`
+
+Set `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL` in the Vercel project settings.
 
 ---
 
@@ -166,11 +172,11 @@ ninja-demo/
 │   └── webhook-events.ts
 │
 ├── scripts/dev.mjs             # `npm run dev`: starts one backend + ham proxy
-├── public/                     # Build output (git-ignored)
+├── public/                     # Build output, committed so Vercel can serve it
 ├── ham.json                    # HAM config
 ├── rollup.config.js            # Bundles src/*.ts into public/assets/js/
 ├── tsconfig.json
-├── vercel.json                 # Vercel build + output settings
+├── vercel.json                 # Vercel: skip the build, serve public/
 ├── .env.example                # Copy to .env
 └── CNAME                       # Custom domain (demo.ninja.ng)
 ```

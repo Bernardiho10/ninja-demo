@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "echo \"Serving prebuilt public/ (built locally with ham build && rollup -c)\"",
   "outputDirectory": "public",
   "cleanUrls": true
 }

@@ -16,6 +16,9 @@ const configs = [
       sourcemap: false,
       preserveModules: true,
       preserveModulesRoot: 'src',
+      // Write bundled packages to vendor/ instead of node_modules/: hosts like
+      // Vercel skip node_modules folders, which would break the deployed site.
+      entryFileNames: (chunk) => `${chunk.name.replace(/^(.*\/)?node_modules\//, 'vendor/')}.js`,
     },
     plugins: [
       copy({
