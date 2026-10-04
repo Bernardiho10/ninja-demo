@@ -6,7 +6,16 @@
 // https://ninja-demo-pink.vercel.app/?vs_id=vs_...&status=failed
 // It's this page's own address, so it's right on Vercel and on localhost.
 // index.ts reads vs_id on load and shows that verification's result.
+import type { Thresholds } from './state'
+
 const FLOW_ID_PLACEHOLDER = '{flow_id}'
+
+// Face match and liveness minimums (0-100) each scenario's flow is created with.
+// Pre-filled and Blank Form are fixed; Custom comes from the user's inputs.
+export function scenarioThresholds(scenario: 'prefilled' | 'unfilled' | 'custom', custom?: Thresholds): Thresholds {
+  if (scenario === 'custom') return { face: custom?.face ?? 90, liveness: custom?.liveness ?? 90 }
+  return { face: 85, liveness: 85 }
+}
 
 const REDIRECT_URL = typeof window !== 'undefined' ? `${window.location.origin}/` : 'https://ninja-demo-pink.vercel.app/'
 
@@ -42,8 +51,10 @@ export function getLinkScenarioConfig(
   dateOfBirth: string = '1975-01-01',
   // The id Ninja returned from POST /api/flows. Until a flow exists, snippets
   // show {flow_id} — there is no preset flow.
-  createdFlowId?: string
+  createdFlowId?: string,
+  customThresholds?: Thresholds
 ): LinkScenarioConfig {
+  const t = scenarioThresholds(scenario, customThresholds)
   if (scenario === 'prefilled') {
     const flowId = createdFlowId || FLOW_ID_PLACEHOLDER
     const flowName = 'Sportsbook Payout Face Verification (Pre-filled)'
@@ -62,9 +73,9 @@ export function getLinkScenarioConfig(
         ],
       },
       selfie_required: true,
-      selfie_threshold: 85,
+      selfie_threshold: t.face,
       liveness_required: true,
-      liveness_threshold: 85,
+      liveness_threshold: t.liveness,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
       redirect_url: REDIRECT_URL,
       webhook_url: 'https://webhook.site/6282e26f-3dca-4d4c-af23-c3603963c1ef',
@@ -100,9 +111,9 @@ console.log('Flow created:', flow.id)`
         AllowTransposedNames: true,
     },
     SelfieRequired:    true,
-    SelfieThreshold:   85,
+    SelfieThreshold:   ${t.face},
     LivenessRequired:  true,
-    LivenessThreshold: 85,
+    LivenessThreshold: ${t.liveness},
 })`
 
     const flowRust = `let res = client
@@ -221,9 +232,9 @@ let res = client
         ],
       },
       selfie_required: true,
-      selfie_threshold: 85,
+      selfie_threshold: t.face,
       liveness_required: true,
-      liveness_threshold: 85,
+      liveness_threshold: t.liveness,
       branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
       redirect_url: REDIRECT_URL,
       webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
@@ -259,9 +270,9 @@ console.log('Flow created:', flow.id)`
         AllowTransposedNames: true,
     },
     SelfieRequired:    true,
-    SelfieThreshold:   85,
+    SelfieThreshold:   ${t.face},
     LivenessRequired:  true,
-    LivenessThreshold: 85,
+    LivenessThreshold: ${t.liveness},
 })`
 
     const flowRust = `let res = client
@@ -359,9 +370,9 @@ let res = client
       ],
     },
     selfie_required: true,
-    selfie_threshold: 90,
+    selfie_threshold: t.face,
     liveness_required: true,
-    liveness_threshold: 90,
+    liveness_threshold: t.liveness,
     branding: { display_name: 'NinjaBet', primary_color: '#10b981' },
     redirect_url: REDIRECT_URL,
     webhook_url: 'https://webhook.site/4006b092-0050-4a89-aa8a-93368ac8d44c',
@@ -397,9 +408,9 @@ console.log('Flow created:', flow.id)`
         AllowTransposedNames: true,
     },
     SelfieRequired:    true,
-    SelfieThreshold:   90,
+    SelfieThreshold:   ${t.face},
     LivenessRequired:  true,
-    LivenessThreshold: 90,
+    LivenessThreshold: ${t.liveness},
 })`
 
   const flowRust = `let res = client
@@ -510,8 +521,11 @@ export interface FlowCreationConfig {
   rust: string
 }
 
-export function getFlowCreationConfig(scenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled'): FlowCreationConfig {
-  const cfg = getLinkScenarioConfig(scenario, 'James Bond', 'player_007', 'wtd_01', 'James', 'Bond', '1975-01-01')
+export function getFlowCreationConfig(
+  scenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled',
+  customThresholds?: Thresholds
+): FlowCreationConfig {
+  const cfg = getLinkScenarioConfig(scenario, 'James Bond', 'player_007', 'wtd_01', 'James', 'Bond', '1975-01-01', undefined, customThresholds)
   return {
     flowId: cfg.flowId,
     requestPayload: cfg.flowRequestPayload,

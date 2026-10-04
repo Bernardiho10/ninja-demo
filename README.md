@@ -20,11 +20,29 @@ Sandbox test data: NIN / BVN `77777777777` belongs to **James Bond, 1975-01-01**
 
 In Step 3 you get a real link you can open on your phone. Do the face check, and the page shows:
 
-- **Passed** or **Failed**, with match, face and liveness scores and a per-field match table
-- **Why it failed**, in plain language, when it fails
+- **Passed**, **Incomplete** or **Failed**, with match, face and liveness scores and a per-field match table
+- **Why** it didn't pass, in plain language
 - **The webhook Ninja sent** (`verification.completed`): delivery ID, signature, and the full JSON payload
 
-Payout only unlocks on a pass. When the player finishes on Ninja's hosted page, Ninja sends them back to this site (`redirect_url` is the page's own address) with `?vs_id=…&status=…`, and the app opens Step 3 with that result.
+### The payout rule
+
+The point of Step 3 is a real face check, so a player is only confirmed, and the payout only unlocks, when **all** of these are true:
+
+1. Ninja's outcome is `verified`
+2. Ninja returned a **face match score** and it meets the flow's face threshold
+3. Ninja returned a **liveness score** and it meets the flow's liveness threshold
+
+| Result | When | Payout |
+|---|---|---|
+| ✓ Passed | all three hold | unlocked |
+| ⚠ Incomplete | Ninja says verified, but a score is missing | blocked, with **Start a new verification** |
+| ✕ Failed | a score is below the threshold, or Ninja didn't verify | blocked, with the reasons |
+
+Only `GET /verifications/:id` decides, because it's the source that carries both scores. The webhook is shown and logged but can't unlock a payout (it doesn't include `liveness_score`).
+
+**Thresholds:** Pre-filled and Blank Form use 85% face / 85% liveness. **Custom** lets you set both (50–100) on the page. They're sent to Ninja when the flow is created and stored with it, and a verification is always judged against the flow that produced it. Change the Custom values after its flow exists and the page asks you to create a new flow.
+
+The page works on phones too (tested at 390px). When the player finishes on Ninja's hosted page, Ninja sends them back to this site (`redirect_url` is the page's own address) with `?vs_id=…&status=…`, and the app opens Step 3 with that result.
 
 Every call is recorded in the API log on the right, with request, response, status and timing.
 

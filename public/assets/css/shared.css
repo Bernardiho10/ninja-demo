@@ -2836,3 +2836,159 @@ body {
   background: rgba(56, 189, 248, 0.08);
   border-left: 3px solid #38bdf8;
 }
+
+/* ---------------------------------------------------------------------------
+   Step 3 · payout gate states + custom thresholds
+   --------------------------------------------------------------------------- */
+.verify-result[data-outcome='incomplete'] { --result-accent: #f59e0b; }
+
+.verify-result-warning {
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.12);
+  border-left: 3px solid #f59e0b;
+}
+.verify-result-warning ul { margin: 6px 0 10px; padding-left: 18px; font-weight: 600; }
+.verify-result-warning li + li { margin-top: 4px; }
+
+.btn-retry-verification {
+  display: inline-flex;
+  width: auto;
+  margin: 0;
+  padding: 9px 14px;
+  font-size: 13px;
+  background: #f59e0b;
+  color: #1c1203;
+}
+.btn-retry-verification:hover:not(:disabled) { background: #fbbf24; }
+
+.verify-result-metrics .metric-missing { border-color: rgba(245, 158, 11, 0.5); }
+.verify-result-metrics .metric-missing strong { color: #fbbf24; }
+.verify-result-metrics .metric-low { border-color: rgba(239, 68, 68, 0.5); }
+.verify-result-metrics .metric-low strong { color: #f87171; }
+
+.verify-result-assumed {
+  margin: -4px 0 12px;
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.verify-result-fields-wrap { overflow-x: auto; margin-bottom: 14px; }
+.verify-result-fields-wrap .verify-result-fields { margin-bottom: 0; }
+
+.verify-webhook-sub {
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.threshold-panel {
+  margin-top: 12px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+}
+.threshold-panel-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+.threshold-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.threshold-field { display: flex; flex-direction: column; gap: 6px; }
+.threshold-field span { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.threshold-field input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 16px;
+  font-family: var(--font-mono);
+  color: var(--text);
+  background: var(--card-input);
+  border: 1px solid var(--border);
+}
+.threshold-field input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
+.threshold-hint { margin: 10px 0 0; font-size: 11.5px; color: var(--muted); line-height: 1.5; }
+
+.threshold-note {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.1);
+  border-left: 3px solid #f59e0b;
+}
+
+/* ===========================================================================
+   Phones (≤640px): whole demo in one column, no sideways scroll
+   =========================================================================== */
+@media (max-width: 640px) {
+  /* Navbar: row 1 = logo + player + reset, row 2 = full-width step tracker */
+  .navbar-top { padding: 0 16px; }
+  .navbar-inner { flex-wrap: wrap; gap: 8px 10px; padding: 8px 0 10px; }
+  .nav-brand-group { order: 1; gap: 8px; min-width: 0; }
+  .nav-env-badge { display: none; }
+  .nav-actions-group { order: 2; margin-left: auto; gap: 8px; min-width: 0; }
+  .checkpoint-stepper { order: 3; width: 100%; justify-content: space-between; gap: 4px; padding: 4px; }
+  .checkpoint-step { padding: 6px 8px; gap: 6px; min-width: 0; }
+  .checkpoint-step .step-label { display: none; }
+  .checkpoint-step.active .step-label { display: inline; }
+  .step-connector { flex: 1; min-width: 8px; }
+  .player-identity-card { padding: 5px 10px; gap: 8px; min-width: 0; }
+  .player-avatar-icon,
+  .player-status-badge,
+  .balance-label { display: none; }
+  .player-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; display: inline-block; vertical-align: bottom; }
+  #global-reset-btn { width: auto; flex: none; margin: 0; padding: 8px 11px; justify-content: center; }
+  .nav-actions-group { flex-wrap: nowrap; }
+  #global-reset-btn span:not(.reset-icon) { display: none; }
+
+  /* Forms: one column, aligned fields */
+  .form-2col { grid-template-columns: 1fr !important; gap: 14px !important; margin-top: 14px !important; }
+  .form-2col:first-child { margin-top: 0 !important; }
+  .form-2col > div { display: flex; flex-direction: column; }
+
+  /* Stage buttons can hold long flow / link IDs */
+  .btn-flow-action { overflow-wrap: anywhere; white-space: normal; }
+
+  /* Step 3 stage cards: header wraps, long pills truncate */
+  .flow-stage-header { flex-wrap: wrap; align-items: flex-start; }
+  .flow-status-pill { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flow-stage-sub { overflow-wrap: anywhere; }
+
+  /* Result panel */
+  .verify-result { padding: 14px 12px; }
+  .verify-result-metrics { grid-template-columns: 1fr 1fr; }
+  .verify-result-fields th, .verify-result-fields td { padding: 6px 4px; }
+  .verify-webhook-payload { font-size: 10.5px; }
+  .btn-retry-verification { width: 100%; justify-content: center; }
+
+  /* Code drawer: full screen, tabs scroll sideways */
+  .code-drawer-overlay { padding: 0; align-items: stretch; }
+  .code-drawer-card { max-width: none; height: 100%; height: 100dvh; }
+  .code-drawer-body { flex: 1; max-height: none; padding: 16px; }
+  .code-drawer-header, .code-drawer-footer { padding: 12px 16px; }
+  .code-drawer-tabs { overflow-x: auto; flex-wrap: nowrap; max-width: 100%; -webkit-overflow-scrolling: touch; }
+  .code-drawer-tabs .tab-btn { flex: none; }
+  .code-drawer-footer { flex-wrap: wrap; }
+  .code-drawer-footer button { flex: 1 1 auto; }
+  .endpoint-code { overflow-wrap: anywhere; }
+
+  /* API log: entries wrap, long paths truncate */
+  .api-log-header-left { min-width: 0; flex-wrap: wrap; }
+  .api-log-path { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}

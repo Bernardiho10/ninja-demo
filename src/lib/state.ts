@@ -28,7 +28,7 @@ export interface WithdrawalState {
   scenario: 'prefilled' | 'unfilled' | 'custom'
   verificationUrl?: string
   verificationId?: string
-  faceStatus: 'unverified' | 'pending' | 'passed' | 'failed'
+  faceStatus: 'unverified' | 'pending' | 'passed' | 'incomplete' | 'failed'
   livenessScore?: number
   isDisbursed: boolean
 }
@@ -46,9 +46,16 @@ export interface TelemetryLog {
   summary: string
 }
 
+export interface Thresholds {
+  face: number
+  liveness: number
+}
+
 export interface CreatedFlowRef {
   id: string
   name: string
+  // What the flow was created with on Ninja; the payout gate checks against these.
+  thresholds: Thresholds
 }
 
 export interface V2State {
@@ -58,6 +65,8 @@ export interface V2State {
   withdrawal: WithdrawalState
   logs: TelemetryLog[]
   createdFlows: Partial<Record<'prefilled' | 'unfilled' | 'custom', CreatedFlowRef>>
+  // Set by the user for the Custom scenario (50-100).
+  customThresholds: Thresholds
 }
 
 const STORAGE_KEY = 'ninjabet_v2_state'
@@ -86,6 +95,7 @@ const DEFAULT_STATE: V2State = {
   },
   logs: [],
   createdFlows: {},
+  customThresholds: { face: 90, liveness: 90 },
 }
 
 export function loadState(): V2State {

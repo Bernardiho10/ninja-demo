@@ -26,6 +26,7 @@ const DEFAULT_STATE = {
     },
     logs: [],
     createdFlows: {},
+    customThresholds: { face: 90, liveness: 90 },
 };
 function loadState() {
     try {

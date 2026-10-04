@@ -68,7 +68,7 @@
 
             <!-- Registration Form -->
             <form id="form-step-1">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div>
                   <label for="input-first-name">First Name</label>
                   <input id="input-first-name" placeholder="e.g. James" value="" required />
@@ -79,7 +79,7 @@
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-phone">Phone Number</label>
                   <input id="input-phone" placeholder="e.g. 08012345678" value="" required />
@@ -90,7 +90,7 @@
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-dob">Date of Birth</label>
                   <input id="input-dob" type="date" value="" required />
@@ -143,7 +143,7 @@
             </div>
 
             <form id="form-step-2">
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
                 <div>
                   <label for="input-bank-name">Payout Bank</label>
                   <select id="input-bank-name">
@@ -161,7 +161,7 @@
                 </div>
               </div>
 
-              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
                 <div>
                   <label for="input-bvn">BVN (11 Digits)</label>
                   <input id="input-bvn" value="77777777777" maxlength="11" required />
@@ -241,6 +241,22 @@
               </div>
             </div>
 
+            <!-- Custom scenario: user-set face + liveness thresholds -->
+            <div id="custom-threshold-panel" class="threshold-panel" hidden>
+              <div class="threshold-panel-title">Custom thresholds</div>
+              <div class="threshold-inputs">
+                <label class="threshold-field">
+                  <span>Face match %</span>
+                  <input type="number" id="input-face-threshold" min="50" max="100" step="1" inputmode="numeric" value="90" />
+                </label>
+                <label class="threshold-field">
+                  <span>Liveness %</span>
+                  <input type="number" id="input-liveness-threshold" min="50" max="100" step="1" inputmode="numeric" value="90" />
+                </label>
+              </div>
+              <p class="threshold-hint">Sent to Ninja when the flow is created, then checked again before payout. 50–100. Changing them after the flow exists means creating a new flow.</p>
+            </div>
+
             <!-- Intentional Two-Stage KYC Flow & Link Generation Console -->
             <div class="flow-execution-console" style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
               
@@ -263,6 +279,8 @@
                     In Ninja, a <strong>Flow</strong> is a reusable configuration that defines your verification rules. For <strong>Pre-filled sessions</strong>, we set <code>source: "business"</code> so Ninja knows our backend provides the player's name &amp; DOB when generating links &mdash; skipping form entry directly into live biometric verification.
                   </p>
                 </div>
+
+                <p id="flow-threshold-note" class="threshold-note" hidden></p>
 
                 <button type="button" id="btn-create-flow" class="btn-flow-action">
                   <span>⚡ 1. Programmatically Create Flow (POST /api/flows) →</span>

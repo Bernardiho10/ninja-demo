@@ -9,9 +9,9 @@ import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-python'
 import 'prismjs/components/prism-rust'
 
-import { loadState, saveState, type V2State, type TelemetryLog } from './lib/state'
+import { loadState, saveState, type V2State, type TelemetryLog, type Thresholds } from './lib/state'
 import { showCodeFirstSlideOut } from './lib/codeModal'
-import { getLinkScenarioConfig, getFlowCreationConfig } from './lib/linkScenarios'
+import { getLinkScenarioConfig, getFlowCreationConfig, scenarioThresholds } from './lib/linkScenarios'
 
 let state: V2State = loadState()
 let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
@@ -78,7 +78,7 @@ function init() {
 function showReturnedVerification(verificationId: string, status: string | null) {
   history.replaceState(null, '', window.location.pathname)
   activeVerification = { id: verificationId, url: '' }
-  startVerificationPolling(verificationId)
+  startVerificationPolling(verificationId, null)
   pollVerificationOnce(verificationId)
 
   const note = document.getElementById('step3-return-note')
@@ -633,17 +633,30 @@ function bindStep3() {
     })
   })
 
+  // Custom thresholds: saved on change; a change after the flow exists means a new flow.
+  for (const [id, key] of [['input-face-threshold', 'face'], ['input-liveness-threshold', 'liveness']] as const) {
+    document.getElementById(id)?.addEventListener('change', (e) => {
+      const input = e.currentTarget as HTMLInputElement
+      const value = Math.min(100, Math.max(50, Math.round(Number(input.value) || 90)))
+      input.value = String(value)
+      state.customThresholds = { ...state.customThresholds, [key]: value }
+      saveState(state)
+      resetFlowStages()
+      updateDevCode()
+    })
+  }
+
   // Stage 1: Create a real Flow against the Ninja sandbox — reuse one if this
   // scenario already has one instead of creating a duplicate.
   createFlowBtn?.addEventListener('click', () => {
-    const existing = state.createdFlows[selectedScenario]
+    const existing = reusableFlow()
     if (existing) {
       alert(`A flow for this scenario already exists (ID: ${existing.id}). Reusing it — not creating a duplicate.`)
       markFlowCreated(existing.id, genBtn, createFlowBtn)
       return
     }
 
-    const config = getFlowCreationConfig(selectedScenario)
+    const config = getFlowCreationConfig(selectedScenario, state.customThresholds)
 
     showCodeFirstSlideOut({
       title: 'POST /api/flows',
@@ -673,7 +686,11 @@ function bindStep3() {
           throw new Error('flow creation failed')
         }
 
-        state.createdFlows[selectedScenario] = { id: body.id, name: config.requestPayload.name }
+        state.createdFlows[selectedScenario] = {
+          id: body.id,
+          name: config.requestPayload.name,
+          thresholds: { face: config.requestPayload.selfie_threshold, liveness: config.requestPayload.liveness_threshold },
+        }
         saveState(state)
         markFlowCreated(body.id, genBtn, createFlowBtn)
       },
@@ -693,7 +710,8 @@ function bindStep3() {
       state.player.firstName,
       state.player.lastName,
       state.player.dateOfBirth || '1975-01-01',
-      flowId
+      flowId,
+      state.customThresholds
     )
 
     showCodeFirstSlideOut({
@@ -749,7 +767,7 @@ function bindStep3() {
           }
         }
 
-        startVerificationPolling(activeVerification.id)
+        startVerificationPolling(activeVerification.id, createdFlow?.thresholds ?? null)
       },
     })
   })
@@ -762,6 +780,11 @@ function bindStep3() {
 
   // Release Money
   releaseBtn?.addEventListener('click', () => {
+    // Second check: never pay out unless the gate said "passed".
+    if (tracker?.verdict?.outcome !== 'passed') {
+      alert('Payout blocked: the face and liveness check has not passed.')
+      return
+    }
     const amt = state.withdrawal.amountNaira
     state.player.walletBalanceNaira = Math.max(0, state.player.walletBalanceNaira - amt)
     saveState(state)
@@ -781,6 +804,8 @@ function bindStep3() {
       verification_id: tracker?.id ?? activeVerification?.id ?? null,
       face_score: tracker?.result?.face_score ?? null,
       liveness_score: tracker?.result?.liveness_score ?? null,
+      thresholds_checked: tracker?.verdict?.thresholds ?? null,
+      gate: tracker?.verdict?.outcome ?? null,
     }
 
     const payoutResponse = {
@@ -823,14 +848,30 @@ function bindStep3() {
 // Once resolved we show pass/fail with the reasons, and keep checking for the
 // webhook for a short while so its payload can be shown too.
 // -----------------------------------------------------------------------------
-let createdFlow: { id: string; scenario: 'prefilled' | 'unfilled' | 'custom' } | null = null
+let createdFlow: { id: string; scenario: 'prefilled' | 'unfilled' | 'custom'; thresholds: Thresholds } | null = null
 let activeVerification: { id: string; url: string } | null = null
 let pollTimer: ReturnType<typeof setInterval> | null = null
+
+function sameThresholds(a: Thresholds | undefined, b: Thresholds): boolean {
+  return !!a && a.face === b.face && a.liveness === b.liveness
+}
+
+// The scenario's existing flow, but only if it was created with the
+// thresholds currently selected. Otherwise a new flow is needed.
+function reusableFlow() {
+  const existing = state.createdFlows[selectedScenario]
+  const wanted = scenarioThresholds(selectedScenario, state.customThresholds)
+  return existing && sameThresholds(existing.thresholds, wanted) ? existing : null
+}
 
 // Marks Stage 1 as done and unlocks Stage 2, whether the flow was just
 // created or we're reusing one that already exists for this scenario.
 function markFlowCreated(flowId: string, genBtn: HTMLButtonElement | null, createFlowBtn: HTMLButtonElement | null) {
-  createdFlow = { id: flowId, scenario: selectedScenario }
+  createdFlow = {
+    id: flowId,
+    scenario: selectedScenario,
+    thresholds: state.createdFlows[selectedScenario]?.thresholds ?? scenarioThresholds(selectedScenario, state.customThresholds),
+  }
 
   const stage1Card = document.getElementById('flow-stage-1-card')
   const stage1Pill = document.getElementById('flow-stage-1-pill')
@@ -856,10 +897,19 @@ function markFlowCreated(flowId: string, genBtn: HTMLButtonElement | null, creat
   if (genBtn) genBtn.disabled = false
 }
 
+function syncThresholdPanel() {
+  const panel = document.getElementById('custom-threshold-panel')
+  if (panel) panel.hidden = selectedScenario !== 'custom'
+  const face = document.getElementById('input-face-threshold') as HTMLInputElement | null
+  const live = document.getElementById('input-liveness-threshold') as HTMLInputElement | null
+  if (face) face.value = String(state.customThresholds.face)
+  if (live) live.value = String(state.customThresholds.liveness)
+}
+
 // Stage 1 + 2 explanations, written from the selected scenario's real payloads
 // so they always match what will be sent.
 function updateStageExplanations() {
-  const flow = getFlowCreationConfig(selectedScenario).requestPayload
+  const flow = getFlowCreationConfig(selectedScenario, state.customThresholds).requestPayload
   const link = getLinkScenarioConfig(
     selectedScenario,
     `${state.player.firstName} ${state.player.lastName}`.trim() || 'James Bond',
@@ -867,7 +917,9 @@ function updateStageExplanations() {
     'wtd_01',
     state.player.firstName || 'James',
     state.player.lastName || 'Bond',
-    state.player.dateOfBirth || '1975-01-01'
+    state.player.dateOfBirth || '1975-01-01',
+    undefined,
+    state.customThresholds
   ).requestPayload
 
   const fields: { field: string; source: string }[] = flow.rules?.fields || []
@@ -919,7 +971,7 @@ function resetFlowStages() {
     stage1Pill.textContent = 'Ready to Create'
     stage1Pill.className = 'flow-status-pill pill-ready'
   }
-  if (flowTargetLabel) flowTargetLabel.textContent = `POST /api/flows · Name: "${getFlowCreationConfig(selectedScenario).requestPayload.name}"`
+  if (flowTargetLabel) flowTargetLabel.textContent = `POST /api/flows · Name: "${getFlowCreationConfig(selectedScenario, state.customThresholds).requestPayload.name}"`
   if (createFlowBtn) createFlowBtn.innerHTML = `<span>⚡ 1. Programmatically Create Flow (POST /api/flows) →</span>`
 
   stage2Card?.classList.remove('active', 'completed')
@@ -937,14 +989,24 @@ function resetFlowStages() {
   if (releaseBox) releaseBox.hidden = true
   const returnNote = document.getElementById('step3-return-note')
   if (returnNote) returnNote.hidden = true
+  const thresholdNote = document.getElementById('flow-threshold-note')
+  if (thresholdNote) thresholdNote.hidden = true
   if (receipt) receipt.hidden = true
   setPollStatusUI('idle')
 
+  syncThresholdPanel()
+
   // A flow already exists for this scenario — reflect that instead of
   // leaving Stage 1 looking like nothing has happened yet.
-  const existing = state.createdFlows[selectedScenario]
+  const existing = reusableFlow()
+  const stale = state.createdFlows[selectedScenario]
+  const note = document.getElementById('flow-threshold-note')
   if (existing) {
     markFlowCreated(existing.id, genBtn, createFlowBtn)
+  } else if (stale && note) {
+    const t = scenarioThresholds(selectedScenario, state.customThresholds)
+    note.hidden = false
+    note.textContent = `Thresholds changed. The existing flow (${stale.id}) uses ${stale.thresholds?.face ?? '?'}% / ${stale.thresholds?.liveness ?? '?'}%. Create a new flow to apply ${t.face}% face / ${t.liveness}% liveness.`
   }
 }
 
@@ -996,11 +1058,24 @@ interface WebhookEvent {
 
 interface VerificationTracker {
   id: string
+  // Thresholds of the flow that minted this link; null when we came back from
+  // Ninja in a fresh tab and have to look the flow up from the result.
+  thresholds: Thresholds | null
   result: VerificationData | null
+  verdict: Verdict | null
   webhook: WebhookEvent | null
   inboxUrl: string | null
   webhookSource: string | null
   resolvedAt: number | null
+}
+
+interface Verdict {
+  outcome: 'passed' | 'incomplete' | 'failed'
+  reasons: string[]
+  thresholds: Thresholds
+  // True when the flow wasn't found in this session and the default bar was used.
+  assumedThresholds: boolean
+  missing: ('face' | 'liveness')[]
 }
 
 // After the result is known, keep looking for the webhook this long before
@@ -1009,9 +1084,18 @@ const WEBHOOK_GRACE_MS = 60_000
 
 let tracker: VerificationTracker | null = null
 
-function startVerificationPolling(verificationId: string) {
+function startVerificationPolling(verificationId: string, thresholds: Thresholds | null) {
   stopVerificationPolling()
-  tracker = { id: verificationId, result: null, webhook: null, inboxUrl: null, webhookSource: null, resolvedAt: null }
+  tracker = {
+    id: verificationId,
+    thresholds,
+    result: null,
+    verdict: null,
+    webhook: null,
+    inboxUrl: null,
+    webhookSource: null,
+    resolvedAt: null,
+  }
   setPollStatusUI('waiting')
   renderVerificationResult(tracker)
   pollTimer = setInterval(() => pollVerificationOnce(verificationId), 4000)
@@ -1040,6 +1124,8 @@ async function pollVerificationOnce(verificationId: string) {
   renderVerificationResult(t)
 }
 
+// The status endpoint is the only thing that decides the result: it is the
+// source that carries both face_score and liveness_score.
 async function checkVerificationStatus(t: VerificationTracker) {
   try {
     const path = `/api/verifications/${encodeURIComponent(t.id)}`
@@ -1056,6 +1142,8 @@ async function checkVerificationStatus(t: VerificationTracker) {
   }
 }
 
+// The webhook is shown and logged as proof of delivery. It never decides the
+// result (it doesn't carry liveness_score).
 async function checkWebhookEvents(t: VerificationTracker) {
   try {
     const path = `/api/webhook-events?verification_id=${encodeURIComponent(t.id)}`
@@ -1069,40 +1157,73 @@ async function checkWebhookEvents(t: VerificationTracker) {
     const event: WebhookEvent | undefined = (body.events || []).find((e: WebhookEvent) => e.payload?.data)
     if (!event) return
     t.webhook = event
-    const passed = event.payload.data?.outcome === 'verified'
-    addLog(passed ? 'Webhook · Face Verified' : 'Webhook · Face Failed', 'GET', path, res.status, Math.round(performance.now() - t0), {}, event)
-    // The webhook can arrive before the status poll sees the change.
-    if (!t.result && event.payload.data) resolveVerification(t, event.payload.data)
+    addLog('Webhook · verification.completed', 'GET', path, res.status, Math.round(performance.now() - t0), {}, event)
   } catch {
     // Network hiccup — the interval will retry.
   }
 }
 
+// Thresholds to judge a result by: the flow that produced it if we know it,
+// otherwise the default bar (flagged so the page can say so).
+function thresholdsFor(t: VerificationTracker, v: VerificationData): { thresholds: Thresholds; assumed: boolean } {
+  const byFlow = Object.values(state.createdFlows).find((f) => f && f.id === v.flow_id)
+  if (byFlow?.thresholds) return { thresholds: byFlow.thresholds, assumed: false }
+  if (t.thresholds) return { thresholds: t.thresholds, assumed: false }
+  return { thresholds: scenarioThresholds('prefilled'), assumed: true }
+}
+
+// The payout gate. Passed needs ALL of: Ninja's outcome "verified", a face
+// score and a liveness score, and both at or above the flow's thresholds.
+function evaluateVerification(v: VerificationData, thresholds: Thresholds, assumed: boolean): Verdict {
+  const reasons: string[] = []
+  const missing: ('face' | 'liveness')[] = []
+  let below = false
+
+  const ninjaVerified = v.status === 'completed' && v.outcome === 'verified'
+  if (!ninjaVerified) reasons.push(...ninjaFailureReasons(v))
+
+  const checks = [
+    { key: 'face' as const, label: 'Face match', score: v.face_score, min: thresholds.face },
+    { key: 'liveness' as const, label: 'Liveness', score: v.liveness_score, min: thresholds.liveness },
+  ]
+  for (const c of checks) {
+    if (typeof c.score !== 'number') {
+      missing.push(c.key)
+      if (ninjaVerified) reasons.push(`Ninja returned no ${c.label.toLowerCase()} score, so we can't confirm a ${c.key === 'face' ? 'face check' : 'liveness check'} took place.`)
+    } else if (c.score < c.min) {
+      below = true
+      reasons.push(`${c.label} ${c.score}% is below the ${c.min}% this flow requires.`)
+    }
+  }
+
+  const outcome = !ninjaVerified || below ? 'failed' : missing.length > 0 ? 'incomplete' : 'passed'
+  if (outcome === 'failed' && reasons.length === 0) reasons.push('Ninja did not return a specific reason. See the full payload below.')
+  return { outcome, reasons, thresholds, assumedThresholds: assumed, missing }
+}
+
 function resolveVerification(t: VerificationTracker, data: VerificationData) {
+  const { thresholds, assumed } = thresholdsFor(t, data)
   t.result = data
+  t.verdict = evaluateVerification(data, thresholds, assumed)
   t.resolvedAt = Date.now()
   setPollStatusUI('done')
 
-  const passed = data.outcome === 'verified'
-  state.withdrawal.faceStatus = passed ? 'passed' : 'failed'
+  const passed = t.verdict.outcome === 'passed'
+  state.withdrawal.faceStatus = t.verdict.outcome
+  state.withdrawal.livenessScore = typeof data.liveness_score === 'number' ? data.liveness_score : undefined
   saveState(state)
 
   const releaseBox = document.getElementById('step3-release-box')
   if (releaseBox) releaseBox.hidden = !passed
   const releaseMsg = document.getElementById('step3-release-msg')
   if (releaseMsg && passed) {
-    const face = typeof data.face_score === 'number' ? ` Face matched with ${data.face_score}% confidence.` : ''
-    releaseMsg.textContent = `✓ Identity confirmed against the government record.${face} You can now safely disburse funds.`
+    releaseMsg.textContent = `✓ Identity confirmed. Face matched ${data.face_score}% (min ${thresholds.face}%) and liveness ${data.liveness_score}% (min ${thresholds.liveness}%). You can now safely disburse funds.`
   }
 }
 
-// Turns a failed verification into plain-language reasons.
-function failureReasons(v: VerificationData): string[] {
+// Reasons from Ninja's own decision (status / outcome / field matches).
+function ninjaFailureReasons(v: VerificationData): string[] {
   const reasons: string[] = []
-  const flow = getFlowCreationConfig(selectedScenario).requestPayload
-  const faceMin = Number(flow.selfie_threshold) || 0
-  const livenessMin = Number(flow.liveness_threshold) || 0
-
   if (v.status && !['completed', 'failed'].includes(v.status)) {
     reasons.push(`The session ended as "${v.status}" before a decision was made.`)
   }
@@ -1116,12 +1237,6 @@ function failureReasons(v: VerificationData): string[] {
     const val = v[key]
     if (typeof val === 'string' && val) reasons.push(val)
   }
-  if (typeof v.face_score === 'number' && faceMin && v.face_score < faceMin) {
-    reasons.push(`Face match ${v.face_score}% is below the ${faceMin}% required by this flow.`)
-  }
-  if (typeof v.liveness_score === 'number' && livenessMin && v.liveness_score < livenessMin) {
-    reasons.push(`Liveness ${v.liveness_score}% is below the ${livenessMin}% required by this flow.`)
-  }
   for (const f of v.fields || []) {
     if (!fieldMatched(f)) {
       const label = f.field.replace(/_/g, ' ')
@@ -1129,7 +1244,6 @@ function failureReasons(v: VerificationData): string[] {
       reasons.push(`${label}${provided} didn't fully match the ID record (${f.match || 'no match'}, score ${f.score ?? 0}).`)
     }
   }
-  if (reasons.length === 0) reasons.push('Ninja did not return a specific reason. See the full payload below.')
   return reasons
 }
 
@@ -1148,32 +1262,47 @@ function renderVerificationResult(t: VerificationTracker | null) {
   box.hidden = false
 
   const v = t.result
-  const outcome = !v ? 'pending' : v.outcome === 'verified' ? 'passed' : 'failed'
+  const verdict = t.verdict
+  const outcome = verdict?.outcome ?? 'pending'
   box.dataset.outcome = outcome
 
-  const pct = (n?: number) => (typeof n === 'number' ? `${n}%` : '—')
   const score = (n?: number) => (typeof n === 'number' ? n.toFixed(2) : '—')
+  const pctMetric = (label: string, n: unknown, min: number | undefined, key: 'face' | 'liveness') => {
+    const isMissing = !!verdict && verdict.missing.includes(key)
+    const value = typeof n === 'number' ? `${n}%` : isMissing ? 'missing' : '—'
+    const low = typeof n === 'number' && typeof min === 'number' && n < min
+    const cls = isMissing ? 'metric-missing' : low ? 'metric-low' : ''
+    return `<div class="${cls}"><span>${label}${typeof min === 'number' ? ` · min ${min}%` : ''}</span><strong>${value}</strong></div>`
+  }
 
-  const headline =
-    outcome === 'pending'
-      ? `<span class="verify-result-badge">● Waiting</span><span class="verify-result-title">No result yet</span>`
-      : outcome === 'passed'
-        ? `<span class="verify-result-badge">✓ Passed</span><span class="verify-result-title">Identity verified — payout can be released</span>`
-        : `<span class="verify-result-badge">✕ Failed</span><span class="verify-result-title">Verification failed — payout blocked</span>`
+  const headlines = {
+    pending: t.webhook
+      ? `<span class="verify-result-badge">● Waiting</span><span class="verify-result-title">Webhook received — waiting for the status check to confirm the scores</span>`
+      : `<span class="verify-result-badge">● Waiting</span><span class="verify-result-title">No result yet</span>`,
+    passed: `<span class="verify-result-badge">✓ Passed</span><span class="verify-result-title">Face and liveness confirmed — payout can be released</span>`,
+    incomplete: `<span class="verify-result-badge">⚠ Incomplete</span><span class="verify-result-title">Scores missing — payout blocked</span>`,
+    failed: `<span class="verify-result-badge">✕ Failed</span><span class="verify-result-title">Verification failed — payout blocked</span>`,
+  }
 
+  const thr = verdict?.thresholds ?? t.thresholds ?? undefined
   const metrics = v
     ? `<div class="verify-result-metrics">
         <div><span>Status</span><strong>${escapeHtml(String(v.status || '—'))}</strong></div>
         <div><span>Outcome</span><strong>${escapeHtml(String(v.outcome || '—'))}</strong></div>
         <div><span>Match score</span><strong>${score(v.score)}</strong></div>
-        <div><span>Face</span><strong>${pct(v.face_score)}</strong></div>
-        <div><span>Liveness</span><strong>${pct(v.liveness_score)}</strong></div>
+        ${pctMetric('Face', v.face_score, thr?.face, 'face')}
+        ${pctMetric('Liveness', v.liveness_score, thr?.liveness, 'liveness')}
       </div>`
     : ''
 
+  const assumedNote =
+    verdict?.assumedThresholds
+      ? `<p class="verify-result-assumed">This flow wasn't created in this browser session, so the default ${verdict.thresholds.face}% / ${verdict.thresholds.liveness}% bar was applied.</p>`
+      : ''
+
   const fields =
     v && v.fields?.length
-      ? `<table class="verify-result-fields">
+      ? `<div class="verify-result-fields-wrap"><table class="verify-result-fields">
           <thead><tr><th>Field</th><th>Provided</th><th>Match</th><th>Score</th></tr></thead>
           <tbody>${v.fields
             .map((f) => {
@@ -1186,15 +1315,20 @@ function renderVerificationResult(t: VerificationTracker | null) {
               </tr>`
             })
             .join('')}</tbody>
-        </table>`
+        </table></div>`
       : ''
 
-  const errors =
-    outcome === 'failed' && v
-      ? `<div class="error verify-result-errors"><strong>Why it failed</strong><ul>${failureReasons(v)
-          .map((r) => `<li>${escapeHtml(r)}</li>`)
-          .join('')}</ul></div>`
-      : ''
+  let reasonsBox = ''
+  if (verdict && outcome === 'failed') {
+    reasonsBox = `<div class="error verify-result-errors"><strong>Why it failed</strong><ul>${verdict.reasons
+      .map((r) => `<li>${escapeHtml(r)}</li>`)
+      .join('')}</ul></div>`
+  } else if (verdict && outcome === 'incomplete') {
+    reasonsBox = `<div class="verify-result-warning"><strong>Why it's incomplete</strong><ul>${verdict.reasons
+      .map((r) => `<li>${escapeHtml(r)}</li>`)
+      .join('')}</ul>
+      <button type="button" class="btn-retry-verification" id="btn-retry-verification">↻ Start a new verification</button></div>`
+  }
 
   const inbox = t.inboxUrl ? ` <a href="${escapeHtml(t.inboxUrl)}" target="_blank" rel="noopener">Open inbox ↗</a>` : ''
   let webhook: string
@@ -1216,15 +1350,30 @@ function renderVerificationResult(t: VerificationTracker | null) {
   }
 
   box.innerHTML = `
-    <div class="verify-result-head">${headline}</div>
-    ${errors}
+    <div class="verify-result-head">${headlines[outcome]}</div>
+    ${reasonsBox}
     ${metrics}
+    ${assumedNote}
     ${fields}
     <div class="verify-webhook">
-      <div class="verify-webhook-title">Webhook from Ninja</div>
+      <div class="verify-webhook-title">Webhook from Ninja <span class="verify-webhook-sub">shown for reference — the status check decides the result</span></div>
       ${webhook}
     </div>
   `
+
+  document.getElementById('btn-retry-verification')?.addEventListener('click', retryVerification)
+}
+
+// "Start a new verification": mint a fresh link on the same flow.
+function retryVerification() {
+  const genBtn = document.getElementById('btn-generate-flow-link') as HTMLButtonElement | null
+  if (createdFlow && genBtn) {
+    genBtn.disabled = false
+    genBtn.click()
+    return
+  }
+  // Came back from Ninja in a fresh tab: no flow in this session yet.
+  document.getElementById('flow-stage-1-card')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
 }
 
 // -----------------------------------------------------------------------------
@@ -1415,7 +1564,7 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
   } else {
     // Step 3
     if (step3Subtab === 'flow') {
-      const flowCfg = getFlowCreationConfig()
+      const flowCfg = getFlowCreationConfig(selectedScenario, state.customThresholds)
       endpoint = 'POST /api/flows'
       if (activeTab === 'curl') {
         lang = 'bash'
@@ -1439,7 +1588,8 @@ resp, err := ninjaClient.Identify(ctx, ninja.IdentifyRequest{
         state.player.firstName,
         state.player.lastName,
         state.player.dateOfBirth || '1975-01-01',
-        state.createdFlows[selectedScenario]?.id
+        state.createdFlows[selectedScenario]?.id,
+        state.customThresholds
       )
       endpoint = `POST /api/flows/${cfg.flowId}/links`
 
