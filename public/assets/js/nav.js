@@ -61,22 +61,18 @@ function initNav() {
     // Global Reset button
     const resetBtn = document.getElementById('global-reset-btn');
     resetBtn?.addEventListener('click', async () => {
-        if (confirm('Reset demo state back to clean initial state (clears checkpoints, reset wallet balances, fresh James Bond fixtures)?')) {
+        if (confirm('Start the demo afresh? This clears the player, bank account, created flows, verification and the API log.')) {
             resetBtn.disabled = true;
             resetBtn.textContent = 'Resetting...';
+            // Clear saved state, then reload. The page keeps state in memory too
+            // (player, flows, logs, the verification being polled), and a reload is
+            // the only way to be sure none of it survives and gets saved back.
+            resetDemoState();
             try {
-                resetDemoState();
-                updateNavFromState();
-                window.dispatchEvent(new CustomEvent('ninjabet:navigate-mode', { detail: { mode: 'sportsbook' } }));
-                window.dispatchEvent(new CustomEvent('ninjabet:navigate-step', { detail: { step: 1 } }));
+                sessionStorage.clear();
             }
-            catch (err) {
-                alert('Failed to reset demo: ' + err.message);
-            }
-            finally {
-                resetBtn.disabled = false;
-                resetBtn.textContent = 'Reset';
-            }
+            catch { }
+            window.location.replace(window.location.pathname);
         }
     });
     // Listen to state changes

@@ -1476,6 +1476,9 @@ function renderLogs(openLogId) {
     const list = document.getElementById('dev-call-log-list');
     if (!list)
         return;
+    const clearBtn = document.getElementById('btn-clear-logs');
+    if (clearBtn)
+        clearBtn.disabled = state.logs.length === 0;
     if (state.logs.length === 0) {
         list.innerHTML = `
       <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 24px;" id="empty-logs-label">

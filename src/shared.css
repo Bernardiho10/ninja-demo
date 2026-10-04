@@ -397,6 +397,34 @@ body {
   border-color: rgba(228, 0, 43, 0.35);
 }
 
+/* Compact "Clear" in the API log header. Overrides the global full-width button. */
+.btn-log-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex: none;
+  width: auto;
+  margin: 0;
+  padding: 4px 9px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.btn-log-clear:hover:not(:disabled) {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.btn-log-clear:disabled {
+  opacity: 0.35;
+}
+
 .btn-logout-ghost:hover {
   color: #fff;
   background: rgba(255, 255, 255, 0.1);

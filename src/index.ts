@@ -1612,6 +1612,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 function renderLogs(openLogId?: string) {
   const list = document.getElementById('dev-call-log-list')
   if (!list) return
+  const clearBtn = document.getElementById('btn-clear-logs') as HTMLButtonElement | null
+  if (clearBtn) clearBtn.disabled = state.logs.length === 0
 
   if (state.logs.length === 0) {
     list.innerHTML = `
