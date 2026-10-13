@@ -7,6 +7,7 @@ import './vendor/prismjs/components/prism-rust.js';
 import { loadState, saveState } from './lib/state.js';
 import { showCodeFirstSlideOut } from './lib/codeModal.js';
 import { getFlowCreationConfig, scenarioThresholds, getLinkScenarioConfig } from './lib/linkScenarios.js';
+import './analytics.js';
 
 // =============================================================================
 // ninja-bet: Interactive Integration Guide & Telemetry Workbench
