@@ -4,6 +4,7 @@ import './vendor/prismjs/components/prism-go.js';
 import './vendor/prismjs/components/prism-bash.js';
 import './vendor/prismjs/components/prism-python.js';
 import './vendor/prismjs/components/prism-rust.js';
+import { inject } from './vendor/@vercel/analytics/dist/index.js';
 import { loadState, saveState } from './lib/state.js';
 import { showCodeFirstSlideOut } from './lib/codeModal.js';
 import { getFlowCreationConfig, scenarioThresholds, getLinkScenarioConfig } from './lib/linkScenarios.js';
@@ -11,6 +12,8 @@ import { getFlowCreationConfig, scenarioThresholds, getLinkScenarioConfig } from
 // =============================================================================
 // ninja-bet: Interactive Integration Guide & Telemetry Workbench
 // =============================================================================
+// Initialize Vercel Web Analytics
+inject();
 let state = loadState();
 let activeTab = 'curl';
 let selectedScenario = 'prefilled';

@@ -8,10 +8,14 @@ import 'prismjs/components/prism-go'
 import 'prismjs/components/prism-bash'
 import 'prismjs/components/prism-python'
 import 'prismjs/components/prism-rust'
+import { inject } from '@vercel/analytics'
 
 import { loadState, saveState, type V2State, type TelemetryLog, type Thresholds } from './lib/state'
 import { showCodeFirstSlideOut } from './lib/codeModal'
 import { getLinkScenarioConfig, getFlowCreationConfig, scenarioThresholds } from './lib/linkScenarios'
+
+// Initialize Vercel Web Analytics
+inject()
 
 let state: V2State = loadState()
 let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
