@@ -13,6 +13,9 @@ import { loadState, saveState, type V2State, type TelemetryLog, type Thresholds 
 import { showCodeFirstSlideOut } from './lib/codeModal'
 import { getLinkScenarioConfig, getFlowCreationConfig, scenarioThresholds } from './lib/linkScenarios'
 
+// Initialize Vercel Web Analytics
+import './analytics'
+
 let state: V2State = loadState()
 let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
 let selectedScenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled'
