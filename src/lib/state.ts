@@ -98,6 +98,54 @@ const DEFAULT_STATE: V2State = {
   customThresholds: { face: 90, liveness: 90 },
 }
 
+export function isStep1Complete(state?: V2State | null): boolean {
+  if (!state || !state.player) return false
+  return (
+    state.player.kycStatus === 'verified' &&
+    Boolean(state.player.firstName?.trim()) &&
+    Boolean(state.player.nin?.trim())
+  )
+}
+
+export function isStep2Complete(state?: V2State | null): boolean {
+  if (!state) return false
+  return Boolean(
+    isStep1Complete(state) &&
+    state.bankAccount &&
+    state.bankAccount.isVerified &&
+    Boolean(state.bankAccount.accountNumber?.trim())
+  )
+}
+
+export function canAccessStep(step: number, state?: V2State | null): { allowed: boolean; reason?: string } {
+  if (step === 1) return { allowed: true }
+  if (step === 2) {
+    if (!isStep1Complete(state)) {
+      return {
+        allowed: false,
+        reason: 'Please complete Step 1: Registration & Compliance before moving to Step 2.',
+      }
+    }
+    return { allowed: true }
+  }
+  if (step === 3) {
+    if (!isStep1Complete(state)) {
+      return {
+        allowed: false,
+        reason: 'Please complete Step 1: Registration & Compliance before moving to Step 3.',
+      }
+    }
+    if (!isStep2Complete(state)) {
+      return {
+        allowed: false,
+        reason: 'Please complete Step 2: Add Bank Account before moving to Step 3.',
+      }
+    }
+    return { allowed: true }
+  }
+  return { allowed: false, reason: 'Invalid step' }
+}
+
 export function loadState(): V2State {
   try {
     // Purge any legacy localStorage state to avoid old session contamination
@@ -120,6 +168,14 @@ export function loadState(): V2State {
         merged.player.walletBalanceNaira = 0
         merged.player.withdrawableBalanceNaira = 0
       }
+
+      // Enforce step validation rules on loaded state
+      if (!isStep1Complete(merged) && merged.currentStep > 1) {
+        merged.currentStep = 1
+      } else if (!isStep2Complete(merged) && merged.currentStep > 2) {
+        merged.currentStep = 2
+      }
+
       return merged
     }
   } catch (e) {

@@ -4,7 +4,7 @@ import './vendor/prismjs/components/prism-go.js';
 import './vendor/prismjs/components/prism-bash.js';
 import './vendor/prismjs/components/prism-python.js';
 import './vendor/prismjs/components/prism-rust.js';
-import { loadState, saveState } from './lib/state.js';
+import { loadState, canAccessStep, saveState, isStep1Complete, isStep2Complete } from './lib/state.js';
 import { showCodeFirstSlideOut } from './lib/codeModal.js';
 import { getFlowCreationConfig, scenarioThresholds, getLinkScenarioConfig } from './lib/linkScenarios.js';
 
@@ -15,6 +15,34 @@ let state = loadState();
 let activeTab = 'curl';
 let selectedScenario = 'prefilled';
 let step3Subtab = 'mint';
+function showToast(message, type = 'warning') {
+    let container = document.getElementById('ninja-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'ninja-toast-container';
+        container.className = 'ninja-toast-container';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `ninja-toast toast-${type}`;
+    const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠';
+    toast.innerHTML = `
+    <span class="toast-icon">${icon}</span>
+    <span class="toast-msg">${escapeHtml(message)}</span>
+    <button type="button" class="toast-close" title="Dismiss">×</button>
+  `;
+    const closeBtn = toast.querySelector('.toast-close');
+    const dismiss = () => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(20px)';
+        setTimeout(() => {
+            toast.remove();
+        }, 200);
+    };
+    closeBtn?.addEventListener('click', dismiss);
+    container.appendChild(toast);
+    setTimeout(dismiss, 3800);
+}
 function escapeHtml(str) {
     if (!str)
         return '';
@@ -52,11 +80,21 @@ function init() {
             goToStep(e.detail.step);
         }
     });
+    // Global toast listener
+    window.addEventListener('ninjabet:show-toast', (e) => {
+        if (e.detail?.message) {
+            showToast(e.detail.message, e.detail.type || 'warning');
+        }
+    });
     // Back from Ninja's hosted check (?vs_id=...&status=...): open Step 3 and show that result.
     const returned = new URLSearchParams(window.location.search);
     const returnedId = returned.get('vs_id');
-    if (returnedId)
+    if (returnedId) {
         state.currentStep = 3;
+    }
+    else if (!canAccessStep(state.currentStep, state).allowed) {
+        state.currentStep = 1;
+    }
     goToStep(state.currentStep);
     syncFields();
     renderLogs();
@@ -83,6 +121,16 @@ function showReturnedVerification(verificationId, status) {
 // Stepper & Step Transitions (Sportsbook KYC)
 // -----------------------------------------------------------------------------
 function goToStep(step) {
+    const access = canAccessStep(step, state);
+    if (!access.allowed) {
+        showToast(access.reason || 'Complete previous steps first', 'warning');
+        if (!canAccessStep(state.currentStep, state).allowed) {
+            step = 1;
+        }
+        else {
+            return;
+        }
+    }
     state.currentStep = step;
     saveState(state);
     window.dispatchEvent(new CustomEvent('ninjabet:statechange'));
@@ -102,7 +150,13 @@ function goToStep(step) {
 }
 function bindStepper() {
     [1, 2, 3].forEach((s) => {
-        document.getElementById(`step-nav-${s}`)?.addEventListener('click', () => {
+        document.getElementById(`step-nav-${s}`)?.addEventListener('click', (e) => {
+            const access = canAccessStep(s, state);
+            if (!access.allowed) {
+                e.preventDefault();
+                showToast(access.reason || 'Complete previous steps first', 'warning');
+                return;
+            }
             goToStep(s);
         });
     });
@@ -249,6 +303,15 @@ function bindStep1() {
             result.hidden = true;
         updateDevCode();
     });
+    // Input sanitization
+    nin?.addEventListener('input', () => {
+        if (nin)
+            nin.value = nin.value.replace(/\D/g, '').slice(0, 11);
+    });
+    phone?.addEventListener('input', () => {
+        if (phone)
+            phone.value = phone.value.replace(/[^\d+]/g, '').slice(0, 14);
+    });
     // Submit -> Code-First Slide-Out
     form?.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -258,7 +321,49 @@ function bindStep1() {
         const ninNum = nin?.value.trim() || '';
         const dobVal = dob?.value.trim() || '';
         if (!firstName || !lastName || !ninNum || !dobVal) {
-            alert('Please fill out the registration fields or click one of the 1-Click Test Scenarios above!');
+            showToast('Please fill out all registration fields or choose a test scenario.', 'warning');
+            return;
+        }
+        if (firstName.length < 2) {
+            showToast('First Name must be at least 2 characters.', 'warning');
+            fn?.focus();
+            return;
+        }
+        if (lastName.length < 2) {
+            showToast('Surname must be at least 2 characters.', 'warning');
+            ln?.focus();
+            return;
+        }
+        const cleanPhone = phoneNum.replace(/[\s-]/g, '');
+        if (!/^\d{11}$/.test(cleanPhone)) {
+            showToast('Please enter a valid 11-digit phone number (e.g. 08012345678).', 'warning');
+            phone?.focus();
+            return;
+        }
+        if (!/^\d{11}$/.test(ninNum)) {
+            showToast('NIN must be exactly 11 numeric digits.', 'warning');
+            nin?.focus();
+            return;
+        }
+        const age = calculateAge(dobVal);
+        if (isNaN(age) || age <= 0) {
+            showToast('Please enter a valid Date of Birth.', 'warning');
+            dob?.focus();
+            return;
+        }
+        if (age < 18) {
+            if (result) {
+                result.hidden = false;
+                result.innerHTML = `
+          <div class="error" style="padding: 14px; border-radius: 0;">
+            <strong>✗ Player Under 18 (Compliance Block)</strong><br/>
+            Birth date indicates age <strong>${age}</strong>. Players under 18 cannot create an account per gaming regulations.
+            Blocked by our compliance policy before calling Ninja API, so no identity check was spent.
+          </div>
+        `;
+                result.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            showToast(`Compliance Block: Player is ${age} years old. Must be 18+ to register.`, 'error');
             return;
         }
         const payload = {
@@ -421,13 +526,42 @@ function bindStep2() {
             result.hidden = true;
         updateDevCode();
     });
+    // Input sanitization
+    acc?.addEventListener('input', () => {
+        if (acc)
+            acc.value = acc.value.replace(/\D/g, '').slice(0, 10);
+    });
+    bvn?.addEventListener('input', () => {
+        if (bvn)
+            bvn.value = bvn.value.replace(/\D/g, '').slice(0, 11);
+    });
     // Submit -> Code-First Slide-Out
     form?.addEventListener('submit', (e) => {
         e.preventDefault();
+        if (!isStep1Complete(state)) {
+            showToast('Please complete Step 1: Registration & Compliance before adding a bank account.', 'warning');
+            goToStep(1);
+            return;
+        }
         const bankName = bank?.value || 'Access Bank';
-        const accNum = acc?.value.trim() || '0123456789';
-        const bvnNum = bvn?.value.trim() || '77777777777';
-        const holderName = holder?.value.trim() || 'James Bond';
+        const accNum = acc?.value.trim() || '';
+        const bvnNum = bvn?.value.trim() || '';
+        const holderName = holder?.value.trim() || '';
+        if (!accNum || !/^\d{10}$/.test(accNum)) {
+            showToast('Account Number must be exactly 10 digits.', 'warning');
+            acc?.focus();
+            return;
+        }
+        if (!bvnNum || !/^\d{11}$/.test(bvnNum)) {
+            showToast('BVN must be exactly 11 digits.', 'warning');
+            bvn?.focus();
+            return;
+        }
+        if (!holderName || holderName.length < 2) {
+            showToast('Please enter the Account Holder Name.', 'warning');
+            holder?.focus();
+            return;
+        }
         const payload = {
             idType: 'bvn',
             mode: 'verify',
@@ -616,6 +750,16 @@ function bindStep3() {
     // Stage 1: Create a real Flow against the Ninja sandbox — reuse one if this
     // scenario already has one instead of creating a duplicate.
     createFlowBtn?.addEventListener('click', () => {
+        if (!isStep1Complete(state)) {
+            showToast('Please complete Step 1: Registration & Compliance first.', 'warning');
+            goToStep(1);
+            return;
+        }
+        if (!isStep2Complete(state)) {
+            showToast('Please complete Step 2: Add Bank Account before creating payout flows.', 'warning');
+            goToStep(2);
+            return;
+        }
         const existing = reusableFlow();
         if (existing) {
             alert(`A flow for this scenario already exists (ID: ${existing.id}). Reusing it — not creating a duplicate.`);
@@ -660,6 +804,10 @@ function bindStep3() {
     });
     // Stage 2: Mint a real hosted verification link on the created Flow
     genBtn?.addEventListener('click', () => {
+        if (!isStep1Complete(state) || !isStep2Complete(state)) {
+            showToast('Please complete Step 1 (Registration) and Step 2 (Bank Account) first.', 'warning');
+            return;
+        }
         if (!createdFlow)
             return;
         const flowId = createdFlow.id;
@@ -1812,3 +1960,5 @@ if (document.readyState === 'loading') {
 else {
     init();
 }
+
+export { showToast };

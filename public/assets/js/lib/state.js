@@ -28,6 +28,50 @@ const DEFAULT_STATE = {
     createdFlows: {},
     customThresholds: { face: 90, liveness: 90 },
 };
+function isStep1Complete(state) {
+    if (!state || !state.player)
+        return false;
+    return (state.player.kycStatus === 'verified' &&
+        Boolean(state.player.firstName?.trim()) &&
+        Boolean(state.player.nin?.trim()));
+}
+function isStep2Complete(state) {
+    if (!state)
+        return false;
+    return Boolean(isStep1Complete(state) &&
+        state.bankAccount &&
+        state.bankAccount.isVerified &&
+        Boolean(state.bankAccount.accountNumber?.trim()));
+}
+function canAccessStep(step, state) {
+    if (step === 1)
+        return { allowed: true };
+    if (step === 2) {
+        if (!isStep1Complete(state)) {
+            return {
+                allowed: false,
+                reason: 'Please complete Step 1: Registration & Compliance before moving to Step 2.',
+            };
+        }
+        return { allowed: true };
+    }
+    if (step === 3) {
+        if (!isStep1Complete(state)) {
+            return {
+                allowed: false,
+                reason: 'Please complete Step 1: Registration & Compliance before moving to Step 3.',
+            };
+        }
+        if (!isStep2Complete(state)) {
+            return {
+                allowed: false,
+                reason: 'Please complete Step 2: Add Bank Account before moving to Step 3.',
+            };
+        }
+        return { allowed: true };
+    }
+    return { allowed: false, reason: 'Invalid step' };
+}
 function loadState() {
     try {
         // Purge any legacy localStorage state to avoid old session contamination
@@ -49,6 +93,13 @@ function loadState() {
                 merged.player.dateOfBirth = '';
                 merged.player.walletBalanceNaira = 0;
                 merged.player.withdrawableBalanceNaira = 0;
+            }
+            // Enforce step validation rules on loaded state
+            if (!isStep1Complete(merged) && merged.currentStep > 1) {
+                merged.currentStep = 1;
+            }
+            else if (!isStep2Complete(merged) && merged.currentStep > 2) {
+                merged.currentStep = 2;
             }
             return merged;
         }
@@ -77,4 +128,4 @@ function resetDemoState() {
     return fresh;
 }
 
-export { loadState, resetDemoState, saveState };
+export { canAccessStep, isStep1Complete, isStep2Complete, loadState, resetDemoState, saveState };

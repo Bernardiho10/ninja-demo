@@ -1,11 +1,11 @@
-import { loadState, resetDemoState } from './lib/state.js';
+import { loadState, isStep1Complete, canAccessStep, isStep2Complete, resetDemoState } from './lib/state.js';
 
 function updateNavFromState(state) {
     const current = state || loadState();
     const nameEl = document.getElementById('nav-player-name');
     const statusEl = document.getElementById('nav-player-status');
     const balanceEl = document.getElementById('nav-player-balance');
-    const isVerified = current.player && current.player.kycStatus === 'verified' && Boolean(current.player.firstName);
+    const isVerified = isStep1Complete(current);
     if (nameEl) {
         nameEl.textContent = isVerified ? `${current.player.firstName} ${current.player.lastName}` : 'Guest';
     }
@@ -38,14 +38,23 @@ function updateNavFromState(state) {
     [1, 2, 3].forEach((step) => {
         const btn = document.getElementById(`step-nav-${step}`);
         if (btn) {
+            const access = canAccessStep(step, current);
             if (step === current.currentStep) {
                 btn.className = 'checkpoint-step active';
+                btn.removeAttribute('title');
             }
-            else if (step < current.currentStep) {
+            else if (!access.allowed) {
+                btn.className = 'checkpoint-step locked';
+                btn.title = access.reason || 'Complete previous steps first';
+            }
+            else if ((step === 1 && isStep1Complete(current)) ||
+                (step === 2 && isStep2Complete(current))) {
                 btn.className = 'checkpoint-step completed';
+                btn.removeAttribute('title');
             }
             else {
                 btn.className = 'checkpoint-step';
+                btn.removeAttribute('title');
             }
         }
     });
@@ -54,7 +63,20 @@ function initNav() {
     updateNavFromState();
     [1, 2, 3].forEach((step) => {
         const btn = document.getElementById(`step-nav-${step}`);
-        btn?.addEventListener('click', () => {
+        btn?.addEventListener('click', (e) => {
+            const current = loadState();
+            const access = canAccessStep(step, current);
+            if (!access.allowed) {
+                e.preventDefault();
+                e.stopPropagation();
+                window.dispatchEvent(new CustomEvent('ninjabet:show-toast', {
+                    detail: {
+                        message: access.reason || 'Complete previous steps first',
+                        type: 'warning',
+                    },
+                }));
+                return;
+            }
             window.dispatchEvent(new CustomEvent('ninjabet:navigate-step', { detail: { step } }));
         });
     });
