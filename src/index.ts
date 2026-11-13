@@ -30,10 +30,20 @@ let activeTab: 'curl' | 'ts' | 'python' | 'go' = 'curl'
 let selectedScenario: 'prefilled' | 'unfilled' | 'custom' = 'prefilled'
 let step3Subtab: 'mint' | 'flow' = 'mint'
 
+let lastToastTime = 0
+let lastToastMsg = ''
+
 export function showToast(
   message: string,
   type: 'warning' | 'error' | 'success' | 'info' = 'warning'
 ) {
+  const now = Date.now()
+  if (lastToastMsg === message && now - lastToastTime < 1500) {
+    return
+  }
+  lastToastTime = now
+  lastToastMsg = message
+
   let container = document.getElementById('ninja-toast-container')
   if (!container) {
     container = document.createElement('div')
@@ -42,28 +52,34 @@ export function showToast(
     document.body.appendChild(container)
   }
 
+  // Clear existing toasts so only one appears at a time
+  container.innerHTML = ''
+
   const toast = document.createElement('div')
   toast.className = `ninja-toast toast-${type}`
   const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : '⚠'
 
   toast.innerHTML = `
-    <span class="toast-icon">${icon}</span>
+    <span class="toast-icon-badge">${icon}</span>
     <span class="toast-msg">${escapeHtml(message)}</span>
-    <button type="button" class="toast-close" title="Dismiss">×</button>
+    <button type="button" class="toast-close" title="Dismiss">✕</button>
   `
 
   const closeBtn = toast.querySelector('.toast-close')
+  let timer: any = null
+
   const dismiss = () => {
+    if (timer) clearTimeout(timer)
     toast.style.opacity = '0'
-    toast.style.transform = 'translateX(20px)'
+    toast.style.transform = 'translateY(-6px) scale(0.96)'
     setTimeout(() => {
       toast.remove()
-    }, 200)
+    }, 180)
   }
 
   closeBtn?.addEventListener('click', dismiss)
   container.appendChild(toast)
-  setTimeout(dismiss, 3800)
+  timer = setTimeout(dismiss, 3500)
 }
 
 function escapeHtml(str: string): string {
@@ -92,7 +108,6 @@ function init() {
     state.player.withdrawableBalanceNaira = 0
   }
 
-  bindStepper()
   bindSimulationWallet()
   bindStep1()
   bindStep2()
@@ -177,20 +192,6 @@ function goToStep(step: 1 | 2 | 3) {
   if (subtabs) subtabs.hidden = step !== 3
 
   updateDevCode()
-}
-
-function bindStepper() {
-  ;[1, 2, 3].forEach((s) => {
-    document.getElementById(`step-nav-${s}`)?.addEventListener('click', (e) => {
-      const access = canAccessStep(s, state)
-      if (!access.allowed) {
-        e.preventDefault()
-        showToast(access.reason || 'Complete previous steps first', 'warning')
-        return
-      }
-      goToStep(s as any)
-    })
-  })
 }
 
 function syncFields() {

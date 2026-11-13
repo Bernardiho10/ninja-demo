@@ -72,25 +72,10 @@ export function updateNavFromState(state?: V2State) {
 function initNav() {
   updateNavFromState()
 
-  // Stepper clicks with prerequisite validation
+  // Stepper clicks - dispatch navigation event to index handler
   ;[1, 2, 3].forEach((step) => {
     const btn = document.getElementById(`step-nav-${step}`)
-    btn?.addEventListener('click', (e) => {
-      const current = loadState()
-      const access = canAccessStep(step, current)
-      if (!access.allowed) {
-        e.preventDefault()
-        e.stopPropagation()
-        window.dispatchEvent(
-          new CustomEvent('ninjabet:show-toast', {
-            detail: {
-              message: access.reason || 'Complete previous steps first',
-              type: 'warning',
-            },
-          })
-        )
-        return
-      }
+    btn?.addEventListener('click', () => {
       window.dispatchEvent(new CustomEvent('ninjabet:navigate-step', { detail: { step } }))
     })
   })
