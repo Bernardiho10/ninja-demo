@@ -393,7 +393,17 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, 'http://localhost')
 
   if (req.method === 'POST' && url.pathname === '/identity/identify') {
-    return proxyToNinja(res, 'POST', '/api/identity/identify', await readBody(req))
+    const raw = await readBody(req)
+    const normalized = {
+      mode: raw.mode || 'verify',
+      idType: raw.idType || raw.type || raw.id_type || 'bvn',
+      idNumber: raw.idNumber || raw.number || raw.id_number || '',
+      firstName: raw.firstName || raw.first_name || '',
+      lastName: raw.lastName || raw.last_name || '',
+    }
+    if (raw.dateOfBirth || raw.dob) normalized.dateOfBirth = raw.dateOfBirth || raw.dob
+    if (raw.phoneNumber || raw.phone) normalized.phoneNumber = raw.phoneNumber || raw.phone
+    return proxyToNinja(res, 'POST', '/api/identity/identify', normalized)
   }
 
   if (req.method === 'POST' && url.pathname === '/credit/check') {

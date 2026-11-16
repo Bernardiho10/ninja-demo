@@ -340,7 +340,19 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         if self.path == "/identity/identify":
-            return proxy_to_ninja(self, "POST", "/api/identity/identify", self._read_json_body())
+            raw = self._read_json_body()
+            normalized = {
+                "mode": raw.get("mode") or "verify",
+                "idType": raw.get("idType") or raw.get("type") or raw.get("id_type") or "bvn",
+                "idNumber": raw.get("idNumber") or raw.get("number") or raw.get("id_number") or "",
+                "firstName": raw.get("firstName") or raw.get("first_name") or "",
+                "lastName": raw.get("lastName") or raw.get("last_name") or "",
+            }
+            if raw.get("dateOfBirth") or raw.get("dob"):
+                normalized["dateOfBirth"] = raw.get("dateOfBirth") or raw.get("dob")
+            if raw.get("phoneNumber") or raw.get("phone"):
+                normalized["phoneNumber"] = raw.get("phoneNumber") or raw.get("phone")
+            return proxy_to_ninja(self, "POST", "/api/identity/identify", normalized)
 
         if self.path == "/credit/check":
             return proxy_to_ninja(self, "POST", "/api/credit/check", self._read_json_body())

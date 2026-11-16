@@ -255,17 +255,23 @@ function bindStep1() {
             return;
         }
         const payload = {
+            mode: 'verify',
+            idType: 'bvn',
+            idNumber: bvn.value.trim(),
+            firstName: fName.value.trim(),
+            lastName: lName.value.trim(),
+            phone: phone.value.trim(),
+            dob: dob.value.trim(),
+            // Backward-compatibility aliases
             type: 'bvn',
             number: bvn.value.trim(),
             first_name: fName.value.trim(),
             last_name: lName.value.trim(),
-            phone: phone.value.trim(),
-            dob: dob.value.trim(),
         };
-        state.borrower.firstName = payload.first_name;
-        state.borrower.lastName = payload.last_name;
+        state.borrower.firstName = payload.firstName;
+        state.borrower.lastName = payload.lastName;
         state.borrower.phone = payload.phone;
-        state.borrower.bvn = payload.number;
+        state.borrower.bvn = payload.idNumber;
         state.borrower.dob = payload.dob;
         state.loanRequest.reference = ref?.value.trim() || 'loan-app-1042';
         const submitBtn = document.getElementById('btn-submit-credit-step1');
@@ -293,15 +299,18 @@ function bindStep1() {
         }
         catch {
             // Fallback for static demo
-            const bvnNum = payload.number;
-            const isJames = (payload.first_name || '').toLowerCase().includes('james') &&
-                (payload.last_name || '').toLowerCase().includes('bond');
+            const bvnNum = payload.idNumber;
+            const isJames = (payload.firstName || '').toLowerCase().includes('james') &&
+                (payload.lastName || '').toLowerCase().includes('bond');
             if (bvnNum === SANDBOX_CREDIT_BVNS.CLEAN && isJames) {
                 status = 200;
                 body = {
+                    id: bvnNum,
+                    found: true,
                     status: 'verified',
                     verified: true,
                     score: 1.0,
+                    recommendation: 'accept',
                     matches: { first_name: 100, last_name: 100, dob: 100 },
                     data: { first_name: 'JAMES', last_name: 'BOND', dob: '1975-01-01', age: 49 },
                 };
@@ -309,16 +318,20 @@ function bindStep1() {
             else if (bvnNum === SANDBOX_CREDIT_BVNS.CLEAN) {
                 status = 200;
                 body = {
+                    id: bvnNum,
+                    found: true,
                     status: 'failed',
                     verified: false,
                     score: 0.2,
+                    recommendation: 'reject',
+                    mismatches: ['first_name', 'last_name'],
                     matches: { first_name: 0, last_name: 0, dob: 0 },
                     reasons: ['name_mismatch'],
                 };
             }
             else {
                 status = 200;
-                body = { status: 'not_found', verified: false, found: false, reasons: ['id_not_found'] };
+                body = { id: bvnNum, found: false, verified: false, recommendation: 'reject', reasons: ['id_not_found'] };
             }
         }
         const duration = Math.round(performance.now() - t0);
@@ -334,19 +347,21 @@ function bindStep1() {
         if (!resultBox)
             return;
         resultBox.hidden = false;
-        const isVerified = status === 200 && body?.status === 'verified';
+        const isVerified = status === 200 &&
+            (body?.verified === true || body?.status === 'verified' || body?.recommendation === 'accept');
         if (isVerified) {
             state.borrower.kycStatus = 'verified';
             saveCreditState(state);
             window.dispatchEvent(new CustomEvent('ninjacredit:state-updated', { detail: { state } }));
+            const matchScore = typeof body?.score === 'number' ? Math.round(body.score * 100) : 100;
             resultBox.innerHTML = `
         <div class="success" style="padding: 16px; border: 1px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <strong style="color: #10b981; font-size: 15px;">✓ Borrower Identity Verified (NIBSS BVN Match 100%)</strong>
+            <strong style="color: #10b981; font-size: 15px;">✓ Borrower Identity Verified (NIBSS BVN Match ${matchScore}%)</strong>
             <span class="status-badge perf-performing">KYC Passed</span>
           </div>
           <p style="font-size: 12.5px; color: #cbd5e1; margin: 0 0 12px; line-height: 1.5;">
-            The borrower's details match government registry records. The applicant is confirmed as <strong>${escapeHtml(payload.first_name)} ${escapeHtml(payload.last_name)}</strong> (Adult, Age 49).
+            The borrower's details match government registry records. The applicant is confirmed as <strong>${escapeHtml(payload.firstName)} ${escapeHtml(payload.lastName)}</strong> (Adult, Age 49).
           </p>
           <div style="display: flex; gap: 8px;">
             <button type="button" id="btn-goto-credit-step2" class="preset-chip preset-pass" style="padding: 10px 16px; font-weight: 800; font-size: 13px;">
@@ -364,12 +379,24 @@ function bindStep1() {
             state.borrower.kycStatus = 'failed';
             saveCreditState(state);
             window.dispatchEvent(new CustomEvent('ninjacredit:state-updated', { detail: { state } }));
-            const reasonMsg = body?.reasons?.join(', ') || body?.error || 'Name or ID did not match government record';
+            let reasonMsg = 'Name or ID did not match government record';
+            if (body?.mismatches?.length) {
+                reasonMsg = `Name mismatch on fields: ${body.mismatches.join(', ')}`;
+            }
+            else if (body?.found === false) {
+                reasonMsg = `No government record was found for BVN ${payload.idNumber}`;
+            }
+            else if (body?.reasons?.length) {
+                reasonMsg = body.reasons.join(', ');
+            }
+            else if (body?.message || body?.error) {
+                reasonMsg = body.message || body.error;
+            }
             resultBox.innerHTML = `
         <div class="error" style="padding: 16px; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.08);">
           <strong style="color: #f87171; font-size: 15px; display: block; margin-bottom: 6px;">✕ Identity Verification Failed</strong>
           <p style="font-size: 12.5px; color: #cbd5e1; margin: 0; line-height: 1.5;">
-            Ninja returned <code>${escapeHtml(body?.status || 'failed')}</code> (${escapeHtml(reasonMsg)}). The loan cannot proceed without verified applicant identity.
+            Ninja returned <code>${escapeHtml(body?.recommendation || body?.status || 'failed')}</code> (${escapeHtml(reasonMsg)}). The loan cannot proceed without verified applicant identity.
           </p>
         </div>
       `;

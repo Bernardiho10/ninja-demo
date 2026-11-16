@@ -65,13 +65,24 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    const raw = req.body || {}
+    const upstreamPayload: Record<string, any> = {
+      mode: raw.mode || 'verify',
+      idType: raw.idType || raw.type || raw.id_type || 'bvn',
+      idNumber: raw.idNumber || raw.number || raw.id_number || '',
+      firstName: raw.firstName || raw.first_name || '',
+      lastName: raw.lastName || raw.last_name || '',
+    }
+    if (raw.dateOfBirth || raw.dob) upstreamPayload.dateOfBirth = raw.dateOfBirth || raw.dob
+    if (raw.phoneNumber || raw.phone) upstreamPayload.phoneNumber = raw.phoneNumber || raw.phone
+
     const upstream = await fetch(`${NINJA_API_BASE}/api/identity/identify`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${secretKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(req.body || {}),
+      body: JSON.stringify(upstreamPayload),
     })
 
     const text = await upstream.text()
