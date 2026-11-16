@@ -117,7 +117,13 @@
 }
 
 .cra-consent-box:hover {
-  border-color: rgba(56, 189, 248, 0.4);
+  border-color: rgba(56, 189, 248, 0.45);
+}
+
+.cra-consent-box:has(.cra-checkbox:checked) {
+  border-color: rgba(56, 189, 248, 0.38);
+  border-left-color: #38bdf8;
+  background: linear-gradient(135deg, rgba(10, 24, 46, 0.9) 0%, rgba(15, 23, 42, 0.75) 100%);
 }
 
 .cra-consent-checkbox-wrap {
@@ -129,11 +135,46 @@
 }
 
 .cra-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: #38bdf8;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(56, 189, 248, 0.55);
+  border-radius: 6px;
+  background-color: rgba(15, 23, 42, 0.85);
   cursor: pointer;
   margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.cra-checkbox:hover {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.cra-checkbox:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.cra-checkbox:checked {
+  background-color: #38bdf8;
+  border-color: #38bdf8;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 16 16' fill='none' stroke='%23031525' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolyline points='3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 14px 14px;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+.cra-checkbox:active {
+  transform: scale(0.92);
 }
 
 .cra-consent-content {
