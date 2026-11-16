@@ -1,63 +1,57 @@
 # Ninja Demo
 
-An interactive demo of [Ninja](https://ninja.ng/)'s identity APIs, built around a fictional betting app called **ninja-bet**.
+Interactive developer demonstrations of [Ninja](https://ninja.ng/)'s identity and credit APIs.
 
-You walk through what a real player does: sign up, add a bank account, withdraw winnings. At each step you see the exact Ninja API call behind it, in cURL, JavaScript, Python, Go and Rust. The point is simple: show a developer how Ninja fits into their product, using real requests and real responses.
+The repo includes two interactive industry journeys that developers can test and inspect side-by-side:
+
+1. **ninja-bet** (`/`): Sportsbook & gaming onboarding, mule-account BVN matching, and biometric payout authorization.
+2. **ninja-credit** (`/credit.html`): Digital lending & BNPL onboarding, instant credit bureau check & scoring (`/api/credit/check`), deep bureau loan history audit (`/api/credit/history`), and disbursement.
+
+Every step executes a **real API call against the Ninja sandbox**. At each step you inspect the exact request and response payloads, plus runnable code in cURL, JavaScript, Python, Go and Rust.
 
 ---
 
-## What it does
+## 1. Credit Company & Lending Demo (`ninja-credit`)
+
+Built around a digital lending platform to show lenders how Ninja catches bad debts *before* money is disbursed.
+
+| Step | Lender action | Ninja feature | API call |
+|---|---|---|---|
+| 1 · Borrower KYC | Enters name, BVN, phone, DOB, loan ask & statutory consent | BVN verify & identify against official registry | `POST /api/identity/identify` |
+| 2 · Credit Check | Runs instant bureau score & risk recommendation | 300–850 bureau score, recommendation (`approve`, `review`, `deny`), reason codes, eligible credit vs requested | `POST /api/credit/check` |
+| 3 · Underwrite & Disburse | Audits full loan history & executes disbursement | Full bureau profile, address history, lender-by-lender accounts, month-by-month repayment matrix, disbursement | `POST /api/credit/history` |
+
+### What the Credit Check returns
+
+- **A Score:** Computed on the 300 to 850 scale with color bands: Excellent (720–850), Good (650–719), Fair (580–649), Poor (300–579).
+- **A Recommendation:** `approve`, `review`, or `deny`.
+  - `approve`: Clean record, no open non-performing loans, requested amount is within eligible credit.
+  - `deny`: Score in poor band, or an open loan classed as non-performing/lost. Always blocks disbursement.
+  - `review`: Fair band, thin file / no history, or loan request exceeds eligible credit (`amount_above_eligible`).
+- **Reason Codes:** `clean_record`, `open_non_performing_loan`, `past_non_performing_loan`, `missed_repayments`, `amount_above_eligible`, `no_credit_history`.
+- **Loan Book in Numbers:** Reporting institutions, total loans, open vs closed, performing vs non-performing, missed repayments, total credit value, highest credit, open outstanding balance, and eligible loan capacity.
+
+### Sandbox Test BVNs
+
+| BVN | Result | Behavior |
+|---|---|---|
+| `77777777777` | `found` | Prime borrower (James Bond): 3 loans all performing, 2 repaid. Score 690 (`good`), `approve`, ₦1.8m eligible limit. If requested loan > ₦1.8m (e.g. ₦2.5m), triggers `amount_above_eligible` and becomes `review`. |
+| `33333333333` | `found` | Defaulter: open loan classed as lost with 3 missed repayments beside 1 repaid loan. Score 415 (`poor`), `deny`. |
+| `44444444444` | `no_history` | Thin file: known to bureaus with zero prior loan accounts. Score `null`, `review` (`no_credit_history`). |
+| `55555555555` | `not_found` | No bureau record. |
+| `00000000000` | Simulated failure | Simulates 503 upstream bureau outage. |
+
+---
+
+## 2. Sports Betting Demo (`ninja-bet`)
+
+Built around a fictional sports betting platform to show operators how to block underage signups, prevent mule accounts, and authorize payouts with biometrics.
 
 | Step | Player action | Ninja feature | API call |
 |---|---|---|---|
-| 1 · Sign up | Enters name, NIN, date of birth | NIN verify against the government record | `POST /api/identity/identify` |
+| 1 · Sign up | Enters name, NIN, date of birth | NIN verify against the government record + 18+ check | `POST /api/identity/identify` |
 | 2 · Bank account | Adds a bank account + BVN | BVN ownership check against the Step 1 player | `POST /api/identity/identify` |
 | 3 · Withdraw | Must pass a face check before payout | **Flows**: create a flow, mint a hosted verification link, get the result | `POST /api/flows`, `POST /api/flows/:id/links`, `GET /api/verifications/:id` |
-
-Every step hits the **real Ninja sandbox**. Nothing is mocked. Mismatches, unknown IDs and failed face checks come straight from Ninja, and the page explains each one in plain language. The only local rule is the 18+ age check, which is the betting app's own policy, so it runs before calling Ninja.
-
-Sandbox test data: NIN / BVN `77777777777` belongs to **James Bond, 1975-01-01**. The one-click presets on each step use it, plus mismatches.
-
-In Step 3 you get a real link you can open on your phone. Do the face check, and the page shows:
-
-- **Passed**, **Incomplete** or **Failed**, with match, face and liveness scores and a per-field match table
-- **Why** it didn't pass, in plain language
-- **The webhook Ninja sent** (`verification.completed`): delivery ID, signature, and the full JSON payload
-
-### The payout rule
-
-The point of Step 3 is a real face check, so a player is only confirmed, and the payout only unlocks, when **all** of these are true:
-
-1. Ninja's outcome is `verified`
-2. Ninja returned a **face match score** and it meets the flow's face threshold
-3. Ninja returned a **liveness score** and it meets the flow's liveness threshold
-
-| Result | When | Payout |
-|---|---|---|
-| ✓ Passed | all three hold | unlocked |
-| ⚠ Incomplete | Ninja says verified, but a score is missing | blocked, with **Start a new verification** |
-| ✕ Failed | a score is below the threshold, or Ninja didn't verify | blocked, with the reasons |
-
-Only `GET /verifications/:id` decides, because it's the source that carries both scores. The webhook is shown and logged but can't unlock a payout (it doesn't include `liveness_score`).
-
-**Thresholds:** Pre-filled and Blank Form use 85% face / 85% liveness. **Custom** lets you set both (50–100) on the page. They're sent to Ninja when the flow is created and stored with it, and a verification is always judged against the flow that produced it. Change the Custom values after its flow exists and the page asks you to create a new flow.
-
-The page works on phones too (tested at 390px). When the player finishes on Ninja's hosted page, Ninja sends them back to this site (`redirect_url` is the page's own address) with `?vs_id=…&status=…`, and the app opens Step 3 with that result.
-
-Every call is recorded in the API log on the right, with request, response, status and timing.
-
----
-
-## Built with HAM
-
-The frontend is built with **[HAM (HTML As Modules)](https://github.com/bougroup/ham)**, our small HTML compiler and dev proxy. Check it out there.
-
-HAM does two jobs here:
-
-- **`ham build`** compiles `src/*.html` with its layout (`.lhtml`) and partials (`.phtml`) into plain HTML in `public/`.
-- **`ham proxy`** serves `public/` on `:8082` and forwards every `/api/*` request to a backend, stripping the `/api/` prefix on the way.
-
-You need `ham` on your `PATH` to build or run the project.
 
 ---
 
@@ -69,14 +63,14 @@ cp .env.example .env     # add your Ninja sandbox key + a webhook.site URL
 npm run dev              # build + backend + ham proxy
 ```
 
-Open **http://localhost:8082**. Ctrl+C stops everything.
+Open **http://localhost:8082** (Sportsbook) or **http://localhost:8082/credit.html** (Credit & Lending).
 
 | Command | What it does |
 |---|---|
 | `npm run dev` | Builds, starts the Node backend on `:8080` and `ham proxy` on `:8082` |
 | `npm run dev -- python` | Same, with another backend: `python`, `go`, `rust` or `php` |
 | `npm run build` | `ham build && rollup -c`, outputs the site to `public/` |
-| `npm run serve` | Static preview on `:5671`. No backend, so Step 3 won't work |
+| `npm run serve` | Static preview on `:5671` |
 
 Port 8080 taken by something else? Use another one:
 
@@ -89,7 +83,7 @@ $env:API_PORT=8090; npm run dev      # PowerShell
 
 | Variable | What it's for |
 |---|---|
-| `NINJA_API_BASE` | Ninja API base URL (defaults to the sandbox) |
+| `NINJA_API_BASE` | Ninja API base URL (defaults to `https://api.sandbox.ninja.boucloud.io`) |
 | `NINJA_SANDBOX_SECRET_KEY` | Your `sk_sandbox_…` key. Server-side only, never sent to the browser |
 | `NINJA_WEBHOOK_URL` | Your [webhook.site](https://webhook.site) inbox URL. Set on every flow the backend creates |
 
@@ -97,41 +91,19 @@ $env:API_PORT=8090; npm run dev      # PowerShell
 
 ---
 
-## How it works
-
-The page is static, but every Ninja call goes through a small backend, for two reasons:
-
-1. **The secret key.** Every Ninja call needs `NINJA_SANDBOX_SECRET_KEY`. Anything shipped to a browser is public, so the key has to live on a server.
-2. **The webhook.** When a verification finishes, Ninja POSTs `verification.completed` to a public URL. A browser can't receive that, and neither can a backend on `localhost`.
-
-```
-Browser ──/api/*──▶ ham proxy :8082 ──▶ backend :8080 ──(Bearer sk_…)──▶ Ninja sandbox
-                         │                    │                              │
-                         └─ serves public/    │                              │ verification.completed
-                                              │                              ▼
-                                              └──── reads it back ────── webhook.site inbox
-```
-
-The page polls two routes every few seconds. Whichever answers first decides pass or fail:
-
-- `GET /api/verifications/:id` gets the session status from Ninja
-- `GET /api/webhook-events?verification_id=…` gets the webhook delivery, read back from webhook.site
-
-In production you'd point `NINJA_WEBHOOK_URL` at your own public server, verify the `X-Ninja-Signature` HMAC, and store the event. webhook.site stands in for that so the demo runs on a laptop.
-
----
-
 ## Backends
 
-Every backend implements the same 5 routes, reads the same `.env`, and needs no framework. Pick the one that matches your stack, or read them side by side.
+Every backend implements the same 7 routes, reads the same `.env`, and needs no framework:
 
 | Route | What it does |
 |---|---|
-| `POST /identity/identify` | Steps 1–2: verifies a NIN or BVN against the player's details |
-| `POST /flows` | Creates a flow. Sets `webhook_url` from `NINJA_WEBHOOK_URL` |
+| `POST /identity/identify` | Verifies a NIN or BVN against borrower/player details |
+| `POST /credit/check` | Instant credit check: score (300–850), recommendation, reasons, loan summary |
+| `POST /credit/history` | Deep bureau history: full profile, address history, loan accounts & schedules |
+| `POST /flows` | Creates a hosted KYC flow |
 | `POST /flows/:flowId/links` | Mints a single-use hosted verification link |
-| `GET /verifications/:id` | Returns the session status and outcome |
-| `GET /webhook-events?verification_id=…` | Returns the webhook deliveries for that verification |
+| `GET /verifications/:id` | Returns the session status and biometric outcome |
+| `GET /webhook-events?verification_id=…` | Returns webhook deliveries for that verification from webhook.site |
 
 | Language | File | Dependencies |
 |---|---|---|
@@ -141,21 +113,15 @@ Every backend implements the same 5 routes, reads the same `.env`, and needs no 
 | Rust | `backends/rust/src/main.rs` | `tiny_http`, `ureq`, `serde_json` |
 | PHP | `backends/php/server.php` | `curl` + `openssl` extensions |
 
-**PHP on Windows:** a fresh install has these extensions turned off. `npm run dev -- php` turns them on for you. To run it by hand:
-
-```bash
-php -d extension_dir=ext -d extension=curl -d extension=openssl -S 0.0.0.0:8080 backends/php/server.php
-```
-
 ---
 
 ## Deploying
 
-The site deploys to Vercel. Vercel can't run `ham` (it's a Go binary), so the built site is committed and Vercel just serves it:
+The site deploys to Vercel:
 
 1. `npm run build` locally
 2. Commit `public/` together with your source changes
-3. Push. Vercel serves `public/` and runs the same 5 routes as functions from `api/`
+3. Push. Vercel serves `public/` as static files and runs the 7 routes as serverless functions from `api/`
 
 Set `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL` in the Vercel project settings.
 
@@ -166,48 +132,47 @@ Set `NINJA_API_BASE`, `NINJA_SANDBOX_SECRET_KEY` and `NINJA_WEBHOOK_URL` in the 
 ```text
 ninja-demo/
 ├── src/                        # Frontend source (compiled by HAM + Rollup)
-│   ├── index.html              # The 3-step walkthrough page
-│   ├── index.ts                # Step logic, real Ninja calls, verification result, API log
-│   ├── index.css               # Page styles
-│   ├── shared.css              # Design system: colours, components, dark theme
-│   ├── default.lhtml           # HAM layout: page shell, fonts, shared partials
-│   ├── nav.phtml               # HAM partial: top bar with progress stepper
-│   ├── nav.ts                  # Keeps the nav in sync with the current step
-│   ├── logo.phtml              # HAM partial: brand logo
-│   ├── assets/images/          # Logos
+│   ├── index.html              # Sportsbook demo page (ninja-bet)
+│   ├── index.ts                # Sportsbook logic & telemetry
+│   ├── index.css               # Sportsbook page styles
+│   ├── credit.html             # Credit & lending demo page (ninja-credit)
+│   ├── credit.ts               # Credit check, scoring & underwriting logic
+│   ├── credit.css              # Credit score gauge, metrics, account timeline styles
+│   ├── shared.css              # Design system: colours, navbar, dark theme, telemetry
+│   ├── default.lhtml           # Sportsbook HAM layout shell
+│   ├── credit.lhtml            # Credit demo HAM layout shell
+│   ├── nav.phtml               # Sportsbook navigation partial with mode switcher
+│   ├── credit-nav.phtml        # Credit demo navigation partial with mode switcher
+│   ├── nav.ts                  # Sportsbook nav state controller
+│   ├── credit-nav.ts           # Credit nav state controller
+│   ├── assets/images/          # Logos & visual assets
 │   └── lib/
-│       ├── linkScenarios.ts    # Step 3 flow + link payloads and code snippets
-│       ├── codeModal.ts        # "See the request first" drawer (cURL/JS/Python/Go/Rust)
-│       └── state.ts            # Demo state, saved in sessionStorage
+│       ├── creditState.ts      # Credit demo state machine & sessionStorage
+│       ├── creditSandbox.ts    # Official sandbox test fixtures & fallbacks
+│       ├── state.ts            # Sportsbook demo state machine
+│       ├── linkScenarios.ts    # Sportsbook Flow + link payloads
+│       └── codeModal.ts        # Pre-flight code drawer
 │
-├── backends/                   # Local API servers, same 5 routes, pick one
+├── backends/                   # Local reference API servers (7 routes each)
 │   ├── node/server.mjs
 │   ├── python/server.py
 │   ├── go/main.go
 │   ├── rust/src/main.rs
 │   └── php/server.php
 │
-├── api/                        # The same routes as Vercel functions (production)
+├── api/                        # The same routes as Vercel serverless functions
 │   ├── identity/identify.ts
+│   ├── credit/check.ts
+│   ├── credit/history.ts
 │   ├── flows.ts
 │   ├── flows/[flowId]/links.ts
 │   ├── verifications/[id].ts
 │   ├── webhook-events.ts
-│   └── tsconfig.json           # Adds Node's types for the functions only
+│   └── tsconfig.json
 │
 ├── scripts/dev.mjs             # `npm run dev`: starts one backend + ham proxy
-├── public/                     # Build output, committed so Vercel can serve it
+├── public/                     # Compiled production build output (committed for Vercel)
 ├── ham.json                    # HAM config
-├── rollup.config.js            # Bundles src/*.ts into public/assets/js/
-├── tsconfig.json
-├── vercel.json                 # Vercel: skip the build, serve public/
-├── .env.example                # Copy to .env
-└── CNAME                       # Custom domain (demo.ninja.ng)
+├── rollup.config.js            # TypeScript & asset bundler
+└── vercel.json                 # Vercel configuration
 ```
-
----
-
-## Notes
-
-- **Webhook not showing up?** Check that `NINJA_WEBHOOK_URL` in `.env` is the inbox you're watching. Flows created before the backend set `webhook_url` still deliver to their old URL, so hit **Reset** to create a fresh one.
-- **`npx run dev` doesn't work.** It's `npm run dev`.

@@ -58,8 +58,17 @@ async function readBody(req) {
 
 // Forwards a request to the real Ninja sandbox API with the secret key
 // attached, then relays its exact status and body back to the caller.
+// If NINJA_SANDBOX_SECRET_KEY is omitted, it serves official sandbox fixtures
+// so the demo works smoothly out of the box.
 async function proxyToNinja(res, method, upstreamPath, body) {
   if (!SECRET_KEY) {
+    const mock = getSandboxMock(upstreamPath, body)
+    if (mock) {
+      res.writeHead(mock.status, { 'Content-Type': 'application/json' })
+      res.end(JSON.stringify(mock.body))
+      return
+    }
+
     res.writeHead(500, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'NINJA_SANDBOX_SECRET_KEY is not set' }))
     return
@@ -81,6 +90,259 @@ async function proxyToNinja(res, method, upstreamPath, body) {
     res.writeHead(502, { 'Content-Type': 'application/json' })
     res.end(JSON.stringify({ error: 'upstream request to Ninja sandbox failed', detail: String(err?.message || err) }))
   }
+}
+
+// Built-in official sandbox fixtures matching backend/service/credit/credit_sandbox.go
+function getSandboxMock(upstreamPath, body) {
+  if (upstreamPath === '/api/identity/identify') {
+    const bvnOrNin = String(body.number || body.idNumber || body.id_number || '')
+    const fname = String(body.first_name || body.firstName || '').toLowerCase()
+    const lname = String(body.last_name || body.lastName || '').toLowerCase()
+
+    if (bvnOrNin === '77777777777' && fname.includes('james') && lname.includes('bond')) {
+      return {
+        status: 200,
+        body: {
+          status: 'verified',
+          verified: true,
+          score: 1.0,
+          data: { first_name: 'JAMES', last_name: 'BOND', dob: '1975-01-01', age: 49 },
+          matches: { first_name: 100, last_name: 100, dob: 100 },
+          id_type: body.type || body.idType || 'bvn',
+          number: bvnOrNin,
+        },
+      }
+    }
+    if (bvnOrNin === '77777777777') {
+      return {
+        status: 200,
+        body: {
+          status: 'failed',
+          verified: false,
+          score: 0.2,
+          reasons: ['name_mismatch'],
+          fields: [{ field: 'first_name', match: 'mismatch', provided: body.firstName || body.first_name, score: 0 }],
+          id_type: body.type || body.idType || 'bvn',
+          number: bvnOrNin,
+        },
+      }
+    }
+    if (bvnOrNin === '55555555555') {
+      return {
+        status: 200,
+        body: { status: 'not_found', verified: false, found: false, reasons: ['id_not_found'], number: bvnOrNin },
+      }
+    }
+    if (bvnOrNin === '00000000000') {
+      return {
+        status: 503,
+        body: { error: 'upstream registry service unavailable', code: 'service_unavailable' },
+      }
+    }
+    return {
+      status: 200,
+      body: {
+        status: 'verified',
+        verified: true,
+        score: 1.0,
+        data: {
+          first_name: (body.first_name || body.firstName || 'JAMES').toUpperCase(),
+          last_name: (body.last_name || body.lastName || 'BOND').toUpperCase(),
+          dob: body.dob || body.dateOfBirth || '1975-01-01',
+          age: 49,
+        },
+        matches: { first_name: 100, last_name: 100, dob: 100 },
+        number: bvnOrNin,
+      },
+    }
+  }
+
+  if (upstreamPath === '/api/credit/check') {
+    const bvn = String(body.bvn || '')
+    const loanKobo = Number(body.loan_amount) || 50000000
+    if (bvn === '00000000000') {
+      return { status: 503, body: { error: 'upstream credit bureau service unavailable', code: 'service_unavailable' } }
+    }
+    if (bvn === '55555555555') {
+      return { status: 404, body: { error: 'borrower not found in credit bureau registry', code: 'not_found' } }
+    }
+    if (bvn === '33333333333') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          data: {
+            score: 480,
+            band: 'poor',
+            recommendation: 'deny',
+            reasons: ['open_non_performing_loan', 'missed_repayments'],
+            eligible_amount: 0,
+            summary: {
+              institutions: 2,
+              total_loans: 3,
+              open_loans: 1,
+              closed_loans: 2,
+              performing_loans: 2,
+              non_performing_loans: 1,
+              open_non_performing_loans: 1,
+              missed_repayments: 3,
+              total_credit_value: 120000000,
+              highest_credit: 60000000,
+              open_credit_value: 45000000,
+            },
+          },
+        },
+      }
+    }
+    if (bvn === '44444444444') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          data: {
+            score: null,
+            band: null,
+            recommendation: 'review',
+            reasons: ['no_credit_history'],
+            eligible_amount: 0,
+            summary: {
+              institutions: 0,
+              total_loans: 0,
+              open_loans: 0,
+              closed_loans: 0,
+              performing_loans: 0,
+              non_performing_loans: 0,
+              open_non_performing_loans: 0,
+              missed_repayments: 0,
+              total_credit_value: 0,
+              highest_credit: 0,
+              open_credit_value: 0,
+            },
+          },
+        },
+      }
+    }
+    const isOverLimit = loanKobo > 180000000
+    return {
+      status: 200,
+      body: {
+        status: 'success',
+        data: {
+          score: 690,
+          band: 'good',
+          recommendation: isOverLimit ? 'review' : 'approve',
+          reasons: isOverLimit ? ['amount_above_eligible'] : ['clean_record'],
+          eligible_amount: 180000000,
+          summary: {
+            institutions: 3,
+            total_loans: 3,
+            open_loans: 1,
+            closed_loans: 2,
+            performing_loans: 3,
+            non_performing_loans: 0,
+            open_non_performing_loans: 0,
+            missed_repayments: 0,
+            total_credit_value: 230000000,
+            highest_credit: 120000000,
+            open_credit_value: 35000000,
+          },
+        },
+      },
+    }
+  }
+
+  if (upstreamPath === '/api/credit/history') {
+    const bvn = String(body.bvn || '')
+    if (bvn === '00000000000') {
+      return { status: 503, body: { error: 'upstream credit bureau service unavailable' } }
+    }
+    if (bvn === '55555555555') {
+      return { status: 404, body: { error: 'borrower not found in credit bureau registry' } }
+    }
+    const checkResult = getSandboxMock('/api/credit/check', body).body.data
+    return {
+      status: 200,
+      body: {
+        status: 'success',
+        data: {
+          ...checkResult,
+          profile: {
+            full_name: 'JAMES BOND',
+            gender: 'male',
+            address_history: [
+              { address: '1 Demo Close, Wuse II, Abuja, FCT', type: 'Residential', date_reported: '2024-03-18' },
+              { address: '14 Marina, Lagos Island, Lagos', type: 'Previous Residential', date_reported: '2022-07-10' },
+            ],
+            identifications: [{ type: 'BVN', number: bvn || '77777777777' }],
+          },
+          accounts: bvn === '44444444444' ? [] : [
+            {
+              institution: 'Access Bank PLC',
+              loans: [
+                {
+                  account_number: 'acc_01h8x9j2k3m4n5p6q7r8s9t0',
+                  status: 'open',
+                  performance: bvn === '33333333333' ? 'lost' : 'performing',
+                  opening_balance: 120000000,
+                  repayment_amount: 11500000,
+                  tenor: 12,
+                  repayment_frequency: 'monthly',
+                  date_opened: '2023-08-15',
+                  repayment_schedule: [
+                    { period: '2024-01', status: 'paid' },
+                    { period: '2024-02', status: 'paid' },
+                    { period: '2024-03', status: bvn === '33333333333' ? 'missed' : 'paid' },
+                    { period: '2024-04', status: bvn === '33333333333' ? 'missed' : 'pending' },
+                  ],
+                },
+              ],
+            },
+            {
+              institution: 'FairMoney MFB',
+              loans: [
+                {
+                  account_number: 'acc_01h8x9j2k3m4n5p6q7r8s9t1',
+                  status: 'closed',
+                  performance: 'performing',
+                  opening_balance: 60000000,
+                  repayment_amount: 12000000,
+                  tenor: 6,
+                  repayment_frequency: 'monthly',
+                  date_opened: '2022-11-10',
+                  repayment_schedule: [
+                    { period: '2022-12', status: 'paid' },
+                    { period: '2023-01', status: 'paid' },
+                    { period: '2023-02', status: 'paid' },
+                  ],
+                },
+              ],
+            },
+            {
+              institution: 'Carbon Finance',
+              loans: [
+                {
+                  account_number: 'acc_01h8x9j2k3m4n5p6q7r8s9t2',
+                  status: 'closed',
+                  performance: 'performing',
+                  opening_balance: 50000000,
+                  repayment_amount: 10000000,
+                  tenor: 6,
+                  repayment_frequency: 'monthly',
+                  date_opened: '2021-06-01',
+                  repayment_schedule: [
+                    { period: '2021-07', status: 'paid' },
+                    { period: '2021-08', status: 'paid' },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      },
+    }
+  }
+
+  return null
 }
 
 // Ninja delivers webhooks to a public URL, which a localhost backend can't be.
@@ -132,6 +394,14 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'POST' && url.pathname === '/identity/identify') {
     return proxyToNinja(res, 'POST', '/api/identity/identify', await readBody(req))
+  }
+
+  if (req.method === 'POST' && url.pathname === '/credit/check') {
+    return proxyToNinja(res, 'POST', '/api/credit/check', await readBody(req))
+  }
+
+  if (req.method === 'POST' && url.pathname === '/credit/history') {
+    return proxyToNinja(res, 'POST', '/api/credit/history', await readBody(req))
   }
 
   if (req.method === 'POST' && url.pathname === '/flows') {

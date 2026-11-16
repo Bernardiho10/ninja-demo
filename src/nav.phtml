@@ -1,7 +1,7 @@
 <nav class="navbar-top">
  <div class="navbar-inner">
   <div class="nav-brand-group">
-    <a href="#" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
+    <a href="/" class="brand-link" id="brand-home-link" title="Ninja Identity API Demos">
       <span class="brand-logo-plate">
         <img src="./assets/images/ninja-bet-logo-dark.png" alt="ninja-bet" class="ninja-logo-img" width="297" height="165" onerror="this.style.display='none'; document.getElementById('brand-fallback').style.display='inline-flex';" />
       </span>
@@ -9,11 +9,18 @@
         <span style="color:#10b981;">NINJA</span>·DEMO
       </span>
     </a>
-    <span class="nav-env-badge">
-      <span class="live-dot-pulse"></span>
-      <span>Ninja Sandbox</span>
-    </span>
 
+    <!-- Demo Mode Switcher -->
+    <div class="demo-mode-switcher">
+      <a href="/" class="demo-mode-tab active" title="Sports Betting Identity &amp; Payouts Demo">
+        <i class="ph-bold ph-game-controller"></i>
+        <span>Sportsbook</span>
+      </a>
+      <a href="/credit.html" class="demo-mode-tab credit-tab" title="Digital Lending &amp; Credit Bureau Checks Demo">
+        <i class="ph-bold ph-bank"></i>
+        <span>Credit &amp; Lending</span>
+      </a>
+    </div>
   </div>
 
   <!-- 3 Simple Steps (Visible on Sportsbook mode) -->
@@ -35,11 +42,6 @@
   </div>
 
   <div class="nav-actions-group">
-    <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20I%20need%20help%20with%20using%20Ninja" target="_blank" class="nav-item support-btn support-whatsapp">
-      <i class="ph-bold ph-whatsapp-logo"></i>
-      <span>WhatsApp Support</span>
-    </a>
-
     <div class="player-identity-card" id="nav-player-pill">
       <div class="player-avatar-icon">👤</div>
       <div class="player-meta-box">
@@ -61,3 +63,14 @@
   </div>
  </div>
 </nav>
+
+<!-- Floating Draggable WhatsApp Widget -->
+<div id="ninja-floating-whatsapp" class="ninja-floating-whatsapp" role="button" tabindex="0" title="Drag to reposition · Click to chat on WhatsApp">
+  <div class="whatsapp-drag-grip" title="Drag me anywhere">
+    <span></span><span></span><span></span>
+  </div>
+  <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20I%20need%20help%20with%20using%20Ninja" target="_blank" rel="noopener noreferrer" class="whatsapp-floating-btn" id="ninja-whatsapp-link" aria-label="WhatsApp Support">
+    <i class="ph-bold ph-whatsapp-logo whatsapp-fab-icon"></i>
+    <span class="whatsapp-fab-label">WhatsApp Support</span>
+  </a>
+</div>

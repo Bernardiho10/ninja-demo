@@ -209,6 +209,14 @@ fn main() {
                 proxy_to_ninja("POST", "/api/identity/identify", Some(body))
             }
 
+            (Method::Post, "/credit/check") => {
+                proxy_to_ninja("POST", "/api/credit/check", Some(body))
+            }
+
+            (Method::Post, "/credit/history") => {
+                proxy_to_ninja("POST", "/api/credit/history", Some(body))
+            }
+
             (Method::Post, "/flows") => {
                 proxy_to_ninja("POST", "/api/flows", Some(with_webhook_url(&body)))
             }

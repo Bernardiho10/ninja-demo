@@ -1,0 +1,386 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ninja Credit Check &amp; Underwriting Demo — ninja-credit</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
+  
+<link rel="stylesheet" href="/assets/css/credit.css"/>
+</head>
+<body>
+<nav class="navbar-top">
+ <div class="navbar-inner">
+  <div class="nav-brand-group">
+    <a href="/credit.html" class="brand-link" id="brand-home-link" title="Ninja Credit &amp; Lending API Demo">
+      <span class="brand-credit-plate">
+        <span class="brand-ninja-word">NINJA</span><span class="brand-dot">·</span><span class="brand-credit-word">CREDIT</span>
+      </span>
+    </a>
+
+    <!-- Demo Mode Switcher -->
+    <div class="demo-mode-switcher">
+      <a href="/" class="demo-mode-tab" title="Sports Betting Identity &amp; Payouts Demo">
+        <i class="ph-bold ph-game-controller"></i>
+        <span>Sportsbook</span>
+      </a>
+      <a href="/credit.html" class="demo-mode-tab active credit-tab" title="Digital Lending &amp; Credit Bureau Checks Demo">
+        <i class="ph-bold ph-bank"></i>
+        <span>Credit &amp; Lending</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 3 Simple Steps for Lenders -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Borrower KYC</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step locked" data-step="2" id="step-nav-2" title="Step 1 (Borrower KYC) required">
+      <span class="step-num">2</span>
+      <span class="step-label">Credit Check</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step locked" data-step="3" id="step-nav-3" title="Step 1 and Step 2 required">
+      <span class="step-num">3</span>
+      <span class="step-label">Underwrite</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-group">
+    <div class="player-identity-card" id="nav-borrower-pill">
+      <div class="player-avatar-icon">🏛️</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" id="nav-borrower-name">Guest</span>
+          <span class="player-status-badge" id="nav-borrower-status">Unverified</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">Loan Ask:</span>
+          <strong class="balance-val" id="nav-loan-ask">₦500,000</strong>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
+      <span class="reset-icon">↺</span>
+      <span>Reset</span>
+    </button>
+  </div>
+ </div>
+</nav>
+
+<!-- Floating Draggable WhatsApp Widget -->
+<div id="ninja-floating-whatsapp" class="ninja-floating-whatsapp" role="button" tabindex="0" title="Drag to reposition · Click to chat on WhatsApp">
+  <div class="whatsapp-drag-grip" title="Drag me anywhere">
+    <span></span><span></span><span></span>
+  </div>
+  <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20I%20need%20help%20with%20using%20Ninja" target="_blank" rel="noopener noreferrer" class="whatsapp-floating-btn" id="ninja-whatsapp-link" aria-label="WhatsApp Support">
+    <i class="ph-bold ph-whatsapp-logo whatsapp-fab-icon"></i>
+    <span class="whatsapp-fab-label">WhatsApp Support</span>
+  </a>
+</div>
+
+<div class="workbench-container">
+  <div class="workbench-page-header">
+    <div class="workbench-page-title-group">
+      <h1 class="workbench-page-title">Ninja Credit Check &amp; Identity API — Interactive Integration Guide</h1>
+      <p class="workbench-page-subtitle">
+        See how digital lenders, microfinance banks, and BNPL platforms integrate Ninja to verify borrowers in real time, evaluate credit bureau records, catch bad debts before disbursement, and fund loans safely.
+        <strong>Every button executes a live API call with inspectable request &amp; response payloads.</strong>
+      </p>
+    </div>
+  </div>
+  <div class="workbench-grid">
+
+    <!-- =====================================================================
+         LEFT COLUMN: INTERACTIVE LENDING WORKBENCH
+         ===================================================================== -->
+    <div class="workbench-main">
+
+      <!-- -------------------------------------------------------------------
+           CORE LENDING &amp; UNDERWRITING JOURNEY (ninja-credit)
+           ------------------------------------------------------------------- -->
+      <div id="flow-credit">
+
+        <!-- STEP 1: BORROWER REGISTRATION &amp; BVN VERIFICATION -->
+        <div id="view-credit-step-1" class="step-card-view">
+          <div class="card step-card">
+            
+            <div class="step-header-wrap">
+              <div>
+                <span class="step-tag-label step-tag-cyan">Step 1 of 3 · Borrower Onboarding &amp; Identity Anti-Fraud</span>
+                <h2 class="step-card-title">Borrower KYC &amp; Loan Application</h2>
+              </div>
+              <span class="step-chip-pill chip-cyan">BVN Match</span>
+            </div>
+            <p class="step-card-desc">
+              Before assessing credit risk, lenders must establish certainty: is this applicant who they say they are? Ninja matches the borrower&#39;s name, BVN, phone, and date of birth directly against official records in <strong>one simple API call</strong> — blocking synthetic identities and mule accounts.
+            </p>
+
+            <!-- Quick Test Presets -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="preset-chip preset-pass" id="btn-credit-preset-prime" title="Valid adult borrower with clean identity — 100% match">
+                  ✓ Prime Borrower (James Bond · 77777777777)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-credit-preset-mismatch" title="Identity claim with mismatched name">
+                  ✗ Impersonator / Mule (Chinedu Okafor · 77777777777)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-credit-preset-notfound" title="Unregistered BVN not found in registry">
+                  ✗ Not Found (55555555555)
+                </button>
+              </div>
+            </div>
+
+            <!-- Loan Application Parameters -->
+            <div class="inset-params-box">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase;">
+                  Loan Request Parameters
+                </span>
+                <span style="font-size: 11px; color: #64748b;">James Bond bureau limit: ₦1.8m</span>
+              </div>
+              
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+                <button type="button" class="param-preset-btn" data-amount="100000" id="btn-loan-100k">₦100,000</button>
+                <button type="button" class="param-preset-btn active" data-amount="500000" id="btn-loan-500k">₦500,000</button>
+                <button type="button" class="param-preset-btn" data-amount="1500000" id="btn-loan-1-5m">₦1,500,000</button>
+                <button type="button" class="param-preset-btn" data-amount="2500000" id="btn-loan-2-5m" title="Exceeds ₦1.8m eligible limit to trigger &#39;amount_above_eligible&#39; review in Step 2!">₦2,500,000 (Exceeds Limit)</button>
+                <input type="number" id="input-loan-amount" value="500000" style="width: 130px; padding: 6px 10px; font-size: 13px; font-family: var(--font-mono); margin: 0;"/>
+              </div>
+
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label for="select-loan-purpose" style="font-size: 11px;">Loan Purpose</label>
+                  <select id="select-loan-purpose" style="font-size: 12px; padding: 7px 10px;">
+                    <option value="Business Working Capital">Business Working Capital</option>
+                    <option value="Personal Emergency">Personal Emergency Loan</option>
+                    <option value="Asset Financing / BNPL">Asset Financing / BNPL</option>
+                    <option value="Invoice Discounting">Invoice Discounting</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="select-loan-tenor" style="font-size: 11px;">Repayment Tenor</label>
+                  <select id="select-loan-tenor" style="font-size: 12px; padding: 7px 10px;">
+                    <option value="3">3 Months (Short-term)</option>
+                    <option value="6" selected="">6 Months (Standard)</option>
+                    <option value="12">12 Months (Annual)</option>
+                    <option value="24">24 Months (Capital)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Borrower KYC Form -->
+            <form id="form-credit-step-1">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label for="input-borrower-fname">First Name</label>
+                  <input id="input-borrower-fname" placeholder="e.g. James" value="" required=""/>
+                </div>
+                <div>
+                  <label for="input-borrower-lname">Surname (Last Name)</label>
+                  <input id="input-borrower-lname" placeholder="e.g. Bond" value="" required=""/>
+                </div>
+              </div>
+
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-borrower-phone">Phone Number</label>
+                  <input id="input-borrower-phone" placeholder="e.g. 08012345678" value="" required=""/>
+                </div>
+                <div>
+                  <label for="input-borrower-bvn">BVN (11 Digits)</label>
+                  <input id="input-borrower-bvn" placeholder="e.g. 77777777777" maxlength="11" value="" required=""/>
+                </div>
+              </div>
+
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-borrower-dob">Date of Birth</label>
+                  <input id="input-borrower-dob" type="date" value="" required=""/>
+                </div>
+                <div>
+                  <label for="input-credit-ref">Lender Application Reference</label>
+                  <input id="input-credit-ref" value="loan-app-1042" required=""/>
+                </div>
+              </div>
+
+              <!-- Mandatory Credit Reporting Act (CRA) Consent -->
+              <div class="cra-consent-box">
+                <div class="cra-consent-checkbox-wrap">
+                  <input type="checkbox" id="check-consent" checked="" required="" class="cra-checkbox"/>
+                </div>
+                <div class="cra-consent-content">
+                  <div class="cra-consent-badge-row">
+                    <span class="cra-consent-tag">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                      Mandatory Regulatory Consent
+                    </span>
+                    <span class="cra-act-cite">Credit Reporting Act (CRA) · Section 15</span>
+                  </div>
+                  <label for="check-consent" class="cra-consent-label">
+                    <strong>Credit Reporting Act Consent:</strong> The borrower formally consents to a credit enquiry with licensed credit bureaus for underwriting this loan application.
+                  </label>
+                  <span class="cra-consent-sub">Enquiry authorization timestamps and regulatory audit trail records are transmitted directly to bureau gateways.</span>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-credit-step1" class="btn-submit-kyc">
+                <span style="font-size: 16px;">🛡️</span>
+                <span>Verify Borrower Identity &amp; Proceed to Credit Check</span>
+                <span style="font-size: 16px;">→</span>
+              </button>
+            </form>
+
+            <!-- Step 1 Result Banner -->
+            <div id="credit-step1-result" style="margin-top: 18px;" hidden=""></div>
+
+          </div>
+        </div>
+
+        <!-- STEP 2: INSTANT BUREAU CREDIT CHECK &amp; SCORING -->
+        <div id="view-credit-step-2" class="step-card-view" hidden="">
+          <div class="card step-card">
+            
+            <div class="step-header-wrap">
+              <div>
+                <span class="step-tag-label step-tag-emerald">Step 2 of 3 · Bureau Risk Scoring &amp; Decisioning</span>
+                <h2 class="step-card-title">Bureau Credit Check &amp; Risk Scoring</h2>
+              </div>
+              <span class="step-chip-pill chip-emerald">₦700 · Bureau Check</span>
+            </div>
+            <p class="step-card-desc">
+              Send the borrower&#39;s BVN and the requested loan amount. Ninja computes a score on the 300 to 850 scale from licensed credit bureaus, returns an instant decision (<code>approve</code>, <code>review</code>, or <code>deny</code>) with machine-readable reason codes, and aggregates the loan book in numbers.
+            </p>
+
+            <!-- 1-Click Sandbox Credit Scenarios -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">Test Bureau Scenarios (Official Sandbox Fixtures):</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="preset-chip preset-pass active" id="btn-credit-clean" title="3 loans, performing, 2 repaid. Score 690, Approve.">
+                  ✓ Prime Record (77777777777 · Approve)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-credit-default" title="Open loan classed as lost, 3 missed repayments. Deny.">
+                  ✗ Defaulter (33333333333 · Deny)
+                </button>
+                <button type="button" class="preset-chip preset-warn" id="btn-credit-thin" title="First-time borrower, zero loan accounts on record. Review.">
+                  ⚠ Thin File (44444444444 · Review)
+                </button>
+                <button type="button" class="preset-chip preset-warn" id="btn-credit-over" title="Loan request above ₦1.8m eligible limit. Turns approve into review!">
+                  ⚠ ₦2.5m Over-Limit (Amount Above Eligible)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-credit-error" title="Simulated 503 upstream bureau failure">
+                  ✗ Upstream Timeout (00000000000)
+                </button>
+              </div>
+            </div>
+
+            <!-- Pre-Flight Request Preview Box -->
+            <div class="withdrawal-summary-box" style="margin-bottom: 20px;">
+              <div>
+                <span class="withdrawal-summary-label">Target Borrower:</span>
+                <strong class="withdrawal-summary-value" id="c2-borrower-summary">James Bond · BVN: 77777777777</strong>
+              </div>
+              <div style="text-align: right;">
+                <span class="withdrawal-summary-label">Requested Loan:</span>
+                <strong class="withdrawal-amount" id="c2-amount-summary" style="color: #38bdf8;">₦500,000</strong>
+              </div>
+            </div>
+
+            <button type="button" id="btn-run-credit-check" class="btn-submit-credit-check">
+              <span style="font-size: 16px;">⚡</span>
+              <span>Execute Credit Check (POST /api/credit/check)</span>
+              <span style="font-size: 16px;">→</span>
+            </button>
+
+            <!-- Step 2 Results Container -->
+            <div id="credit-step2-result" style="margin-top: 20px;" hidden=""></div>
+
+          </div>
+        </div>
+
+        <!-- STEP 3: DEEP BUREAU HISTORY &amp; LOAN DISBURSEMENT -->
+        <div id="view-credit-step-3" class="step-card-view" hidden="">
+          <div class="card step-card">
+            
+            <div class="step-header-wrap">
+              <div>
+                <span class="step-tag-label step-tag-purple">Step 3 of 3 · Underwriting Audit &amp; Disbursement</span>
+                <h2 class="step-card-title">Deep Bureau History &amp; Loan Disbursement</h2>
+              </div>
+              <span class="step-chip-pill chip-purple">₦1,000 · Full History</span>
+            </div>
+            <p class="step-card-desc">
+              Underwriting committees, collections teams, and credit limits need the complete picture. Ninja&#39;s history endpoint returns everything from the check plus the registered bureau profile, address history, and every single loan account on record lender-by-lender with month-by-month repayment schedules.
+            </p>
+
+            <button type="button" id="btn-pull-credit-history" class="btn-submit-credit-history">
+              <span style="font-size: 16px;">📋</span>
+              <span>Pull Complete Bureau History (POST /api/credit/history)</span>
+              <span style="font-size: 16px;">→</span>
+            </button>
+
+            <!-- Deep History Breakdown Container -->
+            <div id="credit-step3-history-container" style="margin-top: 20px;" hidden=""></div>
+
+            <!-- Underwriting &amp; Disbursement Console -->
+            <div id="credit-step3-disbursement-box" style="margin-top: 24px;" hidden=""></div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         RIGHT COLUMN: TELEMETRY WORKBENCH &amp; API LOGS
+         ===================================================================== -->
+    <div class="workbench-sidebar">
+
+      <!-- Collapsible API Call &amp; Response Log -->
+      <div class="card" style="padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(18, 26, 41, 0.7); backdrop-filter: blur(12px); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="font-size: 14px;">📡</span>
+            <span style="font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">API Call &amp; Response Log</span>
+          </div>
+          <button type="button" class="btn-log-clear" id="btn-credit-clear-logs" title="Clear the API log">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+            <span>Clear</span>
+          </button>
+        </div>
+        <p style="font-size: 11.5px; color: #64748b; margin: 0 0 12px; line-height: 1.45;">
+          Click any entry below to inspect both full <strong>Request</strong> and <strong>Response</strong> payloads, copy code snippets in all major languages (cURL, JS, Python, Go, Rust), and inspect replies.
+        </p>
+
+        <div id="credit-call-log-list" style="display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+          <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 24px;" id="credit-empty-logs-label">
+            No API calls made yet. Click any button on the left to trigger a live call.
+          </div>
+        </div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="card feedback-card">
+        <div class="feedback-title">💬 Feedback</div>
+        <p class="feedback-text">Building a lending product or credit integration? Share feedback with the BOU team on GitHub.</p>
+        <a class="feedback-link" href="https://github.com/bougroup/ninja-demo/issues" target="_blank" rel="noopener noreferrer">Share feedback on GitHub ↗</a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="./assets/js/credit-nav.js"></script>
+<script type="module" src="/assets/js/credit.js"></script>
+
+
+</body></html>

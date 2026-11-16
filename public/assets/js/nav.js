@@ -1,4 +1,5 @@
 import { loadState, isStep1Complete, canAccessStep, isStep2Complete, resetDemoState } from './lib/state.js';
+import { initFloatingWhatsapp } from './lib/floatingWhatsapp.js';
 
 function updateNavFromState(state) {
     const current = state || loadState();
@@ -61,6 +62,7 @@ function updateNavFromState(state) {
 }
 function initNav() {
     updateNavFromState();
+    initFloatingWhatsapp();
     [1, 2, 3].forEach((step) => {
         const btn = document.getElementById(`step-nav-${step}`);
         btn?.addEventListener('click', () => {

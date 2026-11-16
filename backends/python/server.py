@@ -58,6 +58,11 @@ VERIFICATIONS_RE = re.compile(r"^/verifications/([^/]+)$")
 
 def proxy_to_ninja(handler, method, upstream_path, body=None):
     if not SECRET_KEY:
+        mock = get_sandbox_mock(upstream_path, body)
+        if mock:
+            status, res_body = mock
+            send_json(handler, status, res_body)
+            return
         send_json(handler, 500, {"error": "NINJA_SANDBOX_SECRET_KEY is not set"})
         return
 
@@ -80,6 +85,193 @@ def proxy_to_ninja(handler, method, upstream_path, body=None):
         send_raw(handler, e.code, e.read())
     except Exception as e:  # noqa: BLE001 -- surfaced to the caller as JSON
         send_json(handler, 502, {"error": "upstream request to Ninja sandbox failed", "detail": str(e)})
+
+
+def get_sandbox_mock(upstream_path, body):
+    body = body or {}
+    if upstream_path == "/api/identity/identify":
+        bvn_or_nin = str(body.get("number") or body.get("idNumber") or body.get("id_number") or "")
+        fname = str(body.get("first_name") or body.get("firstName") or "").lower()
+        lname = str(body.get("last_name") or body.get("lastName") or "").lower()
+        if bvn_or_nin == "77777777777" and "james" in fname and "bond" in lname:
+            return 200, {
+                "status": "verified",
+                "verified": True,
+                "score": 1.0,
+                "data": {"first_name": "JAMES", "last_name": "BOND", "dob": "1975-01-01", "age": 49},
+                "matches": {"first_name": 100, "last_name": 100, "dob": 100},
+                "number": bvn_or_nin,
+            }
+        if bvn_or_nin == "77777777777":
+            return 200, {
+                "status": "failed",
+                "verified": False,
+                "score": 0.2,
+                "reasons": ["name_mismatch"],
+                "fields": [{"field": "first_name", "match": "mismatch", "provided": body.get("firstName") or body.get("first_name"), "score": 0}],
+                "number": bvn_or_nin,
+            }
+        if bvn_or_nin == "55555555555":
+            return 200, {"status": "not_found", "verified": False, "found": False, "reasons": ["id_not_found"], "number": bvn_or_nin}
+        if bvn_or_nin == "00000000000":
+            return 503, {"error": "upstream registry service unavailable"}
+        return 200, {
+            "status": "verified",
+            "verified": True,
+            "score": 1.0,
+            "data": {
+                "first_name": str(body.get("first_name") or body.get("firstName") or "JAMES").upper(),
+                "last_name": str(body.get("last_name") or body.get("lastName") or "BOND").upper(),
+                "dob": body.get("dob") or body.get("dateOfBirth") or "1975-01-01",
+                "age": 49,
+            },
+            "matches": {"first_name": 100, "last_name": 100, "dob": 100},
+            "number": bvn_or_nin,
+        }
+
+    if upstream_path == "/api/credit/check":
+        bvn = str(body.get("bvn") or "")
+        loan_kobo = int(body.get("loan_amount") or 50000000)
+        if bvn == "00000000000":
+            return 503, {"error": "upstream credit bureau service unavailable"}
+        if bvn == "55555555555":
+            return 404, {"error": "borrower not found in credit bureau registry"}
+        if bvn == "33333333333":
+            return 200, {
+                "status": "success",
+                "data": {
+                    "score": 480,
+                    "band": "poor",
+                    "recommendation": "deny",
+                    "reasons": ["open_non_performing_loan", "missed_repayments"],
+                    "eligible_amount": 0,
+                    "summary": {
+                        "institutions": 2, "total_loans": 3, "open_loans": 1, "closed_loans": 2,
+                        "performing_loans": 2, "non_performing_loans": 1, "open_non_performing_loans": 1,
+                        "missed_repayments": 3, "total_credit_value": 120000000, "highest_credit": 60000000,
+                        "open_credit_value": 45000000,
+                    },
+                },
+            }
+        if bvn == "44444444444":
+            return 200, {
+                "status": "success",
+                "data": {
+                    "score": None, "band": None, "recommendation": "review", "reasons": ["no_credit_history"],
+                    "eligible_amount": 0,
+                    "summary": {
+                        "institutions": 0, "total_loans": 0, "open_loans": 0, "closed_loans": 0,
+                        "performing_loans": 0, "non_performing_loans": 0, "open_non_performing_loans": 0,
+                        "missed_repayments": 0, "total_credit_value": 0, "highest_credit": 0,
+                        "open_credit_value": 0,
+                    },
+                },
+            }
+        is_over = loan_kobo > 180000000
+        return 200, {
+            "status": "success",
+            "data": {
+                "score": 690,
+                "band": "good",
+                "recommendation": "review" if is_over else "approve",
+                "reasons": ["amount_above_eligible"] if is_over else ["clean_record"],
+                "eligible_amount": 180000000,
+                "summary": {
+                    "institutions": 3, "total_loans": 3, "open_loans": 1, "closed_loans": 2,
+                    "performing_loans": 3, "non_performing_loans": 0, "open_non_performing_loans": 0,
+                    "missed_repayments": 0, "total_credit_value": 230000000, "highest_credit": 120000000,
+                    "open_credit_value": 35000000,
+                },
+            },
+        }
+
+    if upstream_path == "/api/credit/history":
+        bvn = str(body.get("bvn") or "")
+        if bvn == "00000000000":
+            return 503, {"error": "upstream credit bureau service unavailable"}
+        if bvn == "55555555555":
+            return 404, {"error": "borrower not found in credit bureau registry"}
+        _, check_res = get_sandbox_mock("/api/credit/check", body)
+        check_data = check_res.get("data", {})
+        accounts = [] if bvn == "44444444444" else [
+            {
+                "institution": "Access Bank PLC",
+                "loans": [
+                    {
+                        "account_number": "acc_01h8x9j2k3m4n5p6q7r8s9t0",
+                        "status": "open",
+                        "performance": "lost" if bvn == "33333333333" else "performing",
+                        "opening_balance": 120000000,
+                        "repayment_amount": 11500000,
+                        "tenor": 12,
+                        "repayment_frequency": "monthly",
+                        "date_opened": "2023-08-15",
+                        "repayment_schedule": [
+                            {"period": "2024-01", "status": "paid"},
+                            {"period": "2024-02", "status": "paid"},
+                            {"period": "2024-03", "status": "missed" if bvn == "33333333333" else "paid"},
+                            {"period": "2024-04", "status": "missed" if bvn == "33333333333" else "pending"},
+                        ],
+                    }
+                ],
+            },
+            {
+                "institution": "FairMoney MFB",
+                "loans": [
+                    {
+                        "account_number": "acc_01h8x9j2k3m4n5p6q7r8s9t1",
+                        "status": "closed",
+                        "performance": "performing",
+                        "opening_balance": 60000000,
+                        "repayment_amount": 12000000,
+                        "tenor": 6,
+                        "repayment_frequency": "monthly",
+                        "date_opened": "2022-11-10",
+                        "repayment_schedule": [
+                            {"period": "2022-12", "status": "paid"},
+                            {"period": "2023-01", "status": "paid"},
+                            {"period": "2023-02", "status": "paid"},
+                        ],
+                    }
+                ],
+            },
+            {
+                "institution": "Carbon Finance",
+                "loans": [
+                    {
+                        "account_number": "acc_01h8x9j2k3m4n5p6q7r8s9t2",
+                        "status": "closed",
+                        "performance": "performing",
+                        "opening_balance": 50000000,
+                        "repayment_amount": 10000000,
+                        "tenor": 6,
+                        "repayment_frequency": "monthly",
+                        "date_opened": "2021-06-01",
+                        "repayment_schedule": [
+                            {"period": "2021-07", "status": "paid"},
+                            {"period": "2021-08", "status": "paid"},
+                        ],
+                    }
+                ],
+            },
+        ]
+        return 200, {
+            "status": "success",
+            "data": {
+                **check_data,
+                "profile": {
+                    "full_name": "JAMES BOND",
+                    "gender": "male",
+                    "address_history": [
+                        {"address": "1 Demo Close, Wuse II, Abuja, FCT", "type": "Residential", "date_reported": "2024-03-18"},
+                        {"address": "14 Marina, Lagos Island, Lagos", "type": "Previous Residential", "date_reported": "2022-07-10"},
+                    ],
+                    "identifications": [{"type": "BVN", "number": bvn or "77777777777"}],
+                },
+                "accounts": accounts,
+            },
+        }
+    return None
 
 
 def webhook_events(handler, verification_id):
@@ -149,6 +341,12 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if self.path == "/identity/identify":
             return proxy_to_ninja(self, "POST", "/api/identity/identify", self._read_json_body())
+
+        if self.path == "/credit/check":
+            return proxy_to_ninja(self, "POST", "/api/credit/check", self._read_json_body())
+
+        if self.path == "/credit/history":
+            return proxy_to_ninja(self, "POST", "/api/credit/history", self._read_json_body())
 
         if self.path == "/flows":
             body = self._read_json_body()

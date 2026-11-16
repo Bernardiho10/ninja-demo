@@ -111,6 +111,75 @@ body {
   color: var(--red);
 }
 
+.brand-credit-plate {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+}
+
+.brand-ninja-word {
+  color: #10b981;
+}
+
+.brand-dot {
+  color: #64748b;
+  margin: 0 1px;
+}
+
+.brand-credit-word {
+  color: #38bdf8;
+}
+
+/* Switcher between Sportsbook and Credit demos */
+.demo-mode-switcher {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 3px;
+  gap: 3px;
+  margin-left: 8px;
+}
+
+.demo-mode-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.demo-mode-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.demo-mode-tab.active {
+  color: #021a0e;
+  background: #10b981;
+}
+
+.demo-mode-tab.active.credit-tab {
+  color: #031525;
+  background: #38bdf8;
+}
+
+@media (max-width: 900px) {
+  .demo-mode-switcher {
+    order: 4;
+    width: 100%;
+    margin: 4px 0 0;
+    justify-content: center;
+  }
+}
+
 .nav-env-badge {
   display: inline-flex;
   align-items: center;
@@ -2235,6 +2304,9 @@ body {
   border-radius: 0;
   overflow: hidden;
   transition: all 0.15s ease;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .api-log-entry:hover {
@@ -2322,20 +2394,15 @@ body {
 
 .api-log-details {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 10px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  background: rgba(6, 10, 18, 0.85);
-}
-
-.api-log-details {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   background: rgba(6, 10, 18, 0.95);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .api-log-details[hidden] {
@@ -2344,8 +2411,10 @@ body {
 
 .api-log-payloads-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 10px;
+  min-width: 0;
+  width: 100%;
 }
 
 @media (max-width: 768px) {
@@ -2361,6 +2430,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.09);
   border-radius: 0;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .api-log-section-label {
@@ -2397,9 +2469,12 @@ body {
   overflow-y: auto;
   white-space: pre-wrap;
   word-break: break-all;
-  max-height: 320px;
-  min-height: 90px;
+  overflow-wrap: anywhere;
+  max-height: 280px;
+  min-height: 70px;
   margin: 0;
+  box-sizing: border-box;
+  max-width: 100%;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }
@@ -2410,6 +2485,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 0;
   overflow: hidden;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .api-log-toolbar {
@@ -2505,20 +2583,15 @@ body {
   line-height: 1.5;
   color: #cbd5e1;
   overflow-x: auto;
+  overflow-y: auto;
   max-height: 220px;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  box-sizing: border-box;
+  max-width: 100%;
 }
 
-.api-log-payloads-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-@media (max-width: 600px) {
-  .api-log-payloads-grid {
-    grid-template-columns: 1fr;
-  }
-}
 
 /* ==========================================================================
    TEACHING CONTEXT CALLOUT BOXES
@@ -3196,4 +3269,100 @@ body {
 }
 .step-prereq-btn:hover {
   background: #fbbf24;
+}
+
+/* ==========================================================================
+   DRAGGABLE FLOATING WHATSAPP WIDGET
+   ========================================================================== */
+.ninja-floating-whatsapp {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(8, 14, 28, 0.94);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(37, 211, 102, 0.45);
+  padding: 4px 6px 4px 9px;
+  border-radius: 999px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(37, 211, 102, 0.25);
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.ninja-floating-whatsapp:hover {
+  border-color: #25d366;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.7), 0 0 28px rgba(37, 211, 102, 0.4);
+}
+
+.ninja-floating-whatsapp.is-dragging {
+  cursor: grabbing !important;
+  opacity: 0.95;
+  transform: scale(1.04);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 36px rgba(37, 211, 102, 0.55);
+}
+
+.whatsapp-drag-grip {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5px;
+  padding: 4px 2px;
+  cursor: grab;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.ninja-floating-whatsapp:hover .whatsapp-drag-grip {
+  opacity: 0.9;
+}
+
+.whatsapp-drag-grip span {
+  width: 9px;
+  height: 2px;
+  background: #94a3b8;
+  border-radius: 1px;
+}
+
+.whatsapp-floating-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: #03180c;
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 800;
+  padding: 6px 12px 6px 9px;
+  background: #25d366;
+  border-radius: 999px;
+  transition: all 0.15s ease;
+  pointer-events: auto;
+}
+
+.whatsapp-floating-btn:hover {
+  background: #22c55e;
+  transform: translateY(-0.5px);
+}
+
+.whatsapp-fab-icon {
+  font-size: 17px;
+  color: #03180c;
+}
+
+.whatsapp-fab-label {
+  color: #03180c;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .whatsapp-fab-label {
+    display: none;
+  }
+  .whatsapp-floating-btn {
+    padding: 8px;
+  }
 }

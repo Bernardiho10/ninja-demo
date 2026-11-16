@@ -248,6 +248,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	case r.Method == http.MethodPost && r.URL.Path == "/identity/identify":
 		proxyToNinja(w, "POST", "/api/identity/identify", r.Body)
 
+	case r.Method == http.MethodPost && r.URL.Path == "/credit/check":
+		proxyToNinja(w, "POST", "/api/credit/check", r.Body)
+
+	case r.Method == http.MethodPost && r.URL.Path == "/credit/history":
+		proxyToNinja(w, "POST", "/api/credit/history", r.Body)
+
 	case r.Method == http.MethodPost && r.URL.Path == "/flows":
 		proxyToNinja(w, "POST", "/api/flows", withWebhookURL(r.Body))
 

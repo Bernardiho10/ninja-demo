@@ -1,0 +1,787 @@
+/* =============================================================================
+   ninja-credit: High-Fidelity Credit Check & Underwriting Workbench Styles
+   ============================================================================= */
+
+/* Page accents */
+.credit-accent {
+  color: #38bdf8;
+}
+
+.step-card {
+  padding: 30px;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+}
+
+.step-header-wrap {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 16px;
+}
+
+.step-tag-label {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+}
+
+.step-tag-cyan { color: #38bdf8; }
+.step-tag-emerald { color: #10b981; }
+.step-tag-purple { color: #a78bfa; }
+
+.step-card-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 4px 0 0;
+  letter-spacing: -0.02em;
+}
+
+.step-chip-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 5px 11px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.chip-cyan {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.chip-emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.chip-purple {
+  background: rgba(167, 139, 250, 0.12);
+  color: #a78bfa;
+  border: 1px solid rgba(167, 139, 250, 0.35);
+}
+
+.step-card-desc {
+  font-size: 13px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0 0 18px;
+}
+
+/* Inset Parameter Container */
+.inset-params-box {
+  background: rgba(8, 14, 28, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  margin-bottom: 22px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.preset-chip.preset-warn {
+  border-color: rgba(245, 158, 11, 0.45);
+  color: #fbbf24;
+}
+
+.preset-chip.preset-warn:hover {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: #f59e0b;
+}
+
+/* =============================================================================
+   MANDATORY CRA CONSENT BOX & ACTION BUTTONS
+   ============================================================================= */
+.cra-consent-box {
+  margin: 22px 0 24px;
+  padding: 16px 18px;
+  background: linear-gradient(135deg, rgba(8, 14, 28, 0.85) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-left: 3px solid #38bdf8;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  transition: border-color 0.15s ease;
+}
+
+.cra-consent-box:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+}
+
+.cra-consent-checkbox-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.cra-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #38bdf8;
+  cursor: pointer;
+  margin: 0;
+}
+
+.cra-consent-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cra-consent-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+
+.cra-consent-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 2px 7px;
+  border-radius: 2px;
+}
+
+.cra-act-cite {
+  font-size: 10.5px;
+  color: #64748b;
+  font-family: var(--font-mono);
+}
+
+.cra-consent-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e2e8f0;
+  line-height: 1.5;
+  cursor: pointer;
+  margin: 0 0 4px;
+  text-transform: none;
+}
+
+.cra-consent-sub {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+/* Beautiful Fintech Action Buttons */
+.btn-submit-kyc {
+  width: 100%;
+  padding: 15px 22px;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(56, 189, 248, 0.6);
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
+  color: #031525 !important;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(56, 189, 248, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 4px;
+}
+
+.btn-submit-kyc:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(56, 189, 248, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, #7dd3fc 0%, #38bdf8 100%);
+  color: #01121d !important;
+}
+
+.btn-submit-kyc:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+}
+
+.btn-submit-kyc:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-submit-credit-check {
+  width: 100%;
+  padding: 15px 22px;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(16, 185, 129, 0.6);
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #021a0e !important;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-submit-credit-check:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(16, 185, 129, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: #011209 !important;
+}
+
+.btn-submit-credit-check:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit-credit-check:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-submit-credit-history {
+  width: 100%;
+  padding: 15px 22px;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(139, 92, 246, 0.6);
+  background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%);
+  color: #ffffff !important;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-submit-credit-history:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(139, 92, 246, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(135deg, #a78bfa 0%, #8b5cf6 100%);
+}
+
+.btn-submit-credit-history:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit-credit-history:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* =============================================================================
+   CREDIT RISK TERMINAL & GAUGE (STEP 2)
+   ============================================================================= */
+.credit-score-card {
+  background: linear-gradient(145deg, rgba(12, 19, 36, 0.95), rgba(6, 10, 20, 0.98));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 26px;
+  margin-bottom: 22px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.credit-score-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #ef4444 0%, #f59e0b 33%, #10b981 66%, #38bdf8 100%);
+}
+
+.credit-score-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.score-main-group {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.score-number {
+  font-family: var(--font-mono);
+  font-size: 64px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.score-number.band-excellent {
+  color: #38bdf8;
+  text-shadow: 0 0 35px rgba(56, 189, 248, 0.45);
+}
+
+.score-number.band-good {
+  color: #10b981;
+  text-shadow: 0 0 35px rgba(16, 185, 129, 0.45);
+}
+
+.score-number.band-fair {
+  color: #fbbf24;
+  text-shadow: 0 0 35px rgba(251, 191, 36, 0.45);
+}
+
+.score-number.band-poor {
+  color: #f87171;
+  text-shadow: 0 0 35px rgba(239, 68, 68, 0.45);
+}
+
+.score-band-tag {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 4px;
+}
+
+.band-tag-excellent {
+  background: rgba(56, 189, 248, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+}
+
+.band-tag-good {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.band-tag-fair {
+  background: rgba(245, 158, 11, 0.16);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.band-tag-poor {
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.45);
+}
+
+/* Precision Meter Bar with Colored Segments */
+.score-meter-wrap {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 22px;
+}
+
+.score-meter-segments {
+  display: flex;
+  height: 12px;
+  width: 100%;
+  gap: 3px;
+  position: relative;
+  border-radius: 4px;
+  overflow: visible;
+}
+
+.meter-seg {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.meter-seg-poor { flex: 279; background: #ef4444; }
+.meter-seg-fair { flex: 70; background: #f59e0b; }
+.meter-seg-good { flex: 70; background: #10b981; }
+.meter-seg-excellent { flex: 131; background: #38bdf8; }
+
+.score-needle {
+  position: absolute;
+  top: -7px;
+  width: 4px;
+  height: 26px;
+  background: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 12px #ffffff, 0 0 24px rgba(255, 255, 255, 0.9);
+  transform: translateX(-50%);
+  transition: left 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+  z-index: 2;
+}
+
+.score-scale-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #64748b;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+/* Recommendation Verdict Card */
+.verdict-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border: 1px solid transparent;
+  gap: 18px;
+  margin-bottom: 22px;
+  backdrop-filter: blur(12px);
+}
+
+.verdict-banner.verdict-approve {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.06);
+}
+
+.verdict-banner.verdict-review {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: inset 0 0 20px rgba(245, 158, 11, 0.06);
+}
+
+.verdict-banner.verdict-deny {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+  box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.06);
+}
+
+.verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.verdict-approve .verdict-badge { color: #10b981; }
+.verdict-review .verdict-badge { color: #fbbf24; }
+.verdict-deny .verdict-badge { color: #f87171; }
+
+.verdict-text {
+  font-size: 13px;
+  color: #cbd5e1;
+  line-height: 1.55;
+  margin: 6px 0 0;
+}
+
+/* Reason Chips */
+.reasons-container {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.reason-chip {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 9px;
+  border-radius: 2px;
+}
+
+.reason-chip.reason-positive {
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.reason-chip.reason-warning {
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.reason-chip.reason-negative {
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* 8-Metric Bento Grid */
+.credit-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+@media (max-width: 820px) {
+  .credit-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.metric-tile {
+  background: rgba(8, 14, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.metric-tile-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+}
+
+.metric-tile-value {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.metric-tile-value.val-highlight { color: #38bdf8; }
+.metric-tile-value.val-success { color: #10b981; }
+.metric-tile-value.val-danger { color: #f87171; }
+
+/* =============================================================================
+   DEEP BUREAU ACCOUNTS & TIMELINE (STEP 3)
+   ============================================================================= */
+.bureau-account-card {
+  background: rgba(8, 14, 28, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.account-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 10px;
+}
+
+.account-institution-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.account-status-badges {
+  display: flex;
+  gap: 6px;
+}
+
+.status-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 2px 8px;
+  border-radius: 2px;
+}
+
+.status-badge.status-open {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.status-badge.status-closed {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.status-badge.perf-performing {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.status-badge.perf-lost,
+.status-badge.perf-substandard,
+.status-badge.perf-doubtful {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.account-details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 640px) {
+  .account-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.account-detail-item {
+  font-size: 11px;
+}
+
+.account-detail-key {
+  color: #64748b;
+  display: block;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.account-detail-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+
+/* Repayment Schedule Timeline Matrix */
+.repayment-timeline {
+  background: #04070e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px 14px;
+}
+
+.repayment-timeline-title {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  margin-bottom: 10px;
+}
+
+.repayment-pills-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.repayment-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  border: 1px solid transparent;
+  border-radius: 2px;
+}
+
+.repayment-pill.pill-paid {
+  background: rgba(16, 185, 129, 0.1);
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.repayment-pill.pill-pending {
+  background: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.repayment-pill.pill-missed {
+  background: rgba(239, 68, 68, 0.12);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Loan Disbursement Voucher */
+.disbursement-receipt {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(4, 7, 14, 0.95));
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  padding: 26px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.45);
+}
+
+.receipt-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.receipt-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #10b981;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.01em;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.receipt-label {
+  color: #94a3b8;
+}
+
+.receipt-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: #ffffff;
+}

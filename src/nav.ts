@@ -6,6 +6,7 @@ import {
   isStep2Complete,
   type V2State,
 } from './lib/state'
+import { initFloatingWhatsapp } from './lib/floatingWhatsapp'
 
 export function updateNavFromState(state?: V2State) {
   const current = state || loadState()
@@ -71,6 +72,7 @@ export function updateNavFromState(state?: V2State) {
 
 function initNav() {
   updateNavFromState()
+  initFloatingWhatsapp()
 
   // Stepper clicks - dispatch navigation event to index handler
   ;[1, 2, 3].forEach((step) => {

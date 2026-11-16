@@ -190,6 +190,10 @@ $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 if ($method === 'POST' && $path === '/identity/identify') {
     proxy_to_ninja('POST', '/api/identity/identify', read_json_body());
+} elseif ($method === 'POST' && $path === '/credit/check') {
+    proxy_to_ninja('POST', '/api/credit/check', read_json_body());
+} elseif ($method === 'POST' && $path === '/credit/history') {
+    proxy_to_ninja('POST', '/api/credit/history', read_json_body());
 } elseif ($method === 'POST' && $path === '/flows') {
     proxy_to_ninja('POST', '/api/flows', read_json_body(true));
 } elseif ($method === 'POST' && preg_match('#^/flows/([^/]+)/links$#', $path, $m)) {
