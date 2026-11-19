@@ -342,6 +342,192 @@ function getSandboxMock(upstreamPath, body) {
     }
   }
 
+  if (upstreamPath === '/api/kyb/check') {
+    const rcInput = String(body?.rc_number || body?.rcNumber || body?.rc || body?.idNumber || '').replace(/[^0-9]/g, '')
+    if (rcInput === '9999999') {
+      return {
+        status: 404,
+        body: {
+          status: 'error',
+          code: 'not_found',
+          message: 'Registration number not found in Corporate Affairs Commission (CAC) registry.',
+          data: null,
+        },
+      }
+    }
+    if (rcInput === '2000002') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          data: {
+            id: 2000002,
+            rc_number: 'RC-2000002',
+            company_name: 'PRIME AGRO ALLIED FOODS LIMITED',
+            company_type: 'PRIVATE_COMPANY_LIMITED_BY_SHARES',
+            status: 'INACTIVE',
+            registration_date: '2014-08-20',
+            registered_address: 'KM 14, Old Ibadan-Lagos Expressway',
+            city: 'Ibadan',
+            state: 'Oyo State',
+            email: 'contact@primeallied.com.ng',
+            nature_of_business: 'Wholesale agricultural processing and packaging',
+            annual_returns_up_to_date: false,
+            last_annual_return_year: 2017,
+          },
+        },
+      }
+    }
+    if (rcInput === '6666666') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          data: {
+            id: 6666666,
+            rc_number: 'RC-6666666',
+            company_name: 'GLOBAL HORIZONS CAPITAL LIMITED',
+            company_type: 'PRIVATE_COMPANY_LIMITED_BY_SHARES',
+            status: 'ACTIVE',
+            registration_date: '2021-02-10',
+            registered_address: '22 Constitution Avenue, Central Business District, Abuja',
+            city: 'Abuja',
+            state: 'FCT',
+            email: 'legal@globalhorizons.ng',
+            nature_of_business: 'Financial consultancy and project management',
+            annual_returns_up_to_date: true,
+            last_annual_return_year: 2025,
+          },
+        },
+      }
+    }
+    return {
+      status: 200,
+      body: {
+        status: 'success',
+        data: {
+          id: 1000001,
+          rc_number: 'RC-1000001',
+          company_name: 'NINJA TECH LOGISTICS LIMITED',
+          company_type: 'PRIVATE_COMPANY_LIMITED_BY_SHARES',
+          status: 'ACTIVE',
+          registration_date: '2019-04-12',
+          registered_address: 'Plot 14, Commercial Avenue, Victoria Island',
+          city: 'Lagos',
+          state: 'Lagos State',
+          email: 'operations@ninjalogistics.ng',
+          nature_of_business: 'Freight forwarding, logistics and haulage services',
+          annual_returns_up_to_date: true,
+          last_annual_return_year: 2025,
+        },
+      },
+    }
+  }
+
+  if (upstreamPath === '/api/kyb/directors') {
+    const rcInput = String(body?.rc_number || body?.rcNumber || body?.rc || '').replace(/[^0-9]/g, '')
+    if (rcInput === '9999999') {
+      return {
+        status: 404,
+        body: {
+          status: 'error',
+          code: 'not_found',
+          message: 'Company not found or no directors on record.',
+          data: [],
+        },
+      }
+    }
+    if (rcInput === '2000002') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          company_name: 'PRIME AGRO ALLIED FOODS LIMITED',
+          rc_number: 'RC-2000002',
+          directors_count: 1,
+          data: [
+            {
+              id: 601,
+              name: 'Sunday Emmanuel Adekunle',
+              role: 'DIRECTOR',
+              nationality: 'Nigerian',
+              address: '4 Ring Road, Ibadan, Oyo State',
+              status: 'INACTIVE',
+              id_type: 'NIN',
+              id_number: '33333333333',
+              shares_allotted: 500000,
+              share_percentage: 100,
+              aml_flag: false,
+            },
+          ],
+        },
+      }
+    }
+    if (rcInput === '6666666') {
+      return {
+        status: 200,
+        body: {
+          status: 'success',
+          company_name: 'GLOBAL HORIZONS CAPITAL LIMITED',
+          rc_number: 'RC-6666666',
+          directors_count: 1,
+          data: [
+            {
+              id: 701,
+              name: 'Aliyu Ibrahim Danjuma',
+              role: 'DIRECTOR',
+              nationality: 'Nigerian',
+              address: '34 Aso Drive, Asokoro, Abuja',
+              status: 'ACTIVE',
+              id_type: 'NIN',
+              id_number: '99999999999',
+              shares_allotted: 800000,
+              share_percentage: 80,
+              aml_flag: true,
+            },
+          ],
+        },
+      }
+    }
+    return {
+      status: 200,
+      body: {
+        status: 'success',
+        company_name: 'NINJA TECH LOGISTICS LIMITED',
+        rc_number: 'RC-1000001',
+        directors_count: 2,
+        data: [
+          {
+            id: 501,
+            name: 'James Babatunde Okafor',
+            role: 'MANAGING_DIRECTOR',
+            nationality: 'Nigerian',
+            address: '12 Admiralty Way, Lekki Phase 1, Lagos',
+            status: 'ACTIVE',
+            id_type: 'NIN',
+            id_number: '77777777777',
+            shares_allotted: 600000,
+            share_percentage: 60,
+            aml_flag: false,
+          },
+          {
+            id: 502,
+            name: 'Fatima Amina Bello',
+            role: 'DIRECTOR',
+            nationality: 'Nigerian',
+            address: '8 Gana Street, Maitama, Abuja',
+            status: 'ACTIVE',
+            id_type: 'NIN',
+            id_number: '88888888888',
+            shares_allotted: 400000,
+            share_percentage: 40,
+            aml_flag: false,
+          },
+        ],
+      },
+    }
+  }
+
   return null
 }
 
@@ -412,6 +598,14 @@ const server = http.createServer(async (req, res) => {
 
   if (req.method === 'POST' && url.pathname === '/credit/history') {
     return proxyToNinja(res, 'POST', '/api/credit/history', await readBody(req))
+  }
+
+  if (req.method === 'POST' && url.pathname === '/kyb/check') {
+    return proxyToNinja(res, 'POST', '/api/kyb/check', await readBody(req))
+  }
+
+  if (req.method === 'POST' && url.pathname === '/kyb/directors') {
+    return proxyToNinja(res, 'POST', '/api/kyb/directors', await readBody(req))
   }
 
   if (req.method === 'POST' && url.pathname === '/flows') {

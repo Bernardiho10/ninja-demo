@@ -1,0 +1,383 @@
+<!DOCTYPE html><html lang="en"><head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Ninja Business KYB — Verify Nigerian Companies &amp; Directors with CAC</title>
+  <meta name="description" content="Check any Nigerian business against the Corporate Affairs Commission (CAC) registry. Confirm if a company is Active or Inactive, verify registered directors, and generate hosted KYB onboarding links."/>
+  <meta name="keywords" content="Ninja KYB, CAC business lookup, Nigeria company registry, verify RC number, director verification, vendor onboarding Nigeria, Corporate Affairs Commission"/>
+
+  <!-- Open Graph / LinkedIn / Facebook / WhatsApp -->
+  <meta property="og:type" content="website"/>
+  <meta property="og:url" content="https://demo.ninja.ng/kyb.html"/>
+  <meta property="og:title" content="Ninja Business KYB — Verify Nigerian Companies &amp; Directors"/>
+  <meta property="og:description" content="Check any Nigerian RC number directly with the CAC registry. See Active vs Inactive standing, audit official directors, and create single-use KYB links."/>
+  <meta property="og:image" content="https://demo.ninja.ng/assets/images/og-preview-kyb.png"/>
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/>
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:url" content="https://demo.ninja.ng/kyb.html"/>
+  <meta name="twitter:title" content="Ninja Business KYB — Real-Time CAC Verification"/>
+  <meta name="twitter:description" content="Check company status (Active/Inactive), verify registered directors, and onboard vendors with one link."/>
+  <meta name="twitter:image" content="https://demo.ninja.ng/assets/images/og-preview-kyb.png"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
+  <link rel="stylesheet" href="./assets/css/shared.css?v=20260921"/>
+  
+<link rel="stylesheet" href="/assets/css/kyb.css"/>
+</head>
+<body>
+<nav class="navbar-top">
+ <div class="navbar-inner">
+  <div class="nav-brand-group">
+    <a href="/kyb.html" class="brand-link" id="brand-home-link" title="Ninja Business KYB Demo">
+      <span class="brand-credit-plate" style="border-color: rgba(245, 158, 11, 0.4);">
+        <span class="brand-ninja-word">NINJA</span><span class="brand-dot" style="color: #f59e0b;">·</span><span class="brand-credit-word" style="color: #f59e0b;">KYB</span>
+      </span>
+    </a>
+
+    <!-- Demo Mode Switcher (All 3 Products) -->
+    <div class="demo-mode-switcher">
+      <a href="/" class="demo-mode-tab" title="Sports Betting Identity &amp; Payouts Demo">
+        <i class="ph-bold ph-game-controller"></i>
+        <span>Sportsbook</span>
+      </a>
+      <a href="/credit.html" class="demo-mode-tab credit-tab" title="Digital Lending &amp; Credit Bureau Checks Demo">
+        <i class="ph-bold ph-bank"></i>
+        <span>Credit &amp; Lending</span>
+      </a>
+      <a href="/kyb.html" class="demo-mode-tab active" style="background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;" title="Business Verification &amp; CAC Registry Demo">
+        <i class="ph-bold ph-buildings"></i>
+        <span>Business KYB</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- 3 Simple Steps for Business Verification -->
+  <div class="checkpoint-stepper" id="checkpoint-stepper">
+    <button type="button" class="checkpoint-step active" data-step="1" id="step-nav-1">
+      <span class="step-num">1</span>
+      <span class="step-label">Company Check</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step locked" data-step="2" id="step-nav-2" title="Step 1 (Company Check) required">
+      <span class="step-num">2</span>
+      <span class="step-label">Directors Check</span>
+    </button>
+    <div class="step-connector"></div>
+    <button type="button" class="checkpoint-step locked" data-step="3" id="step-nav-3" title="Step 1 and Step 2 required">
+      <span class="step-num">3</span>
+      <span class="step-label">Hosted KYB Link</span>
+    </button>
+  </div>
+
+  <div class="nav-actions-group">
+    <div class="player-identity-card" id="nav-company-pill">
+      <div class="player-avatar-icon">🏢</div>
+      <div class="player-meta-box">
+        <div class="player-top-line">
+          <span class="player-name" id="nav-company-name">Guest Company</span>
+          <span class="player-status-badge" id="nav-company-status">Unverified</span>
+        </div>
+        <div class="player-balance-line">
+          <span class="balance-label">RC:</span>
+          <strong class="balance-val" id="nav-company-rc">—</strong>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn-reset-ghost" id="global-reset-btn" title="Reset Demo">
+      <span class="reset-icon">↺</span>
+      <span>Reset</span>
+    </button>
+  </div>
+ </div>
+</nav>
+
+<!-- Floating Draggable WhatsApp Widget -->
+<div id="ninja-floating-whatsapp" class="ninja-floating-whatsapp" role="button" tabindex="0" title="Drag to reposition · Click to chat on WhatsApp">
+  <div class="whatsapp-drag-grip" title="Drag me anywhere">
+    <span></span><span></span><span></span>
+  </div>
+  <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20I%20need%20help%20with%20using%20Ninja%20KYB" target="_blank" rel="noopener noreferrer" class="whatsapp-floating-btn" id="ninja-whatsapp-link" aria-label="WhatsApp Support">
+    <i class="ph-bold ph-whatsapp-logo whatsapp-fab-icon"></i>
+    <span class="whatsapp-fab-label">WhatsApp Support</span>
+  </a>
+</div>
+
+<div class="workbench-container">
+  <div class="workbench-page-header">
+    <div class="workbench-page-title-group">
+      <h1 class="workbench-page-title">Business KYB — Real-Time CAC Verification</h1>
+      <p class="workbench-page-subtitle">
+        Check any Nigerian business directly against the Corporate Affairs Commission (CAC) registry. Confirm if the company is real, when it was registered, and whether it is currently Active or Inactive before signing contracts or paying invoices.
+        <strong>Every button below executes a live API call with inspectable request &amp; response payloads in 5 programming languages.</strong>
+      </p>
+    </div>
+  </div>
+  <div class="workbench-grid">
+
+    <!-- =====================================================================
+         LEFT COLUMN: INTERACTIVE KYB WORKBENCH
+         ===================================================================== -->
+    <div class="workbench-main">
+
+      <div id="flow-kyb">
+
+        <!-- STEP 1: COMPANY CHECK (CAC REGISTRY) -->
+        <div id="view-kyb-step-1" class="step-card-view">
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #f59e0b; text-transform: uppercase; letter-spacing: 0.05em;">Step 1 of 3 · Corporate Registration Check</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Verify Company with CAC Registry</h2>
+              </div>
+              <span class="nav-env-badge" style="border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;">CAC Live Check</span>
+            </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              A PDF certificate only tells you the company was registered years ago. Ninja calls the official registry in <strong>seconds</strong> to confirm if the RC number exists, when it was registered, and whether the business is currently <strong>Active</strong> or <strong>Inactive</strong>.
+            </p>
+
+            <!-- Quick Test Presets -->
+            <div style="margin-bottom: 18px;">
+              <span style="font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; display: block; margin-bottom: 6px;">1-Click Test Scenarios:</span>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button type="button" class="preset-chip preset-pass active" id="btn-kyb-preset-active" title="Valid active company with up-to-date annual returns">
+                  ✓ Active Company (RC 1000001 · Ninja Tech Ltd)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-kyb-preset-inactive" title="Delinquent company — Annual returns unfiled for years">
+                  ✗ Inactive Status (RC 2000002 · Prime Foods)
+                </button>
+                <button type="button" class="preset-chip preset-fail" id="btn-kyb-preset-notfound" title="Fake or unregistered RC number on forged certificate">
+                  ✗ Fake / Not Found (RC 9999999)
+                </button>
+              </div>
+            </div>
+
+            <!-- Form -->
+            <form id="form-kyb-step-1">
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div>
+                  <label for="input-kyb-rc">RC or Business Number (BN)</label>
+                  <input id="input-kyb-rc" placeholder="e.g. 1000001" value="1000001" required=""/>
+                </div>
+                <div>
+                  <label for="input-kyb-name">Company Name</label>
+                  <input id="input-kyb-name" placeholder="e.g. NINJA TECH LOGISTICS LIMITED" value="NINJA TECH LOGISTICS LIMITED" required=""/>
+                </div>
+              </div>
+
+              <div class="form-2col" style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 8px;">
+                <div>
+                  <label for="input-kyb-type">Entity Type</label>
+                  <select id="input-kyb-type">
+                    <option value="PRIVATE_COMPANY_LIMITED_BY_SHARES">Private Limited Company (LTD / RC)</option>
+                    <option value="BUSINESS_NAME">Business Name / Enterprise (BN)</option>
+                    <option value="INCORPORATED_TRUSTEES">Incorporated Trustees (IT / NGO)</option>
+                    <option value="PUBLIC_COMPANY">Public Limited Company (PLC)</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="input-kyb-state">Registered State</label>
+                  <select id="input-kyb-state">
+                    <option value="Lagos">Lagos State</option>
+                    <option value="Abuja">FCT Abuja</option>
+                    <option value="Rivers">Rivers State</option>
+                    <option value="Oyo">Oyo State</option>
+                    <option value="Kano">Kano State</option>
+                  </select>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-kyb-step1" style="margin-top: 22px; padding: 14px; font-size: 15px; font-weight: 800; background: #f59e0b; color: #0f172a;">
+                Verify Company with CAC Registry →
+              </button>
+            </form>
+
+            <!-- Result Card -->
+            <div id="step1-kyb-result" style="margin-top: 18px;" hidden=""></div>
+
+          </div>
+        </div>
+
+        <!-- STEP 2: DIRECTORS &amp; OWNERS CHECK -->
+        <div id="view-kyb-step-2" class="step-card-view" hidden="">
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #a78bfa; text-transform: uppercase; letter-spacing: 0.05em;">Step 2 of 3 · Beneficial Ownership &amp; Directors</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Check Registered Directors &amp; Owners</h2>
+              </div>
+              <span class="nav-env-badge" style="border-color: rgba(167, 139, 250, 0.4); color: #c084fc;">Director Audit</span>
+            </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              Know the real human beings behind the company. Ninja pulls the official directors registered with the CAC, their shareholding percentages, and identification records to catch conflicts of interest and unauthorized signatories.
+            </p>
+
+            <button type="button" id="btn-pull-kyb-directors" style="width: 100%; padding: 14px; font-size: 14px; font-weight: 800; background: #8b5cf6; color: #fff; border: none; cursor: pointer;">
+              Pull Official Registered Directors (POST /api/kyb/directors) →
+            </button>
+
+            <!-- Result Directors Container -->
+            <div id="step2-kyb-result" style="margin-top: 18px;" hidden=""></div>
+
+          </div>
+        </div>
+
+        <!-- STEP 3: SINGLE-LINK HOSTED KYB ONBOARDING -->
+        <div id="view-kyb-step-3" class="step-card-view" hidden="">
+          <div class="card" style="padding: 28px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <div>
+                <span style="font-size: 11px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">Step 3 of 3 · Self-Serve Vendor Onboarding</span>
+                <h2 style="font-size: 22px; font-weight: 800; color: #fff; margin: 4px 0 0;">Generate Hosted KYB Link</h2>
+              </div>
+              <span class="nav-env-badge" style="border-color: rgba(52, 211, 153, 0.4); color: #34d399;">1-Link Onboarding</span>
+            </div>
+            <p style="font-size: 12.5px; color: #94a3b8; line-height: 1.55; margin: 0 0 16px;">
+              Stop chasing vendors for document uploads over WhatsApp or email. Generate <strong>one secure link</strong> and send it to your vendor. The vendor uploads their documents and submits director IDs on Ninja&#39;s secure portal, and your system receives a webhook when verified.
+            </p>
+
+            <div class="flow-execution-console" style="margin-top: 18px; display: flex; flex-direction: column; gap: 14px;">
+              
+              <!-- STAGE 1: CREATE FLOW -->
+              <div class="flow-stage-card active" id="kyb-flow-stage-1-card">
+                <div class="flow-stage-header">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="flow-stage-badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">Stage 1</span>
+                    <div>
+                      <h4 class="flow-stage-title">1. Create Hosted KYB Flow</h4>
+                      <span class="flow-stage-sub">POST /api/flows · Name: &#34;Vendor CAC &amp; Director Verification&#34;</span>
+                    </div>
+                  </div>
+                  <span class="flow-status-pill pill-ready" id="kyb-stage-1-pill">Ready to Create</span>
+                </div>
+
+                <div class="teaching-context-box" style="margin: 12px 0 14px;">
+                  <div class="teaching-context-title"><span>💡 Automated KYB Rules</span></div>
+                  <p class="teaching-context-p">
+                    A KYB flow defines required corporate checks: CAC registration number match, active standing check, and director NIN verification.
+                  </p>
+                </div>
+
+                <button type="button" id="btn-create-kyb-flow" class="btn-flow-action">
+                  <span>⚡ 1. Programmatically Create KYB Flow (POST /api/flows) →</span>
+                </button>
+              </div>
+
+              <!-- STAGE 2: GENERATE LINK -->
+              <div class="flow-stage-card locked" id="kyb-flow-stage-2-card">
+                <div class="flow-stage-header">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span class="flow-stage-badge">Stage 2</span>
+                    <div>
+                      <h4 class="flow-stage-title">2. Generate Single-Use KYB Link</h4>
+                      <span class="flow-stage-sub">POST /api/flows/:flow_id/links</span>
+                    </div>
+                  </div>
+                  <span class="flow-status-pill pill-pending" id="kyb-stage-2-pill">Requires Flow Creation</span>
+                </div>
+
+                <div class="teaching-context-box" style="margin: 12px 0 14px;">
+                  <div class="teaching-context-title"><span>💡 Send to Vendor via WhatsApp or Email</span></div>
+                  <p class="teaching-context-p">
+                    Mint a dedicated link bound to this vendor. When the vendor completes onboarding, Ninja posts a <code>kyb.verified</code> event to your webhook endpoint.
+                  </p>
+                </div>
+
+                <button type="button" id="btn-generate-kyb-link" disabled="" class="btn-flow-action">
+                  <span>🔗 2. Generate Single-Use KYB Link →</span>
+                </button>
+              </div>
+
+            </div>
+
+            <!-- Active Link Box -->
+            <div id="step3-kyb-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);" hidden="">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <span style="font-size: 12px; font-weight: 800; color: #fff;">Single-Use Vendor Onboarding Link:</span>
+                <span style="font-size: 11px; font-weight: 800; color: #34d399;">● Ready to Send</span>
+              </div>
+
+              <div style="background: #060a12; padding: 10px 12px; font-family: var(--font-mono); font-size: 11px; color: #38bdf8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 14px;" id="text-kyb-flow-url"></div>
+
+              <div class="success" style="padding: 12px 14px; font-size: 12.5px;">
+                ✓ Vendor link generated. Once completed by the vendor, Ninja verifies against the CAC registry and notifies your backend in real time.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         RIGHT COLUMN: LIVE API TELEMETRY &amp; LOG
+         ===================================================================== -->
+    <div class="workbench-sidebar">
+
+      <!-- Collapsible API Call &amp; Response Log -->
+      <div class="card" style="padding: 20px; border: 1px solid rgba(255, 255, 255, 0.08); background: rgba(18, 26, 41, 0.7); backdrop-filter: blur(12px); min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+            <span style="font-size: 14px;">📡</span>
+            <span style="font-size: 12px; font-weight: 800; color: #fff; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap;">API Call &amp; Response Log</span>
+          </div>
+          <button type="button" class="btn-log-clear" id="btn-kyb-clear-logs" title="Clear the API log">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"></path></svg>
+            <span>Clear</span>
+          </button>
+        </div>
+        <p style="font-size: 11.5px; color: #64748b; margin: 0 0 12px; line-height: 1.45;">
+          Click any entry below to inspect both full <strong>Request</strong> and <strong>Response</strong> payloads, copy code snippets in all major languages (cURL, JS, Python, Go, Rust), and inspect replies.
+        </p>
+
+        <div id="kyb-call-log-list" style="display: flex; flex-direction: column; gap: 10px; min-width: 0; max-width: 100%; box-sizing: border-box; overflow: hidden;">
+          <div style="font-size: 11.5px; color: var(--muted); text-align: center; padding: 24px;" id="kyb-empty-logs-label">
+            No API calls made yet. Click any button on the left to trigger a live call.
+          </div>
+        </div>
+      </div>
+
+      <!-- Founder &amp; CTO Callout Card -->
+      <div class="card founder-cta-card">
+        <div class="founder-cta-tag"><i class="ph-bold ph-handshake"></i> ENTERPRISE &amp; B2B</div>
+        <h3 class="founder-cta-title">Onboarding Vendors or Corporate Clients?</h3>
+        <p class="founder-cta-desc">
+          Automate CAC company lookups, check Active/Inactive standing, and onboard businesses with a single link without manual paper checking.
+        </p>
+        <div class="founder-perks-list">
+          <div class="founder-perk-item">✓ Zero minimum monthly commitments</div>
+          <div class="founder-perk-item">✓ Checks official Corporate Affairs Commission registry</div>
+          <div class="founder-perk-item">✓ Custom volume pricing &amp; enterprise SLAs</div>
+        </div>
+        <a class="founder-cta-btn" href="https://wa.me/2349113401006?text=Hi%20Bernard%2C%20I%20reviewed%20the%20Ninja%20KYB%20API%20demo%20and%20want%20to%20discuss%20vendor%20onboarding%20for%20our%20company" target="_blank" rel="noopener noreferrer">
+          <i class="ph-bold ph-whatsapp-logo"></i>
+          <span>Chat with Engineering on WhatsApp →</span>
+        </a>
+      </div>
+
+      <!-- Feedback -->
+      <div class="card feedback-card">
+        <div class="feedback-title">💬 Feedback</div>
+        <p class="feedback-text">Building a corporate onboarding integration? Share feedback with the BOU team on GitHub.</p>
+        <a class="feedback-link" href="https://github.com/bougroup/ninja-demo/issues" target="_blank" rel="noopener noreferrer">Share feedback on GitHub ↗</a>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+<script type="module" src="./assets/js/kyb-nav.js"></script>
+<script type="module" src="/assets/js/kyb.js"></script>
+
+
+</body></html>
