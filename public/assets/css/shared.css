@@ -3365,4 +3365,191 @@ body {
   .whatsapp-floating-btn {
     padding: 8px;
   }
+  .nav-book-whatsapp span {
+    display: none;
+  }
+  .nav-book-whatsapp {
+    padding: 7px 9px;
+  }
 }
+
+/* =====================================================================
+   FOUNDER & WHATSAPP CONVERSION CTA COMPONENTS
+   ===================================================================== */
+.nav-book-whatsapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #25d366;
+  color: #021a0e;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 12px;
+  border-radius: 4px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(37, 211, 102, 0.25);
+}
+.nav-book-whatsapp:hover {
+  background: #1ebd5b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 211, 102, 0.4);
+}
+
+.workbench-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.workbench-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.workbench-pill-badge.chip-cyan-text {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.workbench-pill-badge-outline {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.workbench-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.workbench-header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-header-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #25d366;
+  color: #021a0e;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.btn-header-cta:hover {
+  background: #1ebd5b;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.45);
+}
+
+.founder-cta-card {
+  padding: 20px;
+  border: 1px solid rgba(37, 211, 102, 0.3);
+  background: linear-gradient(145deg, rgba(37, 211, 102, 0.08) 0%, rgba(18, 26, 41, 0.8) 100%);
+  margin-top: 16px;
+}
+
+.founder-cta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #25d366;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.founder-cta-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  margin: 0 0 8px 0;
+  line-height: 1.35;
+}
+
+.founder-cta-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0 0 12px 0;
+}
+
+.founder-perks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.founder-perk-item {
+  font-size: 11.5px;
+  color: #cbd5e1;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.founder-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #25d366;
+  color: #021a0e;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 10px 14px;
+  border-radius: 6px;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.founder-cta-btn:hover {
+  background: #1ebd5b;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 900px) {
+  .workbench-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .workbench-header-actions {
+    width: 100%;
+  }
+  .btn-header-cta {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
