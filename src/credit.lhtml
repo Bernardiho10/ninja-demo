@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Ninja Credit API &mdash; Underwrite Nigerian Borrowers in Under 2 Seconds</title>
+  <title>Ninja Credit API &mdash; Perform Full Credit History Audit in Under 2 Seconds</title>
   <meta name="description" content="Stop loan stacking and defaults before disbursement: Instant CRC &amp; FirstCentral credit bureau checks, 300-850 scoring, and BVN identity verification.">
-  <meta name="keywords" content="Ninja Credit Check, CRC credit bureau, FirstCentral, digital lending Nigeria, loan underwriting API, BVN lookup, microfinance risk">
+  <meta name="keywords" content="Ninja Credit Check, CRC credit bureau, FirstCentral, digital lending Nigeria, credit history audit API, BVN lookup, microfinance risk">
 
   <!-- Open Graph / LinkedIn / Facebook / WhatsApp -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://demo.ninja.ng/credit.html">
-  <meta property="og:title" content="Ninja Credit Check &amp; Underwriting API &mdash; Live Sandbox">
+  <meta property="og:title" content="Ninja Credit Check API &mdash; Perform Full Credit History Audit">
   <meta property="og:description" content="Sub-2-second credit bureau lookups, automated decisioning (Approve/Review/Deny), and multi-lender exposure tracking before disbursing a single kobo.">
   <meta property="og:image" content="https://demo.ninja.ng/assets/images/og-preview-credit.png">
   <meta property="og:image:width" content="1200">
@@ -19,8 +19,8 @@
   <!-- Twitter / X -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:url" content="https://demo.ninja.ng/credit.html">
-  <meta name="twitter:title" content="Ninja Credit Check &amp; Underwriting API">
-  <meta name="twitter:description" content="Stop loan stacking before disbursement with automated credit bureau checks and instant underwriting.">
+  <meta name="twitter:title" content="Ninja Credit Check &mdash; Full Credit History Audit">
+  <meta name="twitter:description" content="Stop loan stacking before disbursement with automated credit bureau checks and instant decisioning.">
   <meta name="twitter:image" content="https://demo.ninja.ng/assets/images/og-preview-credit.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -546,7 +546,7 @@ function renderCreditCheckResults(data) {
     // Recommendation verdict
     let verdictClass = 'verdict-review';
     let verdictBadge = '⚠ Review Required';
-    let verdictText = 'This applicant requires human underwriter review before funding.';
+    let verdictText = 'This applicant requires manual review before funding.';
     if (rec === 'approve') {
         verdictClass = 'verdict-approve';
         verdictBadge = '✓ Pre-Approved';
@@ -628,7 +628,7 @@ function renderCreditCheckResults(data) {
           </div>
         </div>
         <button type="button" id="btn-goto-step-3" class="preset-chip preset-pass" style="font-weight: 800; padding: 12px 18px; font-size: 13px; flex-shrink: 0;">
-          Audit History &amp; Underwrite →
+          Perform Full Credit History Audit →
         </button>
       </div>
 
@@ -848,7 +848,7 @@ function renderCreditHistoryResults(data) {
     }
     container.innerHTML = `
     <div style="margin-top: 20px;">
-      <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 12px;">Bureau Underwriting Audit</h3>
+      <h3 style="font-size: 16px; font-weight: 800; color: #fff; margin-bottom: 12px;">Bureau Credit History Audit</h3>
       ${profileHtml}
       <h4 style="font-size: 13px; font-weight: 800; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px;">Lender-by-Lender Account Breakdown</h4>
       ${accountsHtml}
@@ -981,10 +981,10 @@ function renderCreditHistoryResults(data) {
         disbBox.innerHTML = `
       <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.35); padding: 22px;">
         <strong style="color: #fbbf24; font-size: 16px; display: block; margin-bottom: 8px;">
-          ⚠ Manual Underwriter Review Required
+          ⚠ Manual Review Required
         </strong>
         <p style="font-size: 12.5px; color: #cbd5e1; line-height: 1.5; margin: 0 0 14px;">
-          This applicant cannot be auto-approved without committee review. Suggested underwriter actions:
+          This applicant cannot be auto-approved without review. Suggested review actions:
         </p>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
           ${eligibleNaira > 0 ? `

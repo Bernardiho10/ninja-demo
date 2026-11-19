@@ -40,13 +40,16 @@ function startServer() {
         }
       };
       const proxyReq = https.request(options, (proxyRes) => {
-        res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        if (!res.headersSent) {
+          res.writeHead(proxyRes.statusCode, proxyRes.headers);
+        }
         proxyRes.pipe(res);
       });
       proxyReq.on('error', (err) => {
-        console.error('Proxy error:', err);
-        res.writeHead(502);
-        res.end('Proxy Error');
+        if (!res.headersSent) {
+          res.writeHead(502);
+          res.end('Proxy Error');
+        }
       });
       req.pipe(proxyReq);
       return;
@@ -58,12 +61,16 @@ function startServer() {
     }
     fs.readFile(filePath, (err, data) => {
       if (err) {
-        res.writeHead(404);
-        res.end('Not Found');
+        if (!res.headersSent) {
+          res.writeHead(404);
+          res.end('Not Found');
+        }
         return;
       }
       const ext = path.extname(filePath);
-      res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+      if (!res.headersSent) {
+        res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+      }
       res.end(data);
     });
   });
@@ -111,8 +118,9 @@ async function captureSequence(page, frameDir, actions) {
 }
 
 function encodeVideo(frameDir, outPath) {
-  console.log(`Encoding video to ${outPath}...`);
-  const ffmpegCmd = `/Users/bou/.local/bin/ffmpeg -y -framerate 4 -i "${frameDir}/frame_%05d.png" -c:v libx264 -pix_fmt yuv420p -vf "scale=1280:-2" -movflags +faststart "${outPath}"`;
+  console.log(`Encoding full-screen HD video to ${outPath}...`);
+  // 1440px wide full screen video matching MacBook Pro Retina
+  const ffmpegCmd = `/Users/bou/.local/bin/ffmpeg -y -framerate 4 -i "${frameDir}/frame_%05d.png" -c:v libx264 -pix_fmt yuv420p -vf "scale=1440:-2" -movflags +faststart "${outPath}"`;
   execSync(ffmpegCmd, { stdio: 'inherit' });
   console.log(`Generated: ${outPath}`);
 }
@@ -122,19 +130,24 @@ async function run() {
   const browser = await puppeteer.launch({
     executablePath: CHROME_PATH,
     headless: 'new',
-    defaultViewport: { width: 1280, height: 800, deviceScaleFactor: 1.5 },
-    args: ['--no-sandbox', '--disable-setuid-sandbox', '--force-device-scale-factor=1.5']
+    // Full screen 1440x900 viewport ensuring 100% of the 1360px workbench and logs are captured
+    defaultViewport: { width: 1440, height: 900, deviceScaleFactor: 1.5 },
+    args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1440,900', '--force-device-scale-factor=1.5']
   });
 
   try {
-    // 1. SPORTSBOOK RECORDING
-    console.log('\n--- Recording Sportsbook Identity & Anti-Fraud Flow ---');
+    // 1. SPORTSBOOK RECORDING (Full Screen)
+    console.log('\n--- Recording Full-Screen Sportsbook Identity & Anti-Fraud Flow ---');
     const page1 = await browser.newPage();
     await page1.goto(`http://127.0.0.1:${PORT}/`, { waitUntil: 'networkidle0' });
 
+    // Capture updated OG Preview card
+    await page1.screenshot({ path: path.resolve('public/assets/images/og-preview.png'), clip: { x: 0, y: 0, width: 1200, height: 630 } });
+    fs.copyFileSync(path.resolve('public/assets/images/og-preview.png'), path.resolve('src/assets/images/og-preview.png'));
+
     const sbFrames = path.resolve('tmp_frames_sportsbook');
     await captureSequence(page1, sbFrames, [
-      { type: 'wait', frames: 5 }, // initial hero
+      { type: 'wait', frames: 5 }, // initial full screen view
       { type: 'click', selector: '#btn-preset-underage', frames: 3 }, // select Tobi 16 yrs
       { type: 'click', selector: '#btn-submit-step1', frames: 6 }, // age rejection compliance block
       { type: 'click', selector: '#btn-preset-adult', frames: 3 }, // select James Bond 49 yrs
@@ -154,7 +167,7 @@ async function run() {
       { type: 'click', selector: '#btn-generate-flow-link', frames: 4 }, // code slideout
       { type: 'click', selector: '#btn-drawer-proceed', frames: 8 }, // generates link
       { type: 'scroll', y: -320, frames: 3 },
-      { type: 'wait', frames: 6 } // highlight WhatsApp CTA in nav
+      { type: 'wait', frames: 6 } // final state with live inspection drawer
     ]);
     await page1.close();
 
@@ -163,10 +176,14 @@ async function run() {
     encodeVideo(sbFrames, sbOut1);
     fs.copyFileSync(sbOut1, sbOut2);
 
-    // 2. CREDIT & LENDING RECORDING
-    console.log('\n--- Recording Credit Bureau & Loan Underwriting Flow ---');
+    // 2. CREDIT & LENDING RECORDING (Full Screen - History Audit)
+    console.log('\n--- Recording Full-Screen Credit Bureau & History Audit Flow ---');
     const page2 = await browser.newPage();
     await page2.goto(`http://127.0.0.1:${PORT}/credit.html`, { waitUntil: 'networkidle0' });
+
+    // Capture updated OG Preview card for credit
+    await page2.screenshot({ path: path.resolve('public/assets/images/og-preview-credit.png'), clip: { x: 0, y: 0, width: 1200, height: 630 } });
+    fs.copyFileSync(path.resolve('public/assets/images/og-preview-credit.png'), path.resolve('src/assets/images/og-preview-credit.png'));
 
     const crFrames = path.resolve('tmp_frames_credit');
     await captureSequence(page2, crFrames, [
@@ -178,10 +195,10 @@ async function run() {
       { type: 'click', selector: '#btn-goto-credit-step2', frames: 4 }, // proceed to Step 2
       { type: 'click', selector: '#btn-credit-clean', frames: 3 }, // select clean bureau profile
       { type: 'click', selector: '#btn-run-credit-check', frames: 10 }, // run sub-2s bureau check & score
-      { type: 'click', selector: '#btn-goto-step-3', frames: 4 }, // proceed to Step 3
+      { type: 'click', selector: '#btn-goto-step-3', frames: 4 }, // proceed to Step 3: Perform Full Credit History Audit
       { type: 'scroll', y: 250, frames: 3 },
-      { type: 'click', selector: '#btn-pull-credit-history', frames: 10 }, // underwrite and view loan decision
-      { type: 'wait', frames: 6 }
+      { type: 'click', selector: '#btn-pull-credit-history', frames: 10 }, // perform full history audit
+      { type: 'wait', frames: 6 } // final review / decision state
     ]);
     await page2.close();
 
@@ -190,7 +207,7 @@ async function run() {
     encodeVideo(crFrames, crOut1);
     fs.copyFileSync(crOut1, crOut2);
 
-    console.log('\n--- Video Recordings Completed Successfully! ---');
+    console.log('\n--- Full-Screen HD Video Recordings Completed Successfully! ---');
   } finally {
     await browser.close();
     server.close();

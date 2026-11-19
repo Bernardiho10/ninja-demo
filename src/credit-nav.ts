@@ -43,7 +43,7 @@ export function updateCreditNavFromState(state?: CreditDemoState) {
       }
       statusEl.className = 'player-status-badge badge-verified'
     } else {
-      statusEl.textContent = 'Underwriting (Step 3)'
+      statusEl.textContent = 'Credit Audit (Step 3)'
       statusEl.className = 'player-status-badge badge-verified'
     }
   }
