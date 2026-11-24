@@ -21,6 +21,9 @@ export interface KybDemoState {
     status: 'ACTIVE' | 'INACTIVE' | 'NOT_FOUND' | 'UNVERIFIED'
     verified: boolean
     details?: SandboxCompany
+    opsDecision?: 'CONDITIONAL_APPROVED' | 'PAYMENT_HELD' | 'NONE'
+    gracePeriodDays?: number
+    remediationDeadline?: string
   }
   directors: {
     audited: boolean
@@ -80,7 +83,13 @@ export function resetKybDemoState(): void {
 }
 
 export function isKybStep1Complete(state: KybDemoState): boolean {
-  return state.company.verified === true && state.company.status !== 'UNVERIFIED'
+  if (!state.company.verified || state.company.status === 'UNVERIFIED' || state.company.status === 'NOT_FOUND') {
+    return false
+  }
+  if (state.company.status === 'INACTIVE') {
+    return state.company.opsDecision === 'CONDITIONAL_APPROVED'
+  }
+  return true
 }
 
 export function isKybStep2Complete(state: KybDemoState): boolean {

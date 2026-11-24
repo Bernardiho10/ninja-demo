@@ -102,7 +102,7 @@
   <div class="whatsapp-drag-grip" title="Drag me anywhere">
     <span></span><span></span><span></span>
   </div>
-  <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20I%20need%20help%20with%20using%20Ninja%20KYB" target="_blank" rel="noopener noreferrer" class="whatsapp-floating-btn" id="ninja-whatsapp-link" aria-label="WhatsApp Support">
+  <a href="https://wa.me/2349113401006?text=Hi%20BOU%20Support%2C%20from%20ninja%20demo%20portal%2C%20I%20need%20help%20with%20Ninja%20KYB" target="_blank" rel="noopener noreferrer" class="whatsapp-floating-btn" id="ninja-whatsapp-link" aria-label="WhatsApp Support">
     <i class="ph-bold ph-whatsapp-logo whatsapp-fab-icon"></i>
     <span class="whatsapp-fab-label">WhatsApp Support</span>
   </a>
@@ -299,17 +299,76 @@
             </div>
 
             <!-- Active Link Box -->
-            <div id="step3-kyb-link-box" style="margin-top: 18px; padding: 16px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);" hidden="">
-              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <div id="step3-kyb-link-box" style="margin-top: 18px; padding: 18px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);" hidden="">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                 <span style="font-size: 12px; font-weight: 800; color: #fff;">Single-Use Vendor Onboarding Link:</span>
-                <span style="font-size: 11px; font-weight: 800; color: #34d399;">● Ready to Send</span>
+                <button type="button" id="btn-open-kyb-portal" class="btn-reset-ghost" style="color: #38bdf8; font-weight: 800; text-decoration: underline; padding: 4px 8px; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                  <span>📱 Open Vendor Portal (Simulate Experience) ↗</span>
+                </button>
               </div>
 
               <div style="background: #060a12; padding: 10px 12px; font-family: var(--font-mono); font-size: 11px; color: #38bdf8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-bottom: 14px;" id="text-kyb-flow-url"></div>
 
-              <div class="success" style="padding: 12px 14px; font-size: 12.5px;">
-                ✓ Vendor link generated. Once completed by the vendor, Ninja verifies against the CAC registry and notifies your backend in real time.
+              <!-- Real-time Waiting Box -->
+              <div class="verify-status-box" id="step3-kyb-waiting-status" style="padding: 14px; background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.15); margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                  <span class="verify-status-dot" style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 8px #fbbf24;"></span>
+                  <span style="font-size: 12.5px; font-weight: 700; color: #fbbf24;" id="text-kyb-status-indicator">Waiting for vendor to open link and complete verification…</span>
+                </div>
+                <p style="font-size: 12px; color: #94a3b8; margin: 0 0 12px; line-height: 1.5;">
+                  The vendor receives this link via WhatsApp or email. Click the simulator button below to experience what the vendor sees on their screen and watch the automated webhook callback arrive in real time.
+                </p>
+                <button type="button" id="btn-simulate-vendor-action" style="padding: 11px 18px; font-size: 13.5px; font-weight: 800; background: #3b82f6; color: #fff; border: none; cursor: pointer; border-radius: 4px; display: inline-flex; align-items: center; gap: 8px;">
+                  <span>📱 Open Vendor Portal &amp; Submit Verification →</span>
+                </button>
               </div>
+
+              <!-- Vendor Completed / Webhook Received Box -->
+              <div id="step3-kyb-webhook-success" hidden="" style="margin-top: 14px; padding: 16px; border: 1px solid rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 12px; font-weight: 800; color: #34d399; text-transform: uppercase; letter-spacing: 0.05em;">
+                    ⚡ Webhook Received: kyb.session.completed
+                  </span>
+                  <span class="status-badge perf-performing" style="background: rgba(16, 185, 129, 0.2); color: #34d399; font-weight: 800; font-size: 11px; padding: 3px 8px; border-radius: 3px;">
+                    200 OK
+                  </span>
+                </div>
+                <p style="font-size: 12.5px; color: #cbd5e1; margin: 0 0 14px; line-height: 1.5;">
+                  The vendor finished the hosted portal. Ninja verified their registration against the CAC registry, audited director NIN with NIMC, confirmed corporate bank account ownership, and posted a verified webhook to your backend in <strong>1.4 seconds</strong>.
+                </p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                  <button type="button" id="btn-approve-vendor" style="padding: 12px 20px; font-size: 14px; font-weight: 800; background: #10b981; color: #021a0e; border: none; cursor: pointer; border-radius: 4px;">
+                    ✓ Approve Vendor &amp; Execute Agreement →
+                  </button>
+                </div>
+              </div>
+
+              <!-- Final Agreement / Onboarding Receipt -->
+              <div id="step3-kyb-final-receipt" hidden="" style="margin-top: 16px; padding: 18px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <strong style="color: #fff; font-size: 15px;">✓ Corporate Vendor Fully Onboarded</strong>
+                  <span style="color: #34d399; font-size: 11px; font-weight: 800; background: rgba(52, 211, 153, 0.15); padding: 3px 8px; border-radius: 3px;">ACTIVE IN PROCUREMENT</span>
+                </div>
+                <div class="company-result-grid" style="margin-top: 10px;">
+                  <div class="company-data-item">
+                    <span class="company-data-label">Vendor Reference</span>
+                    <span class="company-data-value" id="receipt-vendor-ref">ven_01h8x9j2k3</span>
+                  </div>
+                  <div class="company-data-item">
+                    <span class="company-data-label">CAC Compliance</span>
+                    <span class="company-data-value" style="color: #34d399;">✓ ACTIVE (Annual Returns Current)</span>
+                  </div>
+                  <div class="company-data-item">
+                    <span class="company-data-label">Signatory Director</span>
+                    <span class="company-data-value" id="receipt-director-name">James Babatunde Okafor (NIN Match 100%)</span>
+                  </div>
+                  <div class="company-data-item">
+                    <span class="company-data-label">Settlement Bank</span>
+                    <span class="company-data-value">Access Bank PLC · 0123456789</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -358,7 +417,7 @@
           <div class="founder-perk-item">✓ Checks official Corporate Affairs Commission registry</div>
           <div class="founder-perk-item">✓ Custom volume pricing &amp; enterprise SLAs</div>
         </div>
-        <a class="founder-cta-btn" href="https://wa.me/2349113401006?text=Hi%20Bernard%2C%20I%20reviewed%20the%20Ninja%20KYB%20API%20demo%20and%20want%20to%20discuss%20vendor%20onboarding%20for%20our%20company" target="_blank" rel="noopener noreferrer">
+        <a class="founder-cta-btn" href="https://wa.me/2349113401006?text=Hi%20Bernard%2C%20from%20ninja%20demo%20portal%2C%20I%20reviewed%20the%20KYB%20demo%20and%20want%20to%20discuss%20vendor%20onboarding" target="_blank" rel="noopener noreferrer">
           <i class="ph-bold ph-whatsapp-logo"></i>
           <span>Chat with Engineering on WhatsApp →</span>
         </a>

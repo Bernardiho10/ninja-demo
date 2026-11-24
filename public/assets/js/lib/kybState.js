@@ -41,7 +41,13 @@ function resetKybDemoState() {
     catch { }
 }
 function isKybStep1Complete(state) {
-    return state.company.verified === true && state.company.status !== 'UNVERIFIED';
+    if (!state.company.verified || state.company.status === 'UNVERIFIED' || state.company.status === 'NOT_FOUND') {
+        return false;
+    }
+    if (state.company.status === 'INACTIVE') {
+        return state.company.opsDecision === 'CONDITIONAL_APPROVED';
+    }
+    return true;
 }
 function isKybStep2Complete(state) {
     return isKybStep1Complete(state) && state.directors.audited === true;

@@ -4,8 +4,24 @@ const STORAGE_KEY = 'ninja_whatsapp_pos_v2'
 
 export function initFloatingWhatsapp() {
   const widget = document.getElementById('ninja-floating-whatsapp')
-  const link = document.getElementById('ninja-whatsapp-link')
+  const link = document.getElementById('ninja-whatsapp-link') as HTMLAnchorElement | null
   if (!widget) return
+
+  // Update WhatsApp link text so support knows the user is coming from the demo portal
+  if (link) {
+    const updateDemoLink = () => {
+      const path = (window.location.pathname || '').toLowerCase()
+      let topic = 'using Ninja'
+      if (path.includes('kyb')) {
+        topic = 'Ninja KYB'
+      } else if (path.includes('credit')) {
+        topic = 'Ninja Credit'
+      }
+      const text = `Hi BOU Support, from ninja demo portal, I need help with ${topic}`
+      link.href = `https://wa.me/2349113401006?text=${encodeURIComponent(text)}`
+    }
+    updateDemoLink()
+  }
 
   // Restore position from localStorage or default to bottom-right
   const restorePos = () => {

@@ -9,3 +9,4 @@ __pycache__/
 
 # Local learning notes (not committed)
 tutor.md
+.DS_Store

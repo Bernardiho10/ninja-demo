@@ -328,6 +328,11 @@ async function run() {
       { type: 'click', selector: '#btn-drawer-proceed', frames: 8 }, // creates hosted KYB flow
       { type: 'click', selector: '#btn-generate-kyb-link', frames: 4 }, // code slideout
       { type: 'click', selector: '#btn-drawer-proceed', frames: 8 }, // mints single-use vendor link
+      { type: 'click', selector: '#btn-simulate-vendor-action', frames: 4 }, // opens interactive vendor portal simulator modal
+      { type: 'wait', frames: 5 }, // inspect vendor portal fields (CAC, NIN, Bank match)
+      { type: 'click', selector: '#btn-submit-vendor-portal', frames: 8 }, // vendor submits verification
+      { type: 'wait', frames: 5 }, // live webhook arrives in telemetry log and workbench updates
+      { type: 'click', selector: '#btn-approve-vendor', frames: 6 }, // enterprise executes agreement
       { type: 'scroll', y: -200, frames: 3 },
       { type: 'wait', frames: 6 } // final review state
     ]);
